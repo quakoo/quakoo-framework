@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc
+	                    http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		                http://www.springframework.org/schema/beans 
+		                http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		                http://www.springframework.org/schema/context 
+		                http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		                http://www.springframework.org/schema/aop 
+		                http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<constructor-arg ref="dataSource" />
+	</bean>
+    
+    <bean id="payloadMaxValueIncrementer" class="com.quakoo.db.StepMaxValueIncrementer">
+		<property name="tableName" value="payload_seq" />
+		<property name="columnName" value="id" />
+		<property name="step" value="50" />
+		<property name="dataSource" ref="sequenceDataSource" />
+	</bean>
+	
+	
+	<bean id="payloadDao" class="com.quakoo.framework.ext.push.dao.impl.PayloadDaoImpl" />
+	<bean id="pushHandleQueueDao" class="com.quakoo.framework.ext.push.dao.impl.PushHandleQueueDaoImpl" />
+	<bean id="pushUserInfoPoolDao" class="com.quakoo.framework.ext.push.dao.impl.PushUserInfoPoolDaoImpl" />
+	<bean id="pushUserQueueDao" class="com.quakoo.framework.ext.push.dao.impl.PushUserQueueDaoImpl" />
+	<bean id="pushUserQueueInfoDao" class="com.quakoo.framework.ext.push.dao.impl.PushUserQueueInfoDaoImpl" />
+	<bean id="pushHandleAllQueueDao" class="com.quakoo.framework.ext.push.dao.impl.PushHandleAllQueueDaoImpl" />
+</beans>

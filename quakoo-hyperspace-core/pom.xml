@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>quakoo-framework</artifactId>
+		<groupId>com.quakoo</groupId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+
+	
+
+	<groupId>com.quakoo</groupId>
+	<packaging>jar</packaging>
+	<version>1.0.0-SNAPSHOT</version>
+	<artifactId>quakoo-hyperspace-core</artifactId>
+	<name>quakoo-hyperspace-core</name>
+	<url>http://maven.apache.org</url>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	
+
+	<dependencies>
+
+	<dependency>
+		<groupId>com.quakoo</groupId>
+		<artifactId>quakoo-hyperspace-common</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</dependency>
+	<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
+		</dependency>
+	   
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<descriptors>
+						<descriptor>
+							distribution.xml
+						</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+					</execution>
+				</executions>
+			</plugin>
+        </plugins>
+        <resources>
+			<resource>
+				<directory>
+                    ${basedir}/src/main/resources
+                </directory>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/java</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+					<exclude>**/*.class</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		
+	</build>
+</project>

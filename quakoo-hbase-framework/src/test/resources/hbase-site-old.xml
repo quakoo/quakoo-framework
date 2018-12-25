@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+	<property>
+	    <name>hbase.rootdir</name>
+	    <value>hdfs://172.28.5.51:8020/hdbase1</value>
+	 </property>
+	 
+	 <property>
+	    <name>hbase.cluster.distributed</name>
+	    <value>true</value>
+	  </property>
+	  
+	  <property> 
+		<name>hbase.master</name> 
+		<value>hdfs://172.28.5.51:60000</value> 
+	  </property> 
+	
+		<property> 
+			<name>hbase.zookeeper.quorum</name> 
+			<value>172.28.5.51,172.28.5.52,172.28.5.53,172.28.5.54</value> 
+		</property> 
+		
+</configuration>

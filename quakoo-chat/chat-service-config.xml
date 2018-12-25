@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc
+	                    http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		                http://www.springframework.org/schema/beans 
+		                http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		                http://www.springframework.org/schema/context 
+		                http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		                http://www.springframework.org/schema/aop 
+		                http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+
+
+    <!-- service -->
+    <bean id="chatGroupService" class="com.s7.framework.ext.chat.service.impl.ChatGroupServiceImpl" />
+    <bean id="chatService" class="com.s7.framework.ext.chat.service.impl.ChatServiceImpl" />
+    <bean id="manyChatQueueService" class="com.s7.framework.ext.chat.service.impl.ManyChatQueueServiceImpl" />
+    <bean id="noticeAllQueueService" class="com.s7.framework.ext.chat.service.impl.NoticeAllQueueServiceImpl" />
+    <bean id="noticeRangeQueueService" class="com.s7.framework.ext.chat.service.impl.NoticeRangeQueueServiceImpl" />
+    <bean id="noticeService" class="com.s7.framework.ext.chat.service.impl.NoticeServiceImpl" />
+    <bean id="pushQueueService" class="com.s7.framework.ext.chat.service.impl.PushQueueServiceImpl" />
+    <bean id="singleChatQueueService" class="com.s7.framework.ext.chat.service.impl.SingleChatQueueServiceImpl" />
+    <bean id="userDirectoryService" class="com.s7.framework.ext.chat.service.impl.UserDirectoryServiceImpl" />
+    <bean id="userInfoService" class="com.s7.framework.ext.chat.service.impl.UserInfoServiceImpl" />
+    <bean id="userPromptService" class="com.s7.framework.ext.chat.service.impl.UserPromptServiceImpl" />
+    <bean id="userStreamService" class="com.s7.framework.ext.chat.service.impl.UserStreamServiceImpl" />
+    <bean id="willPushQueueService" class="com.s7.framework.ext.chat.service.impl.WillPushQueueServiceImpl" />
+    <bean id="connectService" class="com.s7.framework.ext.chat.service.impl.ConnectServiceImpl" />
+    <bean id="messageService" class="com.s7.framework.ext.chat.service.impl.MessageServiceImpl" />
+
+</beans>

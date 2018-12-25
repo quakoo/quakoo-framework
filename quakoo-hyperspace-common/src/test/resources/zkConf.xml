@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<connection-timeout>10000</connection-timeout>
+	<session-timeout>4000</session-timeout>
+	<zookeeper-connection>10.16.12.17:2181,10.16.12.16:2181,10.11.152.118:2181</zookeeper-connection>
+	<read-only>false</read-only>
+	<root>/dnwtest</root>
+	<acl-policy>
+	  <schema>digest</schema>
+	  <user>test</user>
+	  <password>123</password>
+	</acl-policy>
+	<retry-policy>
+	  <count>3</count>
+	  <unit-time>1000</unit-time>
+	</retry-policy>
+</configuration>

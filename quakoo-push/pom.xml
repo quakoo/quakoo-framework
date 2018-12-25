@@ -1,0 +1,58 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>quakoo-framework</artifactId>
+		<groupId>com.quakoo</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>quakoo-push</artifactId>
+	<packaging>jar</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.quakoo</groupId>
+			<artifactId>quakoo-web-framework</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-redis</artifactId>
+			<version>1.5.0.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>com.notnoop.apns</groupId>
+			<artifactId>apns</artifactId>
+			<version>1.0.0.Beta6</version>
+		</dependency>
+		<dependency>
+		    <groupId>io.netty</groupId>
+		    <artifactId>netty-all</artifactId> <!-- Use 'netty-all' for 4.0 or above -->
+		    <version>4.1.2.Final</version>
+		</dependency>
+
+        <dependency>
+            <groupId>com.xiaomi</groupId>
+            <artifactId>json</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.xiaomi</groupId>
+            <artifactId>push</artifactId>
+            <version>2.2.19</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.1.28</version>
+        </dependency>
+        <dependency>
+            <groupId>com.meizu</groupId>
+            <artifactId>meizu</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+	</dependencies>
+
+</project>
