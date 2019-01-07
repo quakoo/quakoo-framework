@@ -10,7 +10,7 @@ public interface SingleChatQueueService {
     
 	public List<SingleChatQueue> unfinishedList(String tableName, int size) throws Exception;
 	
-	public List<SingleChatQueue> finishedList(String tableName, long maxTime, int size) throws Exception;
+//	public List<SingleChatQueue> finishedList(String tableName, long maxTime, int size) throws Exception;
 	
 	public boolean updateStatus(SingleChatQueue one, int newStatus) throws Exception;
 	

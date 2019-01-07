@@ -33,33 +33,35 @@ public class PushQueueDaoImpl extends BaseDaoHandle implements PushQueueDao {
 	
     @Resource
     private DataFieldMaxValueIncrementer pushQueueMaxValueIncrementer;
-    
-	public boolean insert(PushQueue one) throws DataAccessException {
-		boolean res = false;
-		long id = pushQueueMaxValueIncrementer.nextLongValue();
-		one.setId(id);
-		long uid = one.getUid();
-		long mid = one.getMid();
-		long time = one.getTime();
-		int status = one.getStatus();
-		String sql = "insert ignore into push_queue (id, uid, mid, status, time) values (?, ?, ?, ?, ?)";
-		long startTime = System.currentTimeMillis();
-		int ret = this.jdbcTemplate.update(sql, id, uid, mid, status, time);
-        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
 
-        res = ret > 0 ? true : false;
-		
-		if(res){
-			String queue_key = String.format(push_queue_status_key, chatInfo.projectName, status);
-			String queue_null_key = String.format(push_queue_status_null_key, chatInfo.projectName, status);
-			cache.delete(queue_null_key);
-			if(cache.exists(queue_key)){
-				cache.zaddObject(queue_key, new Double(time), one);
-			}
-		}
-		return res;
-	}
+//    @Override
+//	public boolean insert(PushQueue one) throws DataAccessException {
+//		boolean res = false;
+//		long id = pushQueueMaxValueIncrementer.nextLongValue();
+//		one.setId(id);
+//		long uid = one.getUid();
+//		long mid = one.getMid();
+//		long time = one.getTime();
+//		int status = one.getStatus();
+//		String sql = "insert ignore into push_queue (id, uid, mid, status, time) values (?, ?, ?, ?, ?)";
+//		long startTime = System.currentTimeMillis();
+//		int ret = this.jdbcTemplate.update(sql, id, uid, mid, status, time);
+//        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
+//
+//        res = ret > 0 ? true : false;
+//
+//		if(res){
+//			String queue_key = String.format(push_queue_status_key, chatInfo.projectName, status);
+//			String queue_null_key = String.format(push_queue_status_null_key, chatInfo.projectName, status);
+//			cache.delete(queue_null_key);
+//			if(cache.exists(queue_key)){
+//				cache.zaddObject(queue_key, new Double(time), one);
+//			}
+//		}
+//		return res;
+//	}
 
+    @Override
     public int insert(List<PushQueue> list) throws DataAccessException {
 		for(PushQueue one : list) {
 			long id = pushQueueMaxValueIncrementer.nextLongValue();
@@ -118,18 +120,18 @@ public class PushQueueDaoImpl extends BaseDaoHandle implements PushQueueDao {
 	}
 
     @Override
-    public boolean update(List<PushQueue> list, int oldStatus, int newStatus) throws DataAccessException {
-	    List<String> sqls = Lists.newArrayList();
-	    for(PushQueue one : list) {
-            String sqlFormat = "update push_queue set status = %d where id = %d and status = %d ";
-            sqls.add(String.format(sqlFormat, newStatus, one.getId(), oldStatus));
+    public void update(List<PushQueue> list, int oldStatus, int newStatus) throws DataAccessException {
+        String sql = "update push_queue set status = %d where id in (%s) and status = %d ";
+        List<Long> ids = Lists.newArrayList();
+        for(PushQueue one : list) {
+            ids.add(one.getId());
         }
+        String idParam = StringUtils.join(ids, ",");
+        sql = String.format(sql, newStatus, idParam, oldStatus);
         long startTime = System.currentTimeMillis();
-        int[] res = this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
-        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sqls.toString());
-        int totalRes = 0;
-	    for(int one : res) totalRes += one;
-	    if(totalRes == list.size()) {
+        int totalRes = this.jdbcTemplate.update(sql);
+        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
+        if(totalRes == list.size()) {
             String queue_key = String.format(push_queue_status_key, chatInfo.projectName, oldStatus);
             if(cache.exists(queue_key)) {
                 List<Object> rems = Lists.newArrayList();
@@ -161,35 +163,35 @@ public class PushQueueDaoImpl extends BaseDaoHandle implements PushQueueDao {
             String queue_null_key = String.format(push_queue_status_null_key, chatInfo.projectName, oldStatus);
             cache.delete(queue_null_key);
         }
-        return false;
     }
 
-    public boolean update(PushQueue one, int newStatus)
-			throws DataAccessException {
-		boolean res = false;
-		long id = one.getId();
-		long time = one.getTime();
-		int status = one.getStatus();
-		String sql = "update push_queue set status = ? where id = ?";
-		long startTime = System.currentTimeMillis();
-		int ret = this.jdbcTemplate.update(sql, newStatus, id);
-        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
-		res = ret > 0 ? true : false;
-		
-		if(res){
-			String queue_key = String.format(push_queue_status_key, chatInfo.projectName, status);
-			if(cache.exists(queue_key))
-				cache.zremObject(queue_key, one);
-			String queue_new_null_key = String.format(push_queue_status_null_key, chatInfo.projectName, newStatus);
-			cache.delete(queue_new_null_key);
-			String queue_new_key = String.format(push_queue_status_key, chatInfo.projectName, newStatus);
-			if(cache.exists(queue_new_key)){
-				one.setStatus(newStatus);
-				cache.zaddObject(queue_new_key, new Double(time), one);
-			}
-		}
-		return res;
-	}
+//    @Override
+//    public boolean update(PushQueue one, int newStatus)
+//			throws DataAccessException {
+//		boolean res = false;
+//		long id = one.getId();
+//		long time = one.getTime();
+//		int status = one.getStatus();
+//		String sql = "update push_queue set status = ? where id = ?";
+//		long startTime = System.currentTimeMillis();
+//		int ret = this.jdbcTemplate.update(sql, newStatus, id);
+//        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
+//		res = ret > 0 ? true : false;
+//
+//		if(res){
+//			String queue_key = String.format(push_queue_status_key, chatInfo.projectName, status);
+//			if(cache.exists(queue_key))
+//				cache.zremObject(queue_key, one);
+//			String queue_new_null_key = String.format(push_queue_status_null_key, chatInfo.projectName, newStatus);
+//			cache.delete(queue_new_null_key);
+//			String queue_new_key = String.format(push_queue_status_key, chatInfo.projectName, newStatus);
+//			if(cache.exists(queue_new_key)){
+//				one.setStatus(newStatus);
+//				cache.zaddObject(queue_new_key, new Double(time), one);
+//			}
+//		}
+//		return res;
+//	}
 
 //    @Override
 //    public void clear(long uid) throws DataAccessException {
@@ -238,6 +240,7 @@ public class PushQueueDaoImpl extends BaseDaoHandle implements PushQueueDao {
 		}
 	}
 
+    @Override
 	public List<PushQueue> all_list(int status, int size)
 			throws DataAccessException {
 		this.init(status);
@@ -258,25 +261,26 @@ public class PushQueueDaoImpl extends BaseDaoHandle implements PushQueueDao {
 		return Lists.newArrayList();
 	}
 
-	public List<PushQueue> list_time(int status, long maxTime, int size)
-			throws DataAccessException {
-		this.init(status);
-		String queue_key = String.format(push_queue_status_key, chatInfo.projectName, status);
-		String queue_null_key = String.format(push_queue_status_null_key, chatInfo.projectName, status);
-		if(cache.exists(queue_null_key)) 
-			return Lists.newArrayList();
-		if(cache.exists(queue_key)){
-			List<PushQueue> res = Lists.newArrayList();
-			Set<Object> set = cache.zrangeByScoreObject(queue_key, 0, new Double(maxTime), 0, size, null);
-			if(null != set && set.size() > 0){
-			    for(Object obj : set){
-			   		res.add((PushQueue) obj);
-			   	}
-			}
-			return res;
-		}
-		return Lists.newArrayList();
-	}
+//    @Override
+//	public List<PushQueue> list_time(int status, long maxTime, int size)
+//			throws DataAccessException {
+//		this.init(status);
+//		String queue_key = String.format(push_queue_status_key, chatInfo.projectName, status);
+//		String queue_null_key = String.format(push_queue_status_null_key, chatInfo.projectName, status);
+//		if(cache.exists(queue_null_key))
+//			return Lists.newArrayList();
+//		if(cache.exists(queue_key)){
+//			List<PushQueue> res = Lists.newArrayList();
+//			Set<Object> set = cache.zrangeByScoreObject(queue_key, 0, new Double(maxTime), 0, size, null);
+//			if(null != set && set.size() > 0){
+//			    for(Object obj : set){
+//			   		res.add((PushQueue) obj);
+//			   	}
+//			}
+//			return res;
+//		}
+//		return Lists.newArrayList();
+//	}
 
 	public boolean list_null(int status) {
 		String queue_null_key = String.format(push_queue_status_null_key, chatInfo.projectName, status);

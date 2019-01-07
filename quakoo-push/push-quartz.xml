@@ -11,20 +11,20 @@
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
 		">
 
-    <bean name="cleanJob" class="com.quakoo.framework.ext.chat.job.CleanJob"/>
-    <bean id="cleanJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-        <property name="targetObject" ref="cleanJob" />
+    <bean name="cleanPushJob" class="com.quakoo.framework.ext.push.job.CleanJob"/>
+    <bean id="cleanPushJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="cleanPushJob" />
         <property name="targetMethod" value="handle" />
     </bean>
-    <bean id="cleanCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <property name="jobDetail" ref="cleanJobDetail" />
+    <bean id="cleanPushCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="cleanPushJobDetail" />
         <property name="cronExpression" value="0 0 4 ? * *" />
     </bean>
 
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
             <list>
-                <ref bean="cleanCronTrigger" />
+                <ref bean="cleanPushCronTrigger" />
             </list>
         </property>
     </bean>

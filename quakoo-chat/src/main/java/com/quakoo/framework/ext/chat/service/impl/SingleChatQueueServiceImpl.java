@@ -14,24 +14,28 @@ public class SingleChatQueueServiceImpl implements SingleChatQueueService {
 
 	@Resource
 	private SingleChatQueueDao singleChatQueueDao;
-	
+
+	@Override
 	public boolean unfinishedIsNull(String tableName) throws Exception {
 		return singleChatQueueDao.list_null(tableName, Status.unfinished);
 	}
 
+    @Override
 	public List<SingleChatQueue> unfinishedList(String tableName, int size)
 			throws Exception {
 		return singleChatQueueDao.all_list(tableName, Status.unfinished, size);
 	}
 
+    @Override
 	public boolean updateStatus(SingleChatQueue one, int newStatus)
 			throws Exception {
 		return singleChatQueueDao.update(one, newStatus);
 	}
 
-	public List<SingleChatQueue> finishedList(String tableName, long maxTime,
-			int size) throws Exception {
-		return singleChatQueueDao.list_time(tableName, Status.finished, maxTime, size);
-	}
+//    @Override
+//	public List<SingleChatQueue> finishedList(String tableName, long maxTime,
+//			int size) throws Exception {
+//		return singleChatQueueDao.list_time(tableName, Status.finished, maxTime, size);
+//	}
 
 }

@@ -88,7 +88,6 @@ public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
             userInfo.setPromptIndex(0);
             userInfo.setUid(uid);
             if(mysqlSign) {
-                logger.error(" =========== sync mysql user info !!!");
                 userInfo.setPersistentTime(System.currentTimeMillis());
                 userInfo = this.insert(userInfo);
             }
@@ -96,7 +95,6 @@ public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
             userInfo.setLastIndex(lastIndex);
             userInfo.setLoginTime(loginTime);
             if(mysqlSign) {
-                logger.error(" =========== sync mysql user info !!!");
                 userInfo.setPersistentTime(System.currentTimeMillis());
                 this.update(userInfo);
             }

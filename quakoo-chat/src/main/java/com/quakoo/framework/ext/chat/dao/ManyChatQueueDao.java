@@ -12,15 +12,15 @@ public interface ManyChatQueueDao {
 	
 	public boolean exist(ManyChatQueue one) throws DataAccessException;
 	
-	public boolean delete(ManyChatQueue one) throws DataAccessException;
+//	public boolean delete(ManyChatQueue one) throws DataAccessException;
 	
 	public boolean update(ManyChatQueue one, int newStatus) throws DataAccessException;
 	
 	public List<ManyChatQueue> all_list(String table_name, int status,
 			int size) throws DataAccessException;
 	
-	public List<ManyChatQueue> list_time(String table_name, int status, 
-			long maxTime, int size) throws DataAccessException;
+//	public List<ManyChatQueue> list_time(String table_name, int status,
+//			long maxTime, int size) throws DataAccessException;
 	
 	public boolean list_null(String table_name, int status);
 	

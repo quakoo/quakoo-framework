@@ -33,6 +33,7 @@ public class SingleChatQueueDaoImpl extends BaseDaoHandle implements SingleChatQ
 		return chatInfo.single_chat_queue_table_names.get(index);
 	}
 
+	@Override
 	public boolean insert(SingleChatQueue one) throws DataAccessException {
 		boolean res = false;
 		long uid = one.getUid();
@@ -63,6 +64,7 @@ public class SingleChatQueueDaoImpl extends BaseDaoHandle implements SingleChatQ
 		return res;
 	}
 
+    @Override
 	public boolean exist(SingleChatQueue one) throws DataAccessException {
 		long uid = one.getUid();
 		long toUid = one.getToUid();
@@ -87,32 +89,34 @@ public class SingleChatQueueDaoImpl extends BaseDaoHandle implements SingleChatQ
 		}
 	}
 
-	public boolean delete(SingleChatQueue one) throws DataAccessException {
-		boolean res = false;
-		long uid = one.getUid();
-		long toUid = one.getToUid();
-		long mid = one.getMid();
-		int status =one.getStatus();
-		String tableName = getTable(uid);
-		String sql = "delete from %s where uid = ? and toUid = ? and mid = ?";
-		sql = String.format(sql, tableName);
-		long startTime = System.currentTimeMillis();
-		int ret = this.jdbcTemplate.update(sql, uid, toUid, mid);
-        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
+//    @Override
+//	public boolean delete(SingleChatQueue one) throws DataAccessException {
+//		boolean res = false;
+//		long uid = one.getUid();
+//		long toUid = one.getToUid();
+//		long mid = one.getMid();
+//		int status =one.getStatus();
+//		String tableName = getTable(uid);
+//		String sql = "delete from %s where uid = ? and toUid = ? and mid = ?";
+//		sql = String.format(sql, tableName);
+//		long startTime = System.currentTimeMillis();
+//		int ret = this.jdbcTemplate.update(sql, uid, toUid, mid);
+//        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
+//
+//        res = ret > 0 ? true : false;
+//
+//		if(res){
+//			String object_key = String.format(single_chat_object_key, chatInfo.projectName, uid, toUid, mid);
+//			cache.delete(object_key);
+//			String queue_key = String.format(single_chat_queue_status_key, chatInfo.projectName, tableName, status);
+//			if(cache.exists(queue_key)){
+//				cache.zremObject(queue_key, one);
+//			}
+//		}
+//		return res;
+//	}
 
-        res = ret > 0 ? true : false;
-		
-		if(res){
-			String object_key = String.format(single_chat_object_key, chatInfo.projectName, uid, toUid, mid);
-			cache.delete(object_key);
-			String queue_key = String.format(single_chat_queue_status_key, chatInfo.projectName, tableName, status);
-			if(cache.exists(queue_key)){
-				cache.zremObject(queue_key, one);
-			}
-		}
-		return res;
-	}
-
+    @Override
 	public boolean update(SingleChatQueue one, int newStatus)
 			throws DataAccessException {
 		boolean res = false;
@@ -188,6 +192,7 @@ public class SingleChatQueueDaoImpl extends BaseDaoHandle implements SingleChatQ
 		}
 	}
 
+    @Override
 	public List<SingleChatQueue> all_list(String table_name, int status,
 			int size) throws DataAccessException {
 		this.init(table_name, status);
@@ -209,27 +214,29 @@ public class SingleChatQueueDaoImpl extends BaseDaoHandle implements SingleChatQ
 		return Lists.newArrayList();
 	}
 
-	public List<SingleChatQueue> list_time(String table_name, int status,
-			long maxTime, int size) throws DataAccessException {
-		this.init(table_name, status);
-		String queue_key = String.format(single_chat_queue_status_key, chatInfo.projectName, table_name, status);
-		String queue_null_key = String.format(single_chat_queue_status_null_key, chatInfo.projectName, 
-				table_name, status);
-		if(cache.exists(queue_null_key)) 
-			return Lists.newArrayList();
-		if(cache.exists(queue_key)) {
-			List<SingleChatQueue> res = Lists.newArrayList();
-			Set<Object> set = cache.zrangeByScoreObject(queue_key, 0, new Double(maxTime), 0, size, null);
-			if(null != set && set.size() > 0){
-			    for(Object obj : set){
-			   		res.add((SingleChatQueue) obj);
-			   	}
-			}
-			return res;
-		}
-		return Lists.newArrayList();
-	}
+//    @Override
+//	public List<SingleChatQueue> list_time(String table_name, int status,
+//			long maxTime, int size) throws DataAccessException {
+//		this.init(table_name, status);
+//		String queue_key = String.format(single_chat_queue_status_key, chatInfo.projectName, table_name, status);
+//		String queue_null_key = String.format(single_chat_queue_status_null_key, chatInfo.projectName,
+//				table_name, status);
+//		if(cache.exists(queue_null_key))
+//			return Lists.newArrayList();
+//		if(cache.exists(queue_key)) {
+//			List<SingleChatQueue> res = Lists.newArrayList();
+//			Set<Object> set = cache.zrangeByScoreObject(queue_key, 0, new Double(maxTime), 0, size, null);
+//			if(null != set && set.size() > 0){
+//			    for(Object obj : set){
+//			   		res.add((SingleChatQueue) obj);
+//			   	}
+//			}
+//			return res;
+//		}
+//		return Lists.newArrayList();
+//	}
 
+    @Override
 	public boolean list_null(String table_name, int status) {
 		String queue_null_key = String.format(single_chat_queue_status_null_key, chatInfo.projectName, 
 				table_name, status);

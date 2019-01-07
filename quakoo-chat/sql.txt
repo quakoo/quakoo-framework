@@ -41,6 +41,8 @@ CREATE TABLE `many_chat_queue` (
   `time` bigint(20) NOT NULL,
   PRIMARY KEY (`uid`,`cgid`,`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+create index many_chat_queue_status_index
+  on many_chat_queue (status);
 
 CREATE TABLE `many_chat_queue_1` (
   `uid` bigint(20) NOT NULL,
@@ -50,6 +52,8 @@ CREATE TABLE `many_chat_queue_1` (
   `time` bigint(20) NOT NULL,
   PRIMARY KEY (`uid`,`cgid`,`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+create index many_chat_queue_1_status_index
+  on many_chat_queue_1 (status);
 
 CREATE TABLE `many_chat_queue_2` (
   `uid` bigint(20) NOT NULL,
@@ -59,6 +63,8 @@ CREATE TABLE `many_chat_queue_2` (
   `time` bigint(20) NOT NULL,
   PRIMARY KEY (`uid`,`cgid`,`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+create index many_chat_queue_2_status_index
+  on many_chat_queue_2 (status);
 
 CREATE TABLE `message` (
   `id` bigint(20) NOT NULL,
@@ -120,6 +126,8 @@ CREATE TABLE `push_queue` (
   `time` bigint(20) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+create index push_queue_status_index
+  on push_queue (status);
 
 CREATE TABLE `push_queue_seq` (
   `id` bigint(20) NOT NULL,
@@ -134,6 +142,8 @@ CREATE TABLE `single_chat_queue` (
   `status` tinyint(5) NOT NULL DEFAULT '0',
   PRIMARY KEY (`uid`,`toUid`,`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+create index single_chat_queue_status_index
+  on single_chat_queue (status);
 
 CREATE TABLE `single_chat_queue_1` (
   `uid` bigint(20) NOT NULL,
@@ -143,6 +153,8 @@ CREATE TABLE `single_chat_queue_1` (
   `status` tinyint(5) NOT NULL DEFAULT '0',
   PRIMARY KEY (`uid`,`toUid`,`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+create index single_chat_queue_1_status_index
+  on single_chat_queue_1 (status);
 
 CREATE TABLE `single_chat_queue_2` (
   `uid` bigint(20) NOT NULL,
@@ -152,6 +164,8 @@ CREATE TABLE `single_chat_queue_2` (
   `status` tinyint(5) NOT NULL DEFAULT '0',
   PRIMARY KEY (`uid`,`toUid`,`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+create index single_chat_queue_2_status_index
+  on single_chat_queue_2 (status);
 
 CREATE TABLE `user_client_info` (
   `uid` bigint(20) NOT NULL,
@@ -190,6 +204,8 @@ CREATE TABLE `user_directory` (
   `ctime` bigint(20) NOT NULL,
   PRIMARY KEY (`uid`,`type`,`thirdId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+create index user_directory_uid_index
+  on user_directory (uid);
 
 CREATE TABLE `user_directory_1` (
   `uid` bigint(20) NOT NULL,
@@ -198,6 +214,8 @@ CREATE TABLE `user_directory_1` (
   `ctime` bigint(20) NOT NULL,
   PRIMARY KEY (`uid`,`type`,`thirdId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+create index user_directory_1_uid_index
+  on user_directory_1 (uid);
 
 CREATE TABLE `user_directory_2` (
   `uid` bigint(20) NOT NULL,
@@ -206,6 +224,8 @@ CREATE TABLE `user_directory_2` (
   `ctime` bigint(20) NOT NULL,
   PRIMARY KEY (`uid`,`type`,`thirdId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+create index user_directory_2_uid_index
+  on user_directory_2 (uid);
 
 CREATE TABLE `user_info` (
   `uid` bigint(20) NOT NULL,
@@ -270,6 +290,8 @@ CREATE TABLE `user_stream` (
   `sort` double(23,3) NOT NULL,
   PRIMARY KEY (`uid`,`type`,`thirdId`,`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+create index user_stream_uid_type_thirdId_index
+  on user_stream (uid, type, thirdId);
 
 CREATE TABLE `user_stream_1` (
   `uid` bigint(20) NOT NULL,
@@ -280,6 +302,8 @@ CREATE TABLE `user_stream_1` (
   `sort` double(23,3) NOT NULL,
   PRIMARY KEY (`uid`,`type`,`thirdId`,`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+create index user_stream_1_uid_type_thirdId_index
+  on user_stream_1 (uid, type, thirdId);
 
 CREATE TABLE `user_stream_2` (
   `uid` bigint(20) NOT NULL,
@@ -290,3 +314,5 @@ CREATE TABLE `user_stream_2` (
   `sort` double(23,3) NOT NULL,
   PRIMARY KEY (`uid`,`type`,`thirdId`,`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+create index user_stream_2_uid_type_thirdId_index
+  on user_stream_2 (uid, type, thirdId);
