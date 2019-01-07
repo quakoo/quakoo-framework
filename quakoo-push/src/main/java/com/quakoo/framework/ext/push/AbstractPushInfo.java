@@ -37,7 +37,7 @@ public abstract class AbstractPushInfo implements InitializingBean {
     public String androidMeizuPushAppid;
 	
 	public String lock_suffix = "_lock";
-    public int redis_overtime_long = 60 * 60 * 24 * 5;
+    public int redis_overtime_long = 60 * 60 * 24 * 1;
 	public int redis_overtime_short = 5;
     public int lock_timeout = 60000;
 	public int session_timout = 5000;

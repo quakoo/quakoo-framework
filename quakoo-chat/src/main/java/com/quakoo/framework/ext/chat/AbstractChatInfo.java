@@ -11,7 +11,7 @@ public abstract class AbstractChatInfo implements InitializingBean {
 	
 	private PropertyUtil propertyUtil = PropertyUtil.getInstance("chat.properties");
 	
-	public static final int redis_overtime_long = 60 * 60 * 24 * 5;
+	public static final int redis_overtime_long = 60 * 60 * 24 * 1;
 	
 	public static final int redis_overtime_short = 5;
 
