@@ -15,6 +15,8 @@ public class PushMsg implements Serializable {
 
     private long payloadId;
 
+    private long time;
+
     public long getUid() {
         return uid;
     }
@@ -77,5 +79,13 @@ public class PushMsg implements Serializable {
 
     public void setUids(String uids) {
         this.uids = uids;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 }

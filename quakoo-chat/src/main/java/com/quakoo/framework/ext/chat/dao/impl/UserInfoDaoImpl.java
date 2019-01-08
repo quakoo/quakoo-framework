@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import com.quakoo.framework.ext.chat.AbstractChatInfo;
 import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
 import com.quakoo.framework.ext.chat.dao.UserInfoDao;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,69 @@ public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
 		return loginTime;
 	}
 
+    @Override
+    public void replace(List<UserInfo> userInfos) throws DataAccessException {
+        String sqlPrev = "replace into %s (uid, lastIndex, promptIndex, loginTime) values ";
+        String sqlValueFormat = "(%d, %s, %s, %s)";
+        Map<String, List<UserInfo>> maps = Maps.newHashMap();
+        for(UserInfo userInfo : userInfos){
+            String tableName = getTable(userInfo.getUid());
+            List<UserInfo> list = maps.get(tableName);
+            if(null == list){
+                list = Lists.newArrayList();
+                maps.put(tableName, list);
+            }
+            list.add(userInfo);
+        }
+        List<String> sqls = Lists.newArrayList();
+        for(Entry<String, List<UserInfo>> entry : maps.entrySet()){
+            String tableName = entry.getKey();
+            List<UserInfo> list = entry.getValue();
+            List<String> sqlValueList = Lists.newArrayList();
+            for(UserInfo userInfo : list){
+                String sqlValue = String.format(sqlValueFormat, userInfo.getUid(), userInfo.getLastIndex(),
+                        userInfo.getPromptIndex(), userInfo.getLoginTime());
+                sqlValueList.add(sqlValue);
+            }
+            String sqlValues = StringUtils.join(sqlValueList.toArray(), ",");
+            String sql = sqlPrev + sqlValues;
+            sql = String.format(sql, tableName);
+            sqls.add(sql);
+        }
+        long startTime = System.currentTimeMillis();
+        int[] resList = this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
+        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sqls : " + sqls.toString()
+                + " res : " + ArrayUtils.toString(resList));
+    }
+
+    @Override
+    public UserInfo cache_user_info(long uid, double lastIndex, double loginTime, UserInfo userInfo) throws Exception {
+        String tableName = this.getTable(uid);
+        String object_key = String.format(user_info_object_key, chatInfo.projectName, uid);
+        String queue_null_key = String.format(user_info_queue_null_key, chatInfo.projectName, tableName);
+        String queue_key = String.format(user_info_queue_key, chatInfo.projectName, tableName);
+        cache.delete(queue_null_key);
+        if(null == userInfo) {
+            userInfo = new UserInfo();
+            userInfo.setLastIndex(lastIndex);
+            userInfo.setLoginTime(loginTime);
+            userInfo.setPromptIndex(0);
+            userInfo.setUid(uid);
+        } else {
+            userInfo.setLastIndex(lastIndex);
+            userInfo.setLoginTime(loginTime);
+        }
+        cache.setObject(object_key, AbstractChatInfo.redis_overtime_long, userInfo);
+        if(cache.exists(queue_key)){
+            cache.zaddObject(queue_key, loginTime, uid);
+            long length = cache.zcard(queue_key);
+            if(length > max_queue_num){
+                cache.zremrangeByRank(queue_key, 0, (int)(length - max_queue_num -1));
+            }
+        }
+        return userInfo;
+    }
+
     private boolean update(UserInfo userInfo) throws DataAccessException {
         String tableName = this.getTable(userInfo.getUid());
         String sql = "update %s set loginTime = %s, lastIndex = %s where uid = %d";
@@ -65,51 +129,51 @@ public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
         return res;
     }
 
-    @Override
-    public UserInfo sync(long uid, double lastIndex, double loginTime, UserInfo userInfo) throws Exception {
-        String tableName = this.getTable(uid);
-        String object_key = String.format(user_info_object_key, chatInfo.projectName, uid);
-        String queue_null_key = String.format(user_info_queue_null_key, chatInfo.projectName, tableName);
-        String queue_key = String.format(user_info_queue_key, chatInfo.projectName, tableName);
-        cache.delete(queue_null_key);
-        boolean mysqlSign = true;
-        Object exists = cache.getObject(object_key, null);
-        if(null != exists) {
-            UserInfo cacheUserInfo = (UserInfo) exists;
-            if(System.currentTimeMillis() - cacheUserInfo.getPersistentTime() < 1000 * 60 * 2) {
-                mysqlSign = false;
-            }
-        }
-
-        if (null == userInfo) {
-            userInfo = new UserInfo();
-            userInfo.setLastIndex(lastIndex);
-            userInfo.setLoginTime(loginTime);
-            userInfo.setPromptIndex(0);
-            userInfo.setUid(uid);
-            if(mysqlSign) {
-                userInfo.setPersistentTime(System.currentTimeMillis());
-                userInfo = this.insert(userInfo);
-            }
-        } else {
-            userInfo.setLastIndex(lastIndex);
-            userInfo.setLoginTime(loginTime);
-            if(mysqlSign) {
-                userInfo.setPersistentTime(System.currentTimeMillis());
-                this.update(userInfo);
-            }
-        }
-        cache.setObject(object_key, AbstractChatInfo.redis_overtime_long, userInfo);
-
-        if(cache.exists(queue_key)){
-            cache.zaddObject(queue_key, loginTime, uid);
-            long length = cache.zcard(queue_key);
-            if(length > max_queue_num){
-                cache.zremrangeByRank(queue_key, 0, (int)(length - max_queue_num -1));
-            }
-        }
-        return userInfo;
-    }
+//    @Override
+//    public UserInfo sync(long uid, double lastIndex, double loginTime, UserInfo userInfo) throws Exception {
+//        String tableName = this.getTable(uid);
+//        String object_key = String.format(user_info_object_key, chatInfo.projectName, uid);
+//        String queue_null_key = String.format(user_info_queue_null_key, chatInfo.projectName, tableName);
+//        String queue_key = String.format(user_info_queue_key, chatInfo.projectName, tableName);
+//        cache.delete(queue_null_key);
+//        boolean mysqlSign = true;
+//        Object exists = cache.getObject(object_key, null);
+//        if(null != exists) {
+//            UserInfo cacheUserInfo = (UserInfo) exists;
+//            if(System.currentTimeMillis() - cacheUserInfo.getPersistentTime() < 1000 * 60 * 2) {
+//                mysqlSign = false;
+//            }
+//        }
+//
+//        if (null == userInfo) {
+//            userInfo = new UserInfo();
+//            userInfo.setLastIndex(lastIndex);
+//            userInfo.setLoginTime(loginTime);
+//            userInfo.setPromptIndex(0);
+//            userInfo.setUid(uid);
+//            if(mysqlSign) {
+//                userInfo.setPersistentTime(System.currentTimeMillis());
+//                userInfo = this.insert(userInfo);
+//            }
+//        } else {
+//            userInfo.setLastIndex(lastIndex);
+//            userInfo.setLoginTime(loginTime);
+//            if(mysqlSign) {
+//                userInfo.setPersistentTime(System.currentTimeMillis());
+//                this.update(userInfo);
+//            }
+//        }
+//        cache.setObject(object_key, AbstractChatInfo.redis_overtime_long, userInfo);
+//
+//        if(cache.exists(queue_key)){
+//            cache.zaddObject(queue_key, loginTime, uid);
+//            long length = cache.zcard(queue_key);
+//            if(length > max_queue_num){
+//                cache.zremrangeByRank(queue_key, 0, (int)(length - max_queue_num -1));
+//            }
+//        }
+//        return userInfo;
+//    }
 
     private UserInfo insert(UserInfo userInfo) throws DataAccessException {
 		long uid = userInfo.getUid();

@@ -1,5 +1,6 @@
 package com.quakoo.framework.ext.push.service.impl;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -30,6 +31,8 @@ public class PushHandleServiceImpl extends BaseService implements PushHandleServ
     private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2 + 1);
 
     private final static int handle_num = 50;
+
+    private final static int handle_expire_time = 1000 * 15;
 
     @Resource
     private PayloadDao payloadDao;
@@ -96,6 +99,7 @@ public class PushHandleServiceImpl extends BaseService implements PushHandleServ
             List<PushMsg> batchList= Lists.newArrayList();
             while(true) {
                 try {
+                    long currentTime = System.currentTimeMillis();
                     PushMsg pushMsg = queue.take();
                     batchList.add(pushMsg);
                     if(batchList.size() >= handle_num) {
@@ -110,7 +114,18 @@ public class PushHandleServiceImpl extends BaseService implements PushHandleServ
                         executorService.submit(subProcesser);
                         batchList.clear();
                     } else {
-                        logger.info("==== queue num : " + queue.size());
+                        List<PushMsg> list = Lists.newArrayList();
+                        for(Iterator<PushMsg> it = batchList.iterator(); it.hasNext();) {
+                            PushMsg one = it.next();
+                            if(currentTime - one.getTime() > handle_expire_time) {
+                                list.add(one);
+                                it.remove();
+                            }
+                        }
+                        if(list.size() > 0) {
+                            SubProcesser subProcesser = new SubProcesser(list);
+                            executorService.submit(subProcesser);
+                        }
                     }
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
@@ -129,6 +144,7 @@ public class PushHandleServiceImpl extends BaseService implements PushHandleServ
         pushMsg.setExtra(extra);
         pushMsg.setType(PushHandleQueue.type_single);
         pushMsg.setPlatform(platform);
+        pushMsg.setTime(System.currentTimeMillis());
         queue.add(pushMsg);
 
 //		Payload payload = new Payload();
@@ -158,6 +174,7 @@ public class PushHandleServiceImpl extends BaseService implements PushHandleServ
             pushMsg.setExtra(extra);
             pushMsg.setType(PushHandleQueue.type_single);
             pushMsg.setPlatform(platform);
+            pushMsg.setTime(System.currentTimeMillis());
             queue.add(pushMsg);
         } else {
             PushMsg pushMsg = new PushMsg();
@@ -167,6 +184,7 @@ public class PushHandleServiceImpl extends BaseService implements PushHandleServ
             pushMsg.setExtra(extra);
             pushMsg.setType(PushHandleQueue.type_batch);
             pushMsg.setPlatform(platform);
+            pushMsg.setTime(System.currentTimeMillis());
             queue.add(pushMsg);
 
 //			Payload payload = new Payload();
