@@ -1,5 +1,6 @@
 package com.quakoo.framework.ext.push.dao.impl;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import com.google.common.collect.Sets;
 import com.quakoo.framework.ext.push.dao.BaseDao;
 import com.quakoo.framework.ext.push.dao.PushUserInfoPoolDao;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
 
 import com.google.common.collect.Lists;
@@ -41,77 +44,170 @@ public class PushUserInfoPoolDaoImpl extends BaseDao implements PushUserInfoPool
     }
 
     @Override
-    public boolean insert(PushUserInfoPool one) throws DataAccessException {
-        boolean res = false;
+    public boolean cache_insert(PushUserInfoPool one) throws DataAccessException {
         long uid = one.getUid();
-        String tableName = this.getTable(uid);
-        long activeTime = System.currentTimeMillis();
-        int brand = one.getBrand();
-        int platform = one.getPlatform();
-        String sessionId = one.getSessionId();
-        String iosToken = one.getIosToken();
-        String huaWeiToken = one.getHuaWeiToken();
-        String meiZuPushId = one.getMeiZuPushId();
-        String sqlFormat = "replace into %s (uid, platform, brand, sessionId, iosToken, huaWeiToken,  meiZuPushId, activeTime) " +
-                "values (?, ?, ?, ?, ?, ?, ?, ?)";
-        String sql = String.format(sqlFormat, tableName);
-        long startTime = System.currentTimeMillis();
-        int ret = this.jdbcTemplate.update(sql, uid, platform, brand, sessionId, iosToken, huaWeiToken, meiZuPushId, activeTime);
-        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
-        res = ret > 0 ? true : false;
-        if(res) {
-            String pool_null_key = String.format(push_user_info_pool_null_key, uid);
-            cache.delete(pool_null_key);
-            String pool_key = String.format(push_user_info_pool_key, uid);
-            if(cache.exists(pool_key)) {
-                one.setActiveTime(0);
-                cache.saddObject(pool_key, one);
-            }
-        }
-        return res;
+        String pool_key = String.format(push_user_info_pool_key, uid);
+        String pool_null_key = String.format(push_user_info_pool_null_key, uid);
+        cache.multiDelete(Lists.newArrayList(pool_key, pool_null_key));
+        one.setActiveTime(0);
+        long res = cache.saddObject(pool_key, one);
+        return res > 0 ? true : false;
     }
 
     @Override
-    public boolean clear(long uid) throws DataAccessException {
-        boolean res = false;
-        String tableName = this.getTable(uid);
-        String sqlFormat = "delete from %s where uid = ?";
-        String sql = String.format(sqlFormat, tableName);
-        long startTime = System.currentTimeMillis();
-        int ret = this.jdbcTemplate.update(sql, uid);
-        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
-        res = ret > 0 ? true : false;
-        if(res) {
-            String pool_key = String.format(push_user_info_pool_key, uid);
-            cache.delete(pool_key);
+    public void insert(List<PushUserInfoPool> pools) throws DataAccessException {
+        String sql = "replace into %s (uid, platform, brand, sessionId, iosToken, huaWeiToken,  meiZuPushId, activeTime) values (?, ?, ?, ?, ?, ?, ?, ?)";
+        Map<String, List<PushUserInfoPool>> maps = Maps.newHashMap();
+        for (PushUserInfoPool pool : pools) {
+            String tableName = getTable(pool.getUid());
+            List<PushUserInfoPool> list = maps.get(tableName);
+            if (null == list) {
+                list = Lists.newArrayList();
+                maps.put(tableName, list);
+            }
+            list.add(pool);
         }
-        return res;
+        for (Entry<String, List<PushUserInfoPool>> entry : maps.entrySet()) {
+            String tableName = entry.getKey();
+            String subSql = String.format(sql, tableName);
+            final List<PushUserInfoPool> subList = entry.getValue();
+            long startTime = System.currentTimeMillis();
+            int[] resList = this.jdbcTemplate.batchUpdate(subSql, new BatchPreparedStatementSetter() {
+                @Override
+                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                    PushUserInfoPool one =  subList.get(i);
+                    ps.setLong(1, one.getUid());
+                    ps.setInt(2, one.getPlatform());
+                    ps.setInt(3, one.getBrand());
+                    ps.setString(4, one.getSessionId());
+                    ps.setString(5, one.getIosToken());
+                    ps.setString(6, one.getHuaWeiToken());
+                    ps.setString(7, one.getMeiZuPushId());
+                    ps.setLong(8, System.currentTimeMillis());
+                }
+                @Override
+                public int getBatchSize() {
+                    return subList.size();
+                }
+            });
+            logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + subSql.toString()
+                    + "PushUserInfoPool : " + subList.toString());
+        }
+    }
+
+//    @Override
+//	public boolean insert(PushUserInfoPool one) throws DataAccessException {
+//		boolean res = false;
+//		long uid = one.getUid();
+//		String tableName = this.getTable(uid);
+//		long activeTime = System.currentTimeMillis();
+//		int brand = one.getBrand();
+//		int platform = one.getPlatform();
+//		String sessionId = one.getSessionId();
+//		String iosToken = one.getIosToken();
+//		String huaWeiToken = one.getHuaWeiToken();
+//		String meiZuPushId = one.getMeiZuPushId();
+//		String sqlFormat = "replace into %s (uid, platform, brand, sessionId, iosToken, huaWeiToken,  meiZuPushId, activeTime) " +
+//				"values (?, ?, ?, ?, ?, ?, ?, ?)";
+//		String sql = String.format(sqlFormat, tableName);
+//        long startTime = System.currentTimeMillis();
+//		int ret = this.jdbcTemplate.update(sql, uid, platform, brand, sessionId, iosToken, huaWeiToken, meiZuPushId, activeTime);
+//        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
+//		res = ret > 0 ? true : false;
+//		if(res) {
+//			String pool_null_key = String.format(push_user_info_pool_null_key, uid);
+//			cache.delete(pool_null_key);
+//			String pool_key = String.format(push_user_info_pool_key, uid);
+//			if(cache.exists(pool_key)) {
+//				one.setActiveTime(0);
+//				cache.saddObject(pool_key, one);
+//			}
+//		}
+//		return res;
+//	}
+
+//    @Override
+//    public boolean clear(long uid) throws DataAccessException {
+//        boolean res = false;
+//        String tableName = this.getTable(uid);
+//        String sqlFormat = "delete from %s where uid = ?";
+//        String sql = String.format(sqlFormat, tableName);
+//        long startTime = System.currentTimeMillis();
+//        int ret = this.jdbcTemplate.update(sql, uid);
+//        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
+//        res = ret > 0 ? true : false;
+//        if(res) {
+//            String pool_key = String.format(push_user_info_pool_key, uid);
+//            cache.delete(pool_key);
+//        }
+//        return res;
+//    }
+
+
+    @Override
+    public boolean cache_clear(long uid) throws DataAccessException {
+        String pool_key = String.format(push_user_info_pool_key, uid);
+        long res = cache.delete(pool_key);
+        return res > 0 ? true : false;
     }
 
     @Override
-    public boolean delete(PushUserInfoPool one) throws DataAccessException {
-        boolean res = false;
-        long uid = one.getUid();
-        String tableName = this.getTable(uid);
-        int brand = one.getBrand();
-        int platform = one.getPlatform();
-        String sessionId = one.getSessionId();
-        String sqlFormat = "delete from %s where uid = ? and platform = ? " +
-                "and brand = ? and sessionId = ?";
-        String sql = String.format(sqlFormat, tableName);
-        long startTime = System.currentTimeMillis();
-        int ret = this.jdbcTemplate.update(sql, uid, platform, brand, sessionId);
-        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
-        res = ret > 0 ? true : false;
-        if(res) {
-            one.setActiveTime(0);
+    public void clear(List<Long> uids) throws DataAccessException {
+        Set<String> pool_key_set = Sets.newHashSet();
+        String sqlFormat = "delete from %s where uid in (%s)";
+        Map<String, List<Long>> maps = Maps.newHashMap();
+        for (long uid : uids) {
             String pool_key = String.format(push_user_info_pool_key, uid);
-            if(cache.exists(pool_key)) {
-                cache.sremObject(pool_key, one);
+            pool_key_set.add(pool_key);
+            String tableName = getTable(uid);
+            List<Long> list = maps.get(tableName);
+            if (null == list) {
+                list = Lists.newArrayList();
+                maps.put(tableName, list);
             }
+            list.add(uid);
         }
-        return res;
+        cache.multiDelete(Lists.newArrayList(pool_key_set));
+        List<String> sqls = Lists.newArrayList();
+        for (Entry<String, List<Long>> entry : maps.entrySet()) {
+            String tableName = entry.getKey();
+            List<Long> list = entry.getValue();
+            String param = StringUtils.join(list, ",");
+            String sql = String.format(sqlFormat, tableName, param);
+            sqls.add(sql);
+        }
+        long startTime = System.currentTimeMillis();
+        int[] resList = this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
+        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sqls : " + sqls.toString());
+
     }
+
+
+
+    //    @Override
+//	public boolean delete(PushUserInfoPool one) throws DataAccessException {
+//		boolean res = false;
+//		long uid = one.getUid();
+//		String tableName = this.getTable(uid);
+//		int brand = one.getBrand();
+//		int platform = one.getPlatform();
+//		String sessionId = one.getSessionId();
+//		String sqlFormat = "delete from %s where uid = ? and platform = ? " +
+//				"and brand = ? and sessionId = ?";
+//		String sql = String.format(sqlFormat, tableName);
+//        long startTime = System.currentTimeMillis();
+//		int ret = this.jdbcTemplate.update(sql, uid, platform, brand, sessionId);
+//        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
+//		res = ret > 0 ? true : false;
+//		if(res) {
+//			one.setActiveTime(0);
+//			String pool_key = String.format(push_user_info_pool_key, uid);
+//			if(cache.exists(pool_key)) {
+//				cache.sremObject(pool_key, one);
+//			}
+//		}
+//		return res;
+//	}
 
     private void init(List<Long> uids) {
         List<String> keys = Lists.newArrayList();

@@ -23,7 +23,7 @@ public class UserInfoServiceImpl implements UserInfoService, InitializingBean {
 
     private final static int handle_num = 50;
 
-    private final static int handle_expire_time = 1000 * 60 * 2;
+    private final static int handle_expire_time = 1000 * 60 * 5;
 
     Logger logger = LoggerFactory.getLogger(UserInfoServiceImpl.class);
 
