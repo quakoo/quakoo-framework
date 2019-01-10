@@ -123,6 +123,13 @@ public class PushHandleServiceImpl extends BaseService implements PushHandleServ
                             }
                         }
                         if(list.size() > 0) {
+                            int payloadIdNum = list.size();
+                            List<Long> payloadids = payloadDao.getPayloadIds(payloadIdNum);
+                            for(int i = 0; i < list.size(); i++) {
+                                PushMsg one = list.get(i);
+                                long payloadid = payloadids.get(i);
+                                one.setPayloadId(payloadid);
+                            }
                             SubProcesser subProcesser = new SubProcesser(list);
                             executorService.submit(subProcesser);
                         }
