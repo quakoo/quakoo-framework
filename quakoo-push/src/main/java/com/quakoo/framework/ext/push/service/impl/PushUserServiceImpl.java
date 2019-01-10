@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
@@ -78,27 +79,28 @@ public class PushUserServiceImpl extends BaseService implements PushUserService,
 
         @Override
         public void run() {
-            List<PushUserInfoMsg> batchList= Lists.newArrayList();
-            while(true) {
+            List<PushUserInfoMsg> batchList = Lists.newArrayList();
+            while (true) {
                 try {
                     long currentTime = System.currentTimeMillis();
-                    PushUserInfoMsg msg = queue.take();
-                    batchList.add(msg);
-                    if(batchList.size() >= handle_num) {
-                        handle(batchList);
-                        batchList.clear();
-                    } else {
-                        List<PushUserInfoMsg> list = Lists.newArrayList();
-                        for(Iterator<PushUserInfoMsg> it = batchList.iterator(); it.hasNext();) {
-                            PushUserInfoMsg one = it.next();
-                            if(currentTime - one.getTime() > handle_expire_time) {
-                                list.add(one);
-                                it.remove();
-                            }
+                    PushUserInfoMsg msg = queue.poll(1, TimeUnit.SECONDS);
+                    if (null != msg) {
+                        batchList.add(msg);
+                        if (batchList.size() >= handle_num) {
+                            handle(batchList);
+                            batchList.clear();
                         }
-                        if(list.size() > 0) {
-                            handle(list);
+                    }
+                    List<PushUserInfoMsg> list = Lists.newArrayList();
+                    for (Iterator<PushUserInfoMsg> it = batchList.iterator(); it.hasNext(); ) {
+                        PushUserInfoMsg one = it.next();
+                        if (currentTime - one.getTime() > handle_expire_time) {
+                            list.add(one);
+                            it.remove();
                         }
+                    }
+                    if (list.size() > 0) {
+                        handle(list);
                     }
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);

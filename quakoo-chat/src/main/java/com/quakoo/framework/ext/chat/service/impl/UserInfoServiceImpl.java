@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
@@ -44,30 +45,31 @@ public class UserInfoServiceImpl implements UserInfoService, InitializingBean {
     class Processer implements Runnable {
         @Override
         public void run() {
-            Map<Long, UserInfo> batchMap= Maps.newHashMap();
-            while(true) {
+            Map<Long, UserInfo> batchMap = Maps.newHashMap();
+            while (true) {
                 try {
                     long currentTime = System.currentTimeMillis();
-                    UserInfo userInfo = persistent_queue.take();
-                    batchMap.put(userInfo.getUid(), userInfo);
-                    if(batchMap.size() >= handle_num) {
-                        List<UserInfo> userInfos = Lists.newArrayList(batchMap.values());
-                        userInfoDao.replace(userInfos);
-                        userInfos.clear();
-                        batchMap.clear();
-                    } else {
-                        List<UserInfo> userInfos = Lists.newArrayList();
-                        for(Iterator<Long> it = batchMap.keySet().iterator(); it.hasNext();) {
-                            Long key = it.next();
-                            UserInfo value = batchMap.get(key);
-                            long loginTime = (long)value.getLoginTime();
-                            if(currentTime - loginTime > handle_expire_time) {
-                                userInfos.add(value);
-                                it.remove();
-                            }
+                    UserInfo userInfo = persistent_queue.poll(1, TimeUnit.SECONDS);
+                    if (null != userInfo) {
+                        batchMap.put(userInfo.getUid(), userInfo);
+                        if (batchMap.size() >= handle_num) {
+                            List<UserInfo> userInfos = Lists.newArrayList(batchMap.values());
+                            userInfoDao.replace(userInfos);
+                            userInfos.clear();
+                            batchMap.clear();
                         }
-                        if(userInfos.size() > 0) userInfoDao.replace(userInfos);
                     }
+                    List<UserInfo> userInfos = Lists.newArrayList();
+                    for (Iterator<Long> it = batchMap.keySet().iterator(); it.hasNext(); ) {
+                        Long key = it.next();
+                        UserInfo value = batchMap.get(key);
+                        long loginTime = (long) value.getLoginTime();
+                        if (currentTime - loginTime > handle_expire_time) {
+                            userInfos.add(value);
+                            it.remove();
+                        }
+                    }
+                    if (userInfos.size() > 0) userInfoDao.replace(userInfos);
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }

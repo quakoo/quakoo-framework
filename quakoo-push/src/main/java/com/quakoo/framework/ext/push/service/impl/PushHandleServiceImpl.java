@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
@@ -100,39 +101,40 @@ public class PushHandleServiceImpl extends BaseService implements PushHandleServ
             while(true) {
                 try {
                     long currentTime = System.currentTimeMillis();
-                    PushMsg pushMsg = queue.take();
-                    batchList.add(pushMsg);
-                    if(batchList.size() >= handle_num) {
-                        int payloadIdNum = batchList.size();
-                        List<Long> payloadids = payloadDao.getPayloadIds(payloadIdNum);
-                        for(int i = 0; i < batchList.size(); i++) {
-                            PushMsg one = batchList.get(i);
-                            long payloadid = payloadids.get(i);
-                            one.setPayloadId(payloadid);
-                        }
-                        SubProcesser subProcesser = new SubProcesser(Lists.newArrayList(batchList));
-                        executorService.submit(subProcesser);
-                        batchList.clear();
-                    } else {
-                        List<PushMsg> list = Lists.newArrayList();
-                        for(Iterator<PushMsg> it = batchList.iterator(); it.hasNext();) {
-                            PushMsg one = it.next();
-                            if(currentTime - one.getTime() > handle_expire_time) {
-                                list.add(one);
-                                it.remove();
-                            }
-                        }
-                        if(list.size() > 0) {
-                            int payloadIdNum = list.size();
+                    PushMsg pushMsg = queue.poll(1, TimeUnit.SECONDS);
+                    if(null != pushMsg) {
+                        batchList.add(pushMsg);
+                        if(batchList.size() >= handle_num) {
+                            int payloadIdNum = batchList.size();
                             List<Long> payloadids = payloadDao.getPayloadIds(payloadIdNum);
-                            for(int i = 0; i < list.size(); i++) {
-                                PushMsg one = list.get(i);
+                            for(int i = 0; i < batchList.size(); i++) {
+                                PushMsg one = batchList.get(i);
                                 long payloadid = payloadids.get(i);
                                 one.setPayloadId(payloadid);
                             }
-                            SubProcesser subProcesser = new SubProcesser(list);
+                            SubProcesser subProcesser = new SubProcesser(Lists.newArrayList(batchList));
                             executorService.submit(subProcesser);
+                            batchList.clear();
                         }
+                    }
+                    List<PushMsg> list = Lists.newArrayList();
+                    for (Iterator<PushMsg> it = batchList.iterator(); it.hasNext(); ) {
+                        PushMsg one = it.next();
+                        if (currentTime - one.getTime() > handle_expire_time) {
+                            list.add(one);
+                            it.remove();
+                        }
+                    }
+                    if (list.size() > 0) {
+                        int payloadIdNum = list.size();
+                        List<Long> payloadids = payloadDao.getPayloadIds(payloadIdNum);
+                        for (int i = 0; i < list.size(); i++) {
+                            PushMsg one = list.get(i);
+                            long payloadid = payloadids.get(i);
+                            one.setPayloadId(payloadid);
+                        }
+                        SubProcesser subProcesser = new SubProcesser(list);
+                        executorService.submit(subProcesser);
                     }
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
