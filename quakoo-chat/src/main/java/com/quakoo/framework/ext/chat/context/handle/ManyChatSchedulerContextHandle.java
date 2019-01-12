@@ -104,9 +104,10 @@ public class ManyChatSchedulerContextHandle extends BaseContextHandle {
 										streams.add(stream);
 									}
 								}
-								if (directories.size() > 0)
-									userDirectoryService.batchInsert(Lists
-											.newArrayList(directories));
+                                if (directories.size() > 0) {
+                                    List<UserDirectory> directoryList = userDirectoryService.filterExists(Lists.newArrayList(directories));
+                                    if(directoryList.size() > 0)  userDirectoryService.batchInsert(Lists.newArrayList(directories));
+                                }
 								if (streams.size() > 0)
 									userStreamService.batchInsert(streams);
 								for (ManyChatQueue one : list) {

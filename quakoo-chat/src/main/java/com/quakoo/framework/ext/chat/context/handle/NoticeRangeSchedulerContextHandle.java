@@ -82,8 +82,10 @@ public class NoticeRangeSchedulerContextHandle extends BaseContextHandle {
 										stream.setAuthorId(authorId);
 										streams.add(stream);
 									}
-									if(directories.size() > 0)
-										userDirectoryService.batchInsert(Lists.newArrayList(directories));
+                                    if(directories.size() > 0) {
+                                        List<UserDirectory> directoryList = userDirectoryService.filterExists(Lists.newArrayList(directories));
+                                        if(directoryList.size() > 0)  userDirectoryService.batchInsert(Lists.newArrayList(directories));
+                                    }
 									if(streams.size() > 0)
 										userStreamService.batchInsert(streams);
 									noticeRangeQueueService.updateStatus(one, Status.finished);
