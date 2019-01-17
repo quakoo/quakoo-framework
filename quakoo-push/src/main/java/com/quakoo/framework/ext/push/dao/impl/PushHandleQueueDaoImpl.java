@@ -47,8 +47,9 @@ public class PushHandleQueueDaoImpl extends BaseDao implements PushHandleQueueDa
 
     @Override
     public void insert(List<PushHandleQueue> list) throws DataAccessException {
-        String sql = "insert ignore into %s (id, shardNum, type, uid, uids, `time`) values (?, ?, ?, ?, ?, ?)";
-        Map<String, List<PushHandleQueue>> maps = Maps.newHashMap();
+        String sqlPrev = "insert ignore into %s (id, shardNum, type, uid, uids, `time`) values ";
+        String sqlFormat = "(%d, %d, %d, %d, '%s', %d)";
+        Map<String, List<PushHandleQueue>> maps = Maps.newLinkedHashMap();
         for(PushHandleQueue one : list){
             int shardNum = Math.abs((String.valueOf(one.getType()) +
                     String.valueOf(one.getUid()) + one.getUids()).hashCode());
@@ -62,46 +63,58 @@ public class PushHandleQueueDaoImpl extends BaseDao implements PushHandleQueueDa
             }
             subList.add(one);
         }
-        Set<String> queue_null_key_set = Sets.newHashSet();
-        for(Map.Entry<String, List<PushHandleQueue>> entry : maps.entrySet()) {
+        List<String> sqls = Lists.newArrayList();
+        List<String> queue_null_key_list = Lists.newArrayList();
+        List<String> queue_key_list = Lists.newArrayList();
+        List<Map.Entry<String, List<PushHandleQueue>>> entries = Lists.newArrayList();
+        for(Map.Entry<String, List<PushHandleQueue>> entry : maps.entrySet()){
             String tableName = entry.getKey();
-            String subSql = String.format(sql, tableName);
-            final List<PushHandleQueue> subList = entry.getValue();
-            long startTime = System.currentTimeMillis();
-            int[] resList = this.jdbcTemplate.batchUpdate(subSql, new BatchPreparedStatementSetter() {
-                @Override //id, shardNum, type, uid, uids, `time`
-                public void setValues(PreparedStatement ps, int i) throws SQLException {
-                    PushHandleQueue one =  subList.get(i);
-                    ps.setLong(1, one.getId());
-                    ps.setInt(2, one.getShardNum());
-                    ps.setInt(3, one.getType());
-                    ps.setLong(4, one.getUid());
-                    ps.setString(5, one.getUids());
-                    ps.setLong(6, one.getTime());
-                }
-                @Override
-                public int getBatchSize() {
-                    return subList.size();
-                }
-            });
-            logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + subSql.toString()
-                    + "PushHandleQueues : " + subList.toString());
-
-            String queue_null_key = String.format(push_handle_queue_null_key, tableName);
-            queue_null_key_set.add(queue_null_key);
+            List<PushHandleQueue> subList = entry.getValue();
+            List<String> sqlValueList = Lists.newArrayList();
+            for(PushHandleQueue one : subList){
+                String sqlValue = String.format(sqlFormat, one.getId(), one.getShardNum(), one.getType(),
+                        one.getUid(), one.getUids(), one.getTime());
+                sqlValueList.add(sqlValue);
+            }
+            String sqlValues = StringUtils.join(sqlValueList, ",");
+            String sql = String.format(sqlPrev, tableName) + sqlValues;
+            sqls.add(sql);
             String queue_key = String.format(push_handle_queue_key, tableName);
-            Map<Object, Double> redisMap = Maps.newHashMap();
-            if(cache.exists(queue_key)) {
-                for(int i = 0; i < resList.length; i++) {
-                    if(resList[i] > 0) {
-                        PushHandleQueue pushHandleQueue = subList.get(i);
-                        redisMap.put(pushHandleQueue, new Double(pushHandleQueue.getTime()));
+            queue_key_list.add(queue_key);
+            String queue_null_key = String.format(push_handle_queue_null_key, tableName);
+            queue_null_key_list.add(queue_null_key);
+            entries.add(entry);
+        }
+        long startTime = System.currentTimeMillis();
+        int[] resList = this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
+        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sqls : " + sqls.toString());
+        if(resList.length != entries.size()) {
+            cache.multiDelete(queue_key_list);
+            cache.multiDelete(queue_null_key_list);
+        } else {
+            for(int i = 0; i < entries.size(); i++) {
+                int success = resList[i];
+                Map.Entry<String, List<PushHandleQueue>> entry = entries.get(i);
+                String tableName = entry.getKey();
+                List<PushHandleQueue> subQueueList = entry.getValue();
+                int param_num = subQueueList.size();
+                String queue_key = String.format(push_handle_queue_key, tableName);
+                String queue_null_key = String.format(push_handle_queue_null_key, tableName);
+                if(success != param_num) {
+                    cache.multiDelete(Lists.newArrayList(queue_key, queue_null_key));
+                } else {
+                    cache.delete(queue_null_key);
+                    boolean exists = cache.exists(queue_key);
+                    if(exists) {
+                        Map<Object, Double> redisMap = Maps.newHashMap();
+                        for(PushHandleQueue one : subQueueList) {
+                            redisMap.put(one, new Double(one.getTime()));
+                        }
+                        cache.zaddMultiObject(queue_key, redisMap);
                     }
                 }
-                cache.zaddMultiObject(queue_key, redisMap);
             }
         }
-        if(queue_null_key_set.size() > 0) cache.multiDelete(Lists.newArrayList(queue_null_key_set));
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.quakoo.framework.ext.push.dao.impl;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -56,10 +57,41 @@ public class PayloadDaoImpl extends BaseDao implements PayloadDao, InitializingB
         return res;
     }
 
+    private boolean sql_inj(String str){
+        int srcLen, decLen = 0;
+        str = str.toLowerCase().trim();
+        srcLen = str.length();
+        str = str.replace("exec", "");
+        str = str.replace("delete", "");
+        str = str.replace("master", "");
+        str = str.replace("truncate", "");
+        str = str.replace("declare", "");
+        str = str.replace("create", "");
+        str = str.replace("xp_", "no");
+        decLen = str.length();
+        if (srcLen == decLen) return false;
+        else return true;
+    }
+
     @Override
     public List<Payload> insert(List<Payload> payloads) throws DataAccessException {
-        List<Payload> res = Lists.newArrayList();
-        String sql = "insert ignore into %s (id, title, content, extra, `time`, platform) values (?, ?, ?, ?, ?, ?)";
+        for(Iterator<Payload> it = payloads.iterator(); it.hasNext();) {
+            Payload payload = it.next();
+            String extra = JsonUtils.toJson(payload.getExtra());
+            if(sql_inj(payload.getTitle())) {
+                it.remove();
+                continue;
+            }
+            if(sql_inj(payload.getContent())) {
+                it.remove();
+                continue;
+            }
+            if(sql_inj(extra)) {
+                it.remove();
+            }
+        }
+        String sqlPrev = "insert ignore into %s (id, title, content, extra, `time`, platform) values ";
+        String sqlFormat = "(%d, '%s', '%s', '%s', %d, %d)";
         Map<String, List<Payload>> maps = Maps.newHashMap();
         for(Payload payload : payloads){
             payload.setTime(System.currentTimeMillis());
@@ -71,42 +103,31 @@ public class PayloadDaoImpl extends BaseDao implements PayloadDao, InitializingB
             }
             list.add(payload);
         }
-        Map<String, Object> redisMap = Maps.newHashMap();
-        for(Map.Entry<String, List<Payload>> entry : maps.entrySet()){
+        List<String> sqls = Lists.newArrayList();
+        for(Map.Entry<String, List<Payload>> entry : maps.entrySet()) {
             String tableName = entry.getKey();
-            String subSql = String.format(sql, tableName);
-            final List<Payload> subList = entry.getValue();
-            long startTime = System.currentTimeMillis();
-            int[] resList = this.jdbcTemplate.batchUpdate(subSql, new BatchPreparedStatementSetter() {
-                @Override
-                public void setValues(PreparedStatement ps, int i) throws SQLException {
-                    Payload payload =  subList.get(i);
-                    ps.setLong(1, payload.getId());
-                    ps.setString(2, payload.getTitle());
-                    ps.setString(3, payload.getContent());
-                    String extra = JsonUtils.toJson(payload.getExtra());
-                    ps.setString(4, extra);
-                    ps.setLong(5, payload.getTime());
-                    ps.setInt(6, payload.getPlatform());
-                }
-                @Override
-                public int getBatchSize() {
-                    return subList.size();
-                }
-            });
-            logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + subSql.toString()
-                    + "payloads : " + subList.toString());
-            for(int i = 0; i < resList.length; i++) {
-                if(resList[i] > 0) {
-                    Payload payload = subList.get(i);
-                    String key = String.format(object_key, payload.getId());
-                    redisMap.put(key, payload);
-                    res.add(payload);
-                }
+            List<Payload> list = entry.getValue();
+            List<String> sqlValueList = Lists.newArrayList();
+            for(Payload payload : list){
+                String extra = JsonUtils.toJson(payload.getExtra());
+                String sqlValue = String.format(sqlFormat, payload.getId(), payload.getTitle(),
+                        payload.getContent(), extra, payload.getTime(), payload.getPlatform());
+                sqlValueList.add(sqlValue);
             }
+            String sqlValues = StringUtils.join(sqlValueList, ",");
+            String sql = String.format(sqlPrev, tableName) + sqlValues;
+            sqls.add(sql);
+        }
+        long startTime = System.currentTimeMillis();
+        int[] resList = this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
+        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sqls : " + sqls.toString());
+        Map<String, Object> redisMap = Maps.newHashMap();
+        for(Payload payload : payloads) {
+            String key = String.format(object_key, payload.getId());
+            redisMap.put(key, payload);
         }
         if(redisMap.size() > 0) cache.multiSetObject(redisMap, pushInfo.redis_overtime_long);
-        return res;
+        return payloads;
     }
 
     @Override

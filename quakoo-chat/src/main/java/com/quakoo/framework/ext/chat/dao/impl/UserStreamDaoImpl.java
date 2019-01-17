@@ -218,22 +218,22 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 			return res;
 		} finally {
 			try {
-				if(res > 0) {
-					long currentTime = System.currentTimeMillis();
-					Map<Object, Double> map = Maps.newHashMap();
-					for(UserStream stream : streams) {
-						long authorId = stream.getAuthorId();
-						long uid = stream.getUid();
-						long mid = stream.getMid();
-						if(authorId != uid) {
-							WillPushItem item = new WillPushItem(uid, mid, currentTime);
-							map.put(item, new Double(currentTime));
-						}
-					}
-					if(map.size() > 0) {
-						cache.zaddMultiObject(chatInfo.redis_will_push_queue, map);
-					}
-				}
+                if(res > 0) {
+                    long currentTime = System.currentTimeMillis();
+                    Map<Object, Double> map = Maps.newHashMap();
+                    for(UserStream stream : streams) {
+                        long authorId = stream.getAuthorId();
+                        long uid = stream.getUid();
+                        long mid = stream.getMid();
+                        if(authorId != uid) {
+                            WillPushItem item = new WillPushItem(uid, mid, currentTime);
+                            map.put(item, new Double(currentTime + (1000 * 60)));
+                        }
+                    }
+                    if(map.size() > 0) {
+                        cache.zaddMultiObject(chatInfo.redis_will_push_queue, map);
+                    }
+                }
 			} catch (Exception e) {
 			}
 		}

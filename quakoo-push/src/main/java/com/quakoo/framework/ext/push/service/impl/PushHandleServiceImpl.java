@@ -97,17 +97,17 @@ public class PushHandleServiceImpl extends BaseService implements PushHandleServ
     class Processer implements Runnable {
         @Override
         public void run() {
-            List<PushMsg> batchList= Lists.newArrayList();
-            while(true) {
+            List<PushMsg> batchList = Lists.newArrayList();
+            while (true) {
                 try {
                     long currentTime = System.currentTimeMillis();
                     PushMsg pushMsg = queue.poll(1, TimeUnit.SECONDS);
-                    if(null != pushMsg) {
+                    if (null != pushMsg) {
                         batchList.add(pushMsg);
-                        if(batchList.size() >= handle_num) {
+                        if (batchList.size() >= handle_num) {
                             int payloadIdNum = batchList.size();
                             List<Long> payloadids = payloadDao.getPayloadIds(payloadIdNum);
-                            for(int i = 0; i < batchList.size(); i++) {
+                            for (int i = 0; i < batchList.size(); i++) {
                                 PushMsg one = batchList.get(i);
                                 long payloadid = payloadids.get(i);
                                 one.setPayloadId(payloadid);
