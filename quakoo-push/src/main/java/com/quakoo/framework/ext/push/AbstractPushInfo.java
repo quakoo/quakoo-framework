@@ -11,12 +11,15 @@ public abstract class AbstractPushInfo implements InitializingBean {
 
 	private PropertyUtil propertyUtil = PropertyUtil.getInstance("push.properties");
 	
-	public List<String> payload_table_names = Lists.newArrayList();
-	public List<String> push_handle_queue_table_names = Lists.newArrayList();
+//	public List<String> payload_table_names = Lists.newArrayList();
+//	public List<String> push_handle_queue_table_names = Lists.newArrayList();
 	public List<String> push_user_info_pool_table_names = Lists.newArrayList();
 	public List<String> push_user_queue_table_names = Lists.newArrayList();
+    public List<String> push_msg_queue_names = Lists.newArrayList();
 
     public String projectName;
+    public String persistence;
+
 	public String iosPushCertificateFileName;
 	public String iosPushPassword;
 	public String pushLockZkAddress;
@@ -44,6 +47,8 @@ public abstract class AbstractPushInfo implements InitializingBean {
 	
 	protected void init(int tableNum) {
 	    this.projectName = propertyUtil.getProperty("project.name");
+        this.persistence = propertyUtil.getProperty("persistence").trim();
+
 		this.iosPushCertificateFileName = propertyUtil.getProperty("ios.push.certificate.file.name");
 		this.iosPushPassword = propertyUtil.getProperty("ios.push.password");
 		this.pushLockZkAddress = propertyUtil.getProperty("push.lock.zk.address");
@@ -60,21 +65,28 @@ public abstract class AbstractPushInfo implements InitializingBean {
         this.androidMeizuPushAppsecret = propertyUtil.getProperty("android.meizu.push.appsecret");
         this.androidMeizuPushAppid = propertyUtil.getProperty("android.meizu.push.appid");
 
-		String payload_table_name = "payload";
-		String push_handle_queue_table_name = "push_handle_queue";
+//		String payload_table_name = "payload";
+//		String push_handle_queue_table_name = "push_handle_queue";
 		String push_user_info_pool_table_name = "push_user_info_pool";
 		String push_user_queue_table_name = "push_user_queue";
+
+        String push_msg_queue_name = "push_msg_queue";
+
 		for(int i = 0; i < tableNum; i++) {
 			if(i == 0) {
-				push_handle_queue_table_names.add(push_handle_queue_table_name);
-				payload_table_names.add(payload_table_name);
+//				push_handle_queue_table_names.add(push_handle_queue_table_name);
+//				payload_table_names.add(payload_table_name);
 				push_user_info_pool_table_names.add(push_user_info_pool_table_name);
 				push_user_queue_table_names.add(push_user_queue_table_name);
+
+                push_msg_queue_names.add(push_msg_queue_name);
 			} else {
-				push_handle_queue_table_names.add(push_handle_queue_table_name + "_" + i);
-				payload_table_names.add(payload_table_name + "_" + i);
+//				push_handle_queue_table_names.add(push_handle_queue_table_name + "_" + i);
+//				payload_table_names.add(payload_table_name + "_" + i);
 				push_user_info_pool_table_names.add(push_user_info_pool_table_name + "_" + i);
 				push_user_queue_table_names.add(push_user_queue_table_name + "_" + i);
+
+                push_msg_queue_names.add(push_msg_queue_name + "_" + i);
 			}
 		}
 	}

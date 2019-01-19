@@ -2,7 +2,7 @@ package com.quakoo.framework.ext.push.service.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.quakoo.framework.ext.push.model.Payload;
+import com.quakoo.framework.ext.push.model.PushMsg;
 import com.quakoo.framework.ext.push.model.PushUserInfoPool;
 import com.quakoo.framework.ext.push.service.AndroidXiaoMiPushService;
 import com.quakoo.framework.ext.push.service.BaseService;
@@ -37,7 +37,7 @@ public class AndroidXiaoMiPushServiceImpl extends BaseService implements Android
     }
 
     @Override
-    public void push(PushUserInfoPool userInfo, Payload payload) {
+    public void push(PushUserInfoPool userInfo, PushMsg pushMsg) {
         try {
             long uid = userInfo.getUid();
             int notifyId = cache.incr(notifyIdKey).intValue();
@@ -46,19 +46,19 @@ public class AndroidXiaoMiPushServiceImpl extends BaseService implements Android
                 cache.delete(notifyIdKey);
             }
             Message message = new Message.Builder()
-                    .title(payload.getTitle()).passThrough(0)
-                    .description(payload.getContent())
+                    .title(pushMsg.getTitle()).passThrough(0)
+                    .description(pushMsg.getContent())
                     .restrictedPackageName(packageName)
                     .notifyType(1).notifyId(notifyId)
                     .build();
-            sender.sendToAlias(message, String.valueOf(uid), 2);
+            if(null != sender) sender.sendToAlias(message, String.valueOf(uid), 2);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
     }
 
     @Override
-    public void batchPush(List<PushUserInfoPool> userInfos, Payload payload) {
+    public void batchPush(List<PushUserInfoPool> userInfos, PushMsg pushMsg) {
         try {
             Set<Long> uids = Sets.newHashSet();
             for(PushUserInfoPool one : userInfos) {
@@ -74,13 +74,13 @@ public class AndroidXiaoMiPushServiceImpl extends BaseService implements Android
                 alias.add(String.valueOf(uid));
             }
             Message message = new Message.Builder()
-                    .title(payload.getTitle()).passThrough(0)
-                    .description(payload.getContent())
+                    .title(pushMsg.getTitle()).passThrough(0)
+                    .description(pushMsg.getContent())
                     .restrictedPackageName(packageName)
                     .notifyType(1).notifyId(notifyId)
                     .build();
-            sender.sendToAlias(message, alias, 2);
-            logger.error("===========xiaomi uids : "+ uids.toString() + " payload : " + payload.getTitle());
+            if(null != sender) sender.sendToAlias(message, alias, 2);
+            logger.error("===========xiaomi uids : "+ uids.toString() + " pushMsg : " + pushMsg.getTitle());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

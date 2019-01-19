@@ -1,39 +1,41 @@
 package com.quakoo.framework.ext.push.model.param;
 
+import com.quakoo.framework.ext.push.model.PushMsg;
+
 import java.io.Serializable;
 import java.util.List;
 
-import com.quakoo.framework.ext.push.model.Payload;
 
 public class InternalPushItem implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private List<Long> uids;
-	
-	private Payload payload;
+    private List<Long> uids;
 
-	public List<Long> getUids() {
-		return uids;
-	}
+    private PushMsg pushMsg;
 
-	public void setUids(List<Long> uids) {
-		this.uids = uids;
-	}
+    public List<Long> getUids() {
+        return uids;
+    }
 
-	public Payload getPayload() {
-		return payload;
-	}
+    public void setUids(List<Long> uids) {
+        this.uids = uids;
+    }
 
-	public void setPayload(Payload payload) {
-		this.payload = payload;
-	}
+    public PushMsg getPushMsg() {
+        return pushMsg;
+    }
 
-	@Override
-	public String toString() {
-		return "InternalPushItem ["
-				+ (uids != null ? "uids=" + uids + ", " : "")
-				+ (payload != null ? "payload=" + payload : "") + "]";
-	}
+    public void setPushMsg(PushMsg pushMsg) {
+        this.pushMsg = pushMsg;
+    }
+
+    @Override
+    public String toString() {
+        return "InternalPushItem{" +
+                "uids=" + uids +
+                ", pushMsg=" + pushMsg +
+                '}';
+    }
 	
 }

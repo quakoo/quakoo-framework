@@ -1,28 +1,40 @@
-package com.quakoo.framework.ext.push.bean;
+package com.quakoo.framework.ext.push.model;
+
+import com.google.common.collect.Maps;
 
 import java.io.Serializable;
 import java.util.Map;
 
-public class PushMsg implements Serializable {
+public class PushMsgHandleAllQueue implements Serializable {
 
-    private long uid;
-    private String uids;
+    private long id;
+
+    private long pushMsgId;
+
     private String title;
-    private String content;
-    private Map<String, String> extra;
-    private int platform;
-    private int type;
 
-    private long payloadId;
+    private String content;
+
+    private Map<String, String> extra = Maps.newHashMap();
+
+    private int platform;
 
     private long time;
 
-    public long getUid() {
-        return uid;
+    public long getId() {
+        return id;
     }
 
-    public void setUid(long uid) {
-        this.uid = uid;
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getPushMsgId() {
+        return pushMsgId;
+    }
+
+    public void setPushMsgId(long pushMsgId) {
+        this.pushMsgId = pushMsgId;
     }
 
     public String getTitle() {
@@ -55,30 +67,6 @@ public class PushMsg implements Serializable {
 
     public void setPlatform(int platform) {
         this.platform = platform;
-    }
-
-    public long getPayloadId() {
-        return payloadId;
-    }
-
-    public void setPayloadId(long payloadId) {
-        this.payloadId = payloadId;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
-    public String getUids() {
-        return uids;
-    }
-
-    public void setUids(String uids) {
-        this.uids = uids;
     }
 
     public long getTime() {

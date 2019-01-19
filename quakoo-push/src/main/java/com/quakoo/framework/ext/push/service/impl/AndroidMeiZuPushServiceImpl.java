@@ -5,7 +5,7 @@ import com.meizu.push.sdk.server.IFlymePush;
 import com.meizu.push.sdk.server.constant.ResultPack;
 import com.meizu.push.sdk.server.model.push.PushResult;
 import com.meizu.push.sdk.server.model.push.VarnishedMessage;
-import com.quakoo.framework.ext.push.model.Payload;
+import com.quakoo.framework.ext.push.model.PushMsg;
 import com.quakoo.framework.ext.push.model.PushUserInfoPool;
 import com.quakoo.framework.ext.push.service.AndroidMeiZuPushService;
 import com.quakoo.framework.ext.push.service.BaseService;
@@ -33,11 +33,11 @@ public class AndroidMeiZuPushServiceImpl extends BaseService implements AndroidM
     }
 
     @Override
-    public void batchPush(List<PushUserInfoPool> userInfos, Payload payload) {
+    public void batchPush(List<PushUserInfoPool> userInfos, PushMsg pushMsg) {
         try {
             VarnishedMessage.Builder messageBuilder = new VarnishedMessage.Builder().appId(appId)
-                    .title(payload.getTitle()).content(payload.getContent());
-            for(Map.Entry<String, String> entry : payload.getExtra().entrySet()) {
+                    .title(pushMsg.getTitle()).content(pushMsg.getContent());
+            for(Map.Entry<String, String> entry : pushMsg.getExtra().entrySet()) {
                 messageBuilder.extra(entry.getKey(), entry.getValue());
             }
             VarnishedMessage message = messageBuilder.build();
@@ -45,22 +45,22 @@ public class AndroidMeiZuPushServiceImpl extends BaseService implements AndroidM
             for(PushUserInfoPool userInfo : userInfos) {
                 pushIds.add(userInfo.getMeiZuPushId());
             }
-            push.pushMessage(message, pushIds);
-            logger.error("===========meizu pushids : "+ pushIds.toString() + " payload : " + payload.getTitle());
+            if(null != push) push.pushMessage(message, pushIds);
+            logger.error("===========meizu pushids : "+ pushIds.toString() + " pushMsg : " + pushMsg.getTitle());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
     }
 
     public static void main(String[] args) throws Exception {
-        IFlymePush push  = new IFlymePush("a37283e40106460797d187879643ebce");
-        VarnishedMessage.Builder messageBuilder = new VarnishedMessage.Builder().appId(116390l)
+        IFlymePush push  = new IFlymePush("7d7503f647b446b580bbcaa0e947716c");
+        VarnishedMessage.Builder messageBuilder = new VarnishedMessage.Builder().appId(117204l)
                 .title("2").content("222");
 //        for(Map.Entry<String, String> entry : payload.getExtra().entrySet()) {
 //            messageBuilder.extra(entry.getKey(), entry.getValue());
 //        }
         VarnishedMessage message = messageBuilder.build();
-        List<String> pushIds = Lists.newArrayList("BNA4a666403787201656e437b71414103414366630e71");
+        List<String> pushIds = Lists.newArrayList("Z9K487e027e007d7d637754416543005d09417f047a0d");
         ResultPack<PushResult> res = push.pushMessage(message, pushIds,2);
         System.out.println(res.toString());
     }

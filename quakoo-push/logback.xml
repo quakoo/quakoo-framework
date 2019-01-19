@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false" scanPeriod="60 seconds" debug="false">
+
+    <property name="log_dir" value="/data/logs/xxxx/"/>
+    <property name="log_long_history" value="30"/><!-- 5 days -->
+    <property name="log_short_history" value="30"/><!-- 3 days -->
+    <property name="log_pattern"
+              value="%d{MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n%ex"/>
+
+    <!-- 统计日志 -->
+    <appender name="push_msg"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log_dir}push_msg.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log_dir}push_msg.log.%d{yyyy-MM-dd}
+            </fileNamePattern>
+            <maxHistory>${log_short_history}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log_pattern}</pattern>
+        </encoder>
+    </appender>
+
+
+    <appender name="async_push_msg" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <appender-ref ref="push_msg"/>
+    </appender>
+
+    <logger name="push_msg" level="info" additivity="false">
+        <appender-ref ref="push_msg"/>
+    </logger>
+
+
+
+</configuration>

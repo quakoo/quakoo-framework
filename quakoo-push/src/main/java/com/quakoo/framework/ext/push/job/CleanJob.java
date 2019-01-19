@@ -21,15 +21,10 @@ public class CleanJob {
     @Resource
     private JdbcTemplate jdbcTemplate;
 
-    private void cleanPayload(long time) {
+    private void cleanPushMsg(long time) {
         try {
-            List<String> tableNames = pushInfo.payload_table_names;
-            String sqlFormat = "delete from %s where time < %s";
-            List<String> sqls = Lists.newArrayList();
-            for(String tableName : tableNames) {
-                sqls.add(String.format(sqlFormat, tableName, time));
-            }
-            this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
+            String sql = "delete from push_msg where time < %s";
+            this.jdbcTemplate.update(String.format(sql, time));
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
@@ -37,7 +32,7 @@ public class CleanJob {
 
     public void handle() {
         long currentTime = System.currentTimeMillis();
-        cleanPayload(currentTime - step_day);
+        cleanPushMsg(currentTime - step_day);
     }
 
 }

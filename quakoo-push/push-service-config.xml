@@ -16,7 +16,7 @@
     <bean id="pushConnectHandler" scope="prototype" class="com.quakoo.framework.ext.push.nio.PushConnectHandler" />
 
     <!-- service -->
-    <bean id="pushHandleService" class="com.quakoo.framework.ext.push.service.impl.PushHandleServiceImpl" />
+    <!--<bean id="pushHandleService" class="com.quakoo.framework.ext.push.service.impl.PushHandleServiceImpl" />-->
     <bean id="iosPushService" class="com.quakoo.framework.ext.push.service.impl.IosPushServiceImpl" />
     <bean id="androidXiaoMiPushService" class="com.quakoo.framework.ext.push.service.impl.AndroidXiaoMiPushServiceImpl" />
     <bean id="androidHuaWeiPushService" class="com.quakoo.framework.ext.push.service.impl.AndroidHuaWeiPushServiceImpl" />
@@ -24,6 +24,10 @@
     <bean id="internalPushService" class="com.quakoo.framework.ext.push.service.impl.InternalPushServiceImpl" />
     <bean id="pushNioConnectService" class="com.quakoo.framework.ext.push.service.impl.PushNioConnectServiceImpl" />
     <bean id="pushUserService" class="com.quakoo.framework.ext.push.service.impl.PushUserServiceImpl" />
-    <bean id="pushHandleAllService" class="com.quakoo.framework.ext.push.service.impl.PushHandleAllServiceImpl" />
+    <!--<bean id="pushHandleAllService" class="com.quakoo.framework.ext.push.service.impl.PushHandleAllServiceImpl" />-->
+
+    <bean id="pushMsgService" class="com.quakoo.framework.ext.push.service.impl.PushMsgServiceImpl" />
+    <bean id="pushMsgHandleService" class="com.quakoo.framework.ext.push.service.impl.PushMsgHandleServiceImpl" />
+
 
 </beans>

@@ -5,7 +5,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import com.quakoo.framework.ext.push.model.Payload;
+import com.quakoo.framework.ext.push.model.PushMsg;
 import com.quakoo.framework.ext.push.model.param.InternalPushItem;
 import com.quakoo.framework.ext.push.service.BaseService;
 import com.quakoo.framework.ext.push.service.InternalPushService;
@@ -21,7 +21,7 @@ public class InternalPushServiceImpl extends BaseService implements InternalPush
 
     Logger logger = LoggerFactory.getLogger(InternalPushServiceImpl.class);
 
-	private String channel;
+    private String channel;
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -29,24 +29,24 @@ public class InternalPushServiceImpl extends BaseService implements InternalPush
     }
 
     @Resource
-	private RedisTemplate<?, ?> redisTemplate;
+    private RedisTemplate<?, ?> redisTemplate;
 
-	@Override
-	public void push(long uid, Payload payload) {
-		InternalPushItem pushItem = new InternalPushItem();
-		pushItem.setUids(Lists.newArrayList(uid));
-		pushItem.setPayload(payload);
-        logger.error("===========internal uid : "+ uid + " payload : " + payload.getTitle());
-		redisTemplate.convertAndSend(channel, JsonUtils.toJson(pushItem));
-	}
+    @Override
+    public void push(long uid, PushMsg pushMsg) {
+        InternalPushItem pushItem = new InternalPushItem();
+        pushItem.setUids(Lists.newArrayList(uid));
+        pushItem.setPushMsg(pushMsg);
+        logger.error("===========internal uid : "+ uid + " pushMsg : " + pushMsg.getTitle());
+        redisTemplate.convertAndSend(channel, JsonUtils.toJson(pushItem));
+    }
 
-	@Override
-	public void batchPush(List<Long> uids, Payload payload) {
-		InternalPushItem pushItem = new InternalPushItem();
-		pushItem.setUids(uids);
-		pushItem.setPayload(payload);
-        logger.error("===========internal uids : "+ uids.toString() + " payload : " + payload.getTitle());
-		redisTemplate.convertAndSend(channel, JsonUtils.toJson(pushItem));
-	}
+    @Override
+    public void batchPush(List<Long> uids, PushMsg pushMsg) {
+        InternalPushItem pushItem = new InternalPushItem();
+        pushItem.setUids(uids);
+        pushItem.setPushMsg(pushMsg);
+        logger.error("===========internal uids : "+ uids.toString() + " pushMsg : " + pushMsg.getTitle());
+        redisTemplate.convertAndSend(channel, JsonUtils.toJson(pushItem));
+    }
 	
 }

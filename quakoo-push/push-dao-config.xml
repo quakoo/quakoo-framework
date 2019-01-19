@@ -25,10 +25,14 @@
 	</bean>
 	
 	
-	<bean id="payloadDao" class="com.quakoo.framework.ext.push.dao.impl.PayloadDaoImpl" />
-	<bean id="pushHandleQueueDao" class="com.quakoo.framework.ext.push.dao.impl.PushHandleQueueDaoImpl" />
+	<!--<bean id="payloadDao" class="com.quakoo.framework.ext.push.dao.impl.PayloadDaoImpl" />-->
+	<!--<bean id="pushHandleQueueDao" class="com.quakoo.framework.ext.push.dao.impl.PushHandleQueueDaoImpl" />-->
+    <bean id="pushMsgDao" class="com.quakoo.framework.ext.push.dao.impl.PushMsgDaoImpl" />
+
 	<bean id="pushUserInfoPoolDao" class="com.quakoo.framework.ext.push.dao.impl.PushUserInfoPoolDaoImpl" />
 	<bean id="pushUserQueueDao" class="com.quakoo.framework.ext.push.dao.impl.PushUserQueueDaoImpl" />
 	<bean id="pushUserQueueInfoDao" class="com.quakoo.framework.ext.push.dao.impl.PushUserQueueInfoDaoImpl" />
-	<bean id="pushHandleAllQueueDao" class="com.quakoo.framework.ext.push.dao.impl.PushHandleAllQueueDaoImpl" />
+
+    <bean id="pushMsgHandleAllQueueDao" class="com.quakoo.framework.ext.push.dao.impl.PushMsgHandleAllQueueDaoImpl" />
+	<!--<bean id="pushHandleAllQueueDao" class="com.quakoo.framework.ext.push.dao.impl.PushHandleAllQueueDaoImpl" />-->
 </beans>
