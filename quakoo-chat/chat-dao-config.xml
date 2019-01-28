@@ -17,14 +17,14 @@
 		<constructor-arg ref="dataSource" />
 	</bean>
     
-    <bean id="messageMaxValueIncrementer" class="com.s7.db.StepMaxValueIncrementer">
+    <bean id="messageMaxValueIncrementer" class="com.quakoo.db.StepMaxValueIncrementer">
 		<property name="tableName" value="message_seq" />
 		<property name="columnName" value="id" />
 		<property name="step" value="100" />
 		<property name="dataSource" ref="sequenceDataSource" />
 	</bean>
 	
-	<bean id="chatGroupMaxValueIncrementer" class="com.s7.db.StepMaxValueIncrementer">
+	<bean id="chatGroupMaxValueIncrementer" class="com.quakoo.db.StepMaxValueIncrementer">
 		<property name="tableName" value="chat_group_seq" />
 		<property name="columnName" value="id" />
 		<property name="step" value="50" />
