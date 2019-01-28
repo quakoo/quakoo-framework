@@ -13,6 +13,8 @@ public class Message implements Serializable {
 	private String clientId;
 	
 	private int type;
+
+    private long thirdId;
 	
 	private String content;
 
@@ -64,5 +66,26 @@ public class Message implements Serializable {
 
     public void setTime(long time) {
         this.time = time;
+    }
+
+    public long getThirdId() {
+        return thirdId;
+    }
+
+    public void setThirdId(long thirdId) {
+        this.thirdId = thirdId;
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", authorId=" + authorId +
+                ", clientId='" + clientId + '\'' +
+                ", type=" + type +
+                ", thirdId=" + thirdId +
+                ", content='" + content + '\'' +
+                ", time=" + time +
+                '}';
     }
 }

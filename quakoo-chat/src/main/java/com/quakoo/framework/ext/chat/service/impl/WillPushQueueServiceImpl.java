@@ -22,12 +22,9 @@ import com.google.common.collect.Sets;
 import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.framework.ext.chat.AbstractChatInfo;
 import com.quakoo.framework.ext.chat.dao.MessageDao;
-import com.quakoo.framework.ext.chat.dao.PushQueueDao;
 import com.quakoo.framework.ext.chat.dao.UserInfoDao;
 import com.quakoo.framework.ext.chat.model.Message;
-import com.quakoo.framework.ext.chat.model.PushQueue;
 import com.quakoo.framework.ext.chat.model.UserInfo;
-import com.quakoo.framework.ext.chat.model.constant.Status;
 import com.quakoo.framework.ext.chat.model.param.WillPushItem;
 import com.quakoo.framework.ext.chat.service.WillPushQueueService;
 
@@ -46,9 +43,6 @@ public class WillPushQueueServiceImpl implements WillPushQueueService {
 
     @Resource
     private MessageDao messageDao;
-
-    @Resource
-    private PushQueueDao pushQueueDao;
 
     @Autowired(required = false)
     @Qualifier("chatPushService")

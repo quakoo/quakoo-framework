@@ -108,9 +108,10 @@ public class SingleChatSchedulerContextHandle extends BaseContextHandle {
                                 }
 								if(streams.size() > 0)
 									userStreamService.batchInsert(streams);
-								for(SingleChatQueue one : list) {
-									singleChatQueueService.updateStatus(one, Status.finished);
-								}
+                                if(list.size() > 0) singleChatQueueService.updateStatus(list, Status.finished);
+//								for(SingleChatQueue one : list) {
+//									singleChatQueueService.updateStatus(one, Status.finished);
+//								}
 							}
 						}
 					} catch (Exception e) {

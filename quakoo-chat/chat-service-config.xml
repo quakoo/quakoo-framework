@@ -15,20 +15,20 @@
 
 
     <!-- service -->
-    <bean id="chatGroupService" class="com.s7.framework.ext.chat.service.impl.ChatGroupServiceImpl" />
-    <bean id="chatService" class="com.s7.framework.ext.chat.service.impl.ChatServiceImpl" />
-    <bean id="manyChatQueueService" class="com.s7.framework.ext.chat.service.impl.ManyChatQueueServiceImpl" />
-    <bean id="noticeAllQueueService" class="com.s7.framework.ext.chat.service.impl.NoticeAllQueueServiceImpl" />
-    <bean id="noticeRangeQueueService" class="com.s7.framework.ext.chat.service.impl.NoticeRangeQueueServiceImpl" />
-    <bean id="noticeService" class="com.s7.framework.ext.chat.service.impl.NoticeServiceImpl" />
-    <bean id="pushQueueService" class="com.s7.framework.ext.chat.service.impl.PushQueueServiceImpl" />
-    <bean id="singleChatQueueService" class="com.s7.framework.ext.chat.service.impl.SingleChatQueueServiceImpl" />
-    <bean id="userDirectoryService" class="com.s7.framework.ext.chat.service.impl.UserDirectoryServiceImpl" />
-    <bean id="userInfoService" class="com.s7.framework.ext.chat.service.impl.UserInfoServiceImpl" />
-    <bean id="userPromptService" class="com.s7.framework.ext.chat.service.impl.UserPromptServiceImpl" />
-    <bean id="userStreamService" class="com.s7.framework.ext.chat.service.impl.UserStreamServiceImpl" />
-    <bean id="willPushQueueService" class="com.s7.framework.ext.chat.service.impl.WillPushQueueServiceImpl" />
-    <bean id="connectService" class="com.s7.framework.ext.chat.service.impl.ConnectServiceImpl" />
-    <bean id="messageService" class="com.s7.framework.ext.chat.service.impl.MessageServiceImpl" />
+    <bean id="chatGroupService" class="com.quakoo.framework.ext.chat.service.impl.ChatGroupServiceImpl" />
+    <bean id="chatService" class="com.quakoo.framework.ext.chat.service.impl.ChatServiceImpl" />
+    <bean id="manyChatQueueService" class="com.quakoo.framework.ext.chat.service.impl.ManyChatQueueServiceImpl" />
+    <bean id="noticeAllQueueService" class="com.quakoo.framework.ext.chat.service.impl.NoticeAllQueueServiceImpl" />
+    <bean id="noticeRangeQueueService" class="com.quakoo.framework.ext.chat.service.impl.NoticeRangeQueueServiceImpl" />
+    <bean id="noticeService" class="com.quakoo.framework.ext.chat.service.impl.NoticeServiceImpl" />
+    <!--<bean id="pushQueueService" class="com.quakoo.framework.ext.chat.service.impl.PushQueueServiceImpl" />-->
+    <bean id="singleChatQueueService" class="com.quakoo.framework.ext.chat.service.impl.SingleChatQueueServiceImpl" />
+    <bean id="userDirectoryService" class="com.quakoo.framework.ext.chat.service.impl.UserDirectoryServiceImpl" />
+    <bean id="userInfoService" class="com.quakoo.framework.ext.chat.service.impl.UserInfoServiceImpl" />
+    <bean id="userPromptService" class="com.quakoo.framework.ext.chat.service.impl.UserPromptServiceImpl" />
+    <bean id="userStreamService" class="com.quakoo.framework.ext.chat.service.impl.UserStreamServiceImpl" />
+    <bean id="willPushQueueService" class="com.quakoo.framework.ext.chat.service.impl.WillPushQueueServiceImpl" />
+    <bean id="connectService" class="com.quakoo.framework.ext.chat.service.impl.ConnectServiceImpl" />
+    <bean id="messageService" class="com.quakoo.framework.ext.chat.service.impl.MessageServiceImpl" />
 
 </beans>

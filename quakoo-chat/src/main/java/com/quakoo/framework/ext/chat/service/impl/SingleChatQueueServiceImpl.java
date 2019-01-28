@@ -32,6 +32,11 @@ public class SingleChatQueueServiceImpl implements SingleChatQueueService {
 		return singleChatQueueDao.update(one, newStatus);
 	}
 
+    @Override
+    public void updateStatus(List<SingleChatQueue> list, int newStatus) throws Exception {
+        singleChatQueueDao.update(list, newStatus);
+    }
+
 //    @Override
 //	public List<SingleChatQueue> finishedList(String tableName, long maxTime,
 //			int size) throws Exception {

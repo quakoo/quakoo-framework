@@ -10,14 +10,12 @@ import javax.annotation.Resource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.quakoo.framework.ext.chat.dao.PushQueueDao;
 import com.quakoo.framework.ext.chat.dao.UserInfoDao;
 import com.quakoo.framework.ext.chat.model.UserInfo;
 import com.quakoo.framework.ext.chat.service.UserInfoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.web.bind.annotation.InitBinder;
 
 
 public class UserInfoServiceImpl implements UserInfoService, InitializingBean {
@@ -31,8 +29,6 @@ public class UserInfoServiceImpl implements UserInfoService, InitializingBean {
     @Resource
     private UserInfoDao userInfoDao;
 
-    @Resource
-    private PushQueueDao pushQueueDao;
 
     private static volatile LinkedBlockingQueue<UserInfo> persistent_queue = new LinkedBlockingQueue<UserInfo>();
 

@@ -14,9 +14,9 @@
 		                http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
 
 
-    <bean id="connectHandler" scope="prototype" class="com.s7.framework.ext.chat.nio.ConnectHandler" />
+    <bean id="connectHandler" scope="prototype" class="com.quakoo.framework.ext.chat.nio.ConnectHandler" />
 
     <!-- service -->
-    <bean id="nioConnectService" class="com.s7.framework.ext.chat.service.impl.nio.NioConnectServiceImpl" />
+    <bean id="nioConnectService" class="com.quakoo.framework.ext.chat.service.impl.nio.NioConnectServiceImpl" />
     
 </beans>

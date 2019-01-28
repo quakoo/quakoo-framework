@@ -110,10 +110,11 @@ public class ManyChatSchedulerContextHandle extends BaseContextHandle {
                                 }
 								if (streams.size() > 0)
 									userStreamService.batchInsert(streams);
-								for (ManyChatQueue one : list) {
-									manyChatQueueService.updateStatus(one,
-											Status.finished);
-								}
+                                if(list.size() > 0) manyChatQueueService.updateStatus(list, Status.finished);
+//								for (ManyChatQueue one : list) {
+//									manyChatQueueService.updateStatus(one,
+//											Status.finished);
+//								}
 							}
 						}
 					} catch (Exception e) {

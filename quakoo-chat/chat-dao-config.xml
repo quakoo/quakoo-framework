@@ -31,25 +31,25 @@
 		<property name="dataSource" ref="sequenceDataSource" />
 	</bean>
 	
-	<bean id="pushQueueMaxValueIncrementer" class="com.s7.db.StepMaxValueIncrementer">
-		<property name="tableName" value="push_queue_seq" />
-		<property name="columnName" value="id" />
-		<property name="step" value="50" />
-		<property name="dataSource" ref="sequenceDataSource" />
-	</bean>
+	<!--<bean id="pushQueueMaxValueIncrementer" class="com.s7.db.StepMaxValueIncrementer">-->
+		<!--<property name="tableName" value="push_queue_seq" />-->
+		<!--<property name="columnName" value="id" />-->
+		<!--<property name="step" value="50" />-->
+		<!--<property name="dataSource" ref="sequenceDataSource" />-->
+	<!--</bean>-->
     
    	<!-- daos -->
-	<bean id="chatGroupDao" class="com.s7.framework.ext.chat.dao.impl.ChatGroupDaoImpl" />
-	<bean id="manyChatQueueDao" class="com.s7.framework.ext.chat.dao.impl.ManyChatQueueDaoImpl" />
-	<bean id="messageDao" class="com.s7.framework.ext.chat.dao.impl.MessageDaoImpl" />
-	<bean id="noticeAllQueueDao" class="com.s7.framework.ext.chat.dao.impl.NoticeAllQueueDaoImpl" />
-	<bean id="noticeRangeQueueDao" class="com.s7.framework.ext.chat.dao.impl.NoticeRangeQueueDaoImpl" />
-	<bean id="pushQueueDao" class="com.s7.framework.ext.chat.dao.impl.PushQueueDaoImpl" />
-	<bean id="singleChatQueueDao" class="com.s7.framework.ext.chat.dao.impl.SingleChatQueueDaoImpl" />
-	<bean id="userClientInfoDao" class="com.s7.framework.ext.chat.dao.impl.UserClientInfoDaoImpl" />
-	<bean id="userDirectoryDao" class="com.s7.framework.ext.chat.dao.impl.UserDirectoryDaoImpl" />
-	<bean id="userInfoDao" class="com.s7.framework.ext.chat.dao.impl.UserInfoDaoImpl" />
-	<bean id="userPromptDao" class="com.s7.framework.ext.chat.dao.impl.UserPromptDaoImpl" />
-	<bean id="userStreamDao" class="com.s7.framework.ext.chat.dao.impl.UserStreamDaoImpl" />
+	<bean id="chatGroupDao" class="com.quakoo.framework.ext.chat.dao.impl.ChatGroupDaoImpl" />
+	<bean id="manyChatQueueDao" class="com.quakoo.framework.ext.chat.dao.impl.ManyChatQueueDaoImpl" />
+	<bean id="messageDao" class="com.quakoo.framework.ext.chat.dao.impl.MessageDaoImpl" />
+	<bean id="noticeAllQueueDao" class="com.quakoo.framework.ext.chat.dao.impl.NoticeAllQueueDaoImpl" />
+	<bean id="noticeRangeQueueDao" class="com.quakoo.framework.ext.chat.dao.impl.NoticeRangeQueueDaoImpl" />
+	<!--<bean id="pushQueueDao" class="com.quakoo.framework.ext.chat.dao.impl.PushQueueDaoImpl" />-->
+	<bean id="singleChatQueueDao" class="com.quakoo.framework.ext.chat.dao.impl.SingleChatQueueDaoImpl" />
+	<!--<bean id="userClientInfoDao" class="com.quakoo.framework.ext.chat.dao.impl.UserClientInfoDaoImpl" />-->
+	<bean id="userDirectoryDao" class="com.quakoo.framework.ext.chat.dao.impl.UserDirectoryDaoImpl" />
+	<bean id="userInfoDao" class="com.quakoo.framework.ext.chat.dao.impl.UserInfoDaoImpl" />
+	<bean id="userPromptDao" class="com.quakoo.framework.ext.chat.dao.impl.UserPromptDaoImpl" />
+	<bean id="userStreamDao" class="com.quakoo.framework.ext.chat.dao.impl.UserStreamDaoImpl" />
 	
 </beans>

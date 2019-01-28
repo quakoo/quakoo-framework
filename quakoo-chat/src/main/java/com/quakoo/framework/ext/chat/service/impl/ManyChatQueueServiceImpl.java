@@ -32,6 +32,11 @@ public class ManyChatQueueServiceImpl implements ManyChatQueueService {
 		return manyChatQueueDao.update(one, newStatus);
 	}
 
+    @Override
+    public void updateStatus(List<ManyChatQueue> list, int newStatus) throws Exception {
+        manyChatQueueDao.update(list, newStatus);
+    }
+
 //    @Override
 //	public List<ManyChatQueue> finishedList(String tableName, long maxTime,
 //			int size) throws Exception {

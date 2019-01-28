@@ -13,5 +13,7 @@ public interface SingleChatQueueService {
 //	public List<SingleChatQueue> finishedList(String tableName, long maxTime, int size) throws Exception;
 	
 	public boolean updateStatus(SingleChatQueue one, int newStatus) throws Exception;
-	
+
+    public void updateStatus(List<SingleChatQueue> list, int newStatus) throws Exception;
+
 }
