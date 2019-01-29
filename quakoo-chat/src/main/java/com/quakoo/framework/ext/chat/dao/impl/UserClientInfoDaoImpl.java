@@ -3,14 +3,14 @@
 //import java.sql.ResultSet;
 //import java.sql.SQLException;
 //
-//import com.quakoo.framework.ext.chat.AbstractChatInfo;
-//import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
-//import com.quakoo.framework.ext.chat.dao.UserClientInfoDao;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 //import org.springframework.dao.DataAccessException;
 //import org.springframework.jdbc.core.ResultSetExtractor;
 //
+//import com.quakoo.framework.ext.chat.AbstractChatInfo;
+//import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
+//import com.quakoo.framework.ext.chat.dao.UserClientInfoDao;
 //import com.quakoo.framework.ext.chat.model.UserClientInfo;
 //
 //public class UserClientInfoDaoImpl extends BaseDaoHandle implements UserClientInfoDao {

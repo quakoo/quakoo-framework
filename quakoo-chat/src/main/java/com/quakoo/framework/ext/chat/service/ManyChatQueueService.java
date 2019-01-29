@@ -14,6 +14,6 @@ public interface ManyChatQueueService {
 	
 	public boolean updateStatus(ManyChatQueue one, int newStatus) throws Exception;
 
-    public void updateStatus(List<ManyChatQueue> list, int newStatus) throws Exception;
-
+	public void updateStatus(List<ManyChatQueue> list, int newStatus) throws Exception;
+	
 }

@@ -6,7 +6,9 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.quakoo.baseFramework.model.pagination.PagerCursor;
+import org.apache.commons.collections.ComparatorUtils;
 
+import javax.jws.soap.SOAPBinding;
 
 
 public class UserStream implements Serializable, Comparable<UserStream> {

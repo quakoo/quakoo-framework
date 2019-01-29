@@ -10,11 +10,19 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import javax.annotation.Resource;
 import java.util.List;
 
+/**
+ * 清理任务
+ * class_name: CleanJob
+ * package: com.quakoo.framework.ext.chat.job
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 17:04
+ **/
 public class CleanJob {
 
     private Logger logger = LoggerFactory.getLogger(CleanJob.class);
 
-    private int step_day = 1000 * 60 * 60 * 24;
+    private int step_day = 1000 * 60 * 60 * 24; //保留天数
 
     @Resource
     private AbstractChatInfo chatInfo;
@@ -65,15 +73,15 @@ public class CleanJob {
         }
     }
 
-    private void cleanPushQueue(long time) {
-        try {
-            String sqlFormat = "delete from push_queue where status = %d and time < %d";
-            String sql = String.format(sqlFormat, Status.finished, time);
-            this.jdbcTemplate.update(sql);
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
+//    private void cleanPushQueue(long time) {
+//        try {
+//            String sqlFormat = "delete from push_queue where status = %d and time < %d";
+//            String sql = String.format(sqlFormat, Status.finished, time);
+//            this.jdbcTemplate.update(sql);
+//        } catch (Exception e) {
+//            logger.error(e.getMessage(), e);
+//        }
+//    }
 
     private void cleanUserStream(long time) {
         try {
@@ -90,28 +98,28 @@ public class CleanJob {
         }
     }
 
-    private void cleanUserClientInfo(long time) {
-        try {
-            List<String> tableNames = chatInfo.user_client_info_table_names;
-            String sqlFormat = "delete from %s where ctime < %s";
-            List<String> sqls = Lists.newArrayList();
-            for(String tableName : tableNames) {
-                sqls.add(String.format(sqlFormat, tableName, time));
-            }
-            this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
+//    private void cleanUserClientInfo(long time) {
+//        try {
+//            List<String> tableNames = chatInfo.user_client_info_table_names;
+//            String sqlFormat = "delete from %s where ctime < %s";
+//            List<String> sqls = Lists.newArrayList();
+//            for(String tableName : tableNames) {
+//                sqls.add(String.format(sqlFormat, tableName, time));
+//            }
+//            this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
+//        } catch (Exception e) {
+//            logger.error(e.getMessage(), e);
+//        }
+//    }
 
     public void handle() {
         long currentTime = System.currentTimeMillis();
         cleanSingleChatQueue(currentTime - step_day);
         cleanManyChatQueue(currentTime - step_day);
-        cleanPushQueue(currentTime - step_day);
+//        cleanPushQueue(currentTime - step_day);
         cleanUserStream(currentTime - step_day * 7);
         cleanMessage(currentTime - step_day * 7);
-        cleanUserClientInfo(currentTime - step_day * 7);
+//        cleanUserClientInfo(currentTime - step_day * 7);
     }
 
 }

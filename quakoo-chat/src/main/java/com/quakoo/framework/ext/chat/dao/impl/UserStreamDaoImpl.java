@@ -8,9 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import com.quakoo.framework.ext.chat.AbstractChatInfo;
-import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
-import com.quakoo.framework.ext.chat.dao.UserStreamDao;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,15 +23,26 @@ import com.quakoo.baseFramework.redis.RedisIncrParam;
 import com.quakoo.baseFramework.redis.RedisSortedSetParam;
 import com.quakoo.baseFramework.redis.RedisSortedSetZremrangeParam;
 import com.quakoo.baseFramework.redis.RedisSortData.RedisKeySortMemObj;
+import com.quakoo.framework.ext.chat.AbstractChatInfo;
+import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
+import com.quakoo.framework.ext.chat.dao.UserStreamDao;
 import com.quakoo.framework.ext.chat.model.UserStream;
 import com.quakoo.framework.ext.chat.model.param.UserOneStreamParam;
 import com.quakoo.framework.ext.chat.model.param.UserStreamParam;
 import com.quakoo.framework.ext.chat.model.param.WillPushItem;
 
+/**
+ * 用户信息流DAO
+ * class_name: UserStreamDaoImpl
+ * package: com.quakoo.framework.ext.chat.dao.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 17:00
+ **/
 public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 
-    private final static long MAX_LENGTH = 400;
-    
+    private final static long MAX_LENGTH = 2000; //跟AbstractChatInfo 的 pull_length的保持一致
+
     private final static String user_stream_key = "%s_user_stream_uid_%d";
 	private final static String user_stream_null_key = "%s_user_stream_uid_%d_null";
 	private final static String user_stream_incr_key = "%s_user_stream_uid_%d_incr";
@@ -47,7 +55,16 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 		int index = (int) uid % chatInfo.user_stream_table_names.size();
 		return chatInfo.user_stream_table_names.get(index);
 	}
-	
+
+	/**
+     * 创建排序字段
+	 * method_name: create_sort
+	 * params: [streams]
+	 * return: void
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 17:01
+	 **/
 	public void create_sort(List<UserStream> streams) throws Exception {
 		if(null == streams || streams.size() == 0)
 			throw new IllegalStateException("streams is null"); 
@@ -88,7 +105,16 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 			this.create_sort(nextStreams);
 		} 
 	}
-	
+
+	/**
+     * 批量添加
+	 * method_name: insert
+	 * params: [streams]
+	 * return: int
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 17:02
+	 **/
 	public int insert(List<UserStream> streams) throws DataAccessException {
 		int res = 0;
 		try {
@@ -218,22 +244,22 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 			return res;
 		} finally {
 			try {
-                if(res > 0) {
-                    long currentTime = System.currentTimeMillis();
-                    Map<Object, Double> map = Maps.newHashMap();
-                    for(UserStream stream : streams) {
-                        long authorId = stream.getAuthorId();
-                        long uid = stream.getUid();
-                        long mid = stream.getMid();
-                        if(authorId != uid) {
-                            WillPushItem item = new WillPushItem(uid, mid, currentTime);
-                            map.put(item, new Double(currentTime + (1000 * 60)));
-                        }
-                    }
-                    if(map.size() > 0) {
-                        cache.zaddMultiObject(chatInfo.redis_will_push_queue, map);
-                    }
-                }
+				if(res > 0) {
+					long currentTime = System.currentTimeMillis();
+					Map<Object, Double> map = Maps.newHashMap();
+					for(UserStream stream : streams) {
+						long authorId = stream.getAuthorId();
+						long uid = stream.getUid();
+						long mid = stream.getMid();
+						if(authorId != uid) {
+							WillPushItem item = new WillPushItem(uid, mid, currentTime);
+							map.put(item, new Double(currentTime + (1000 * 20)));
+						}
+					}
+					if(map.size() > 0) {
+						cache.zaddMultiObject(chatInfo.redis_will_push_queue, map); //添加到预推送队列里
+					}
+				}
 			} catch (Exception e) {
 			}
 		}

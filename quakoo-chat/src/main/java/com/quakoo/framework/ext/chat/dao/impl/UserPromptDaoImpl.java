@@ -7,9 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import com.quakoo.framework.ext.chat.AbstractChatInfo;
-import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
-import com.quakoo.framework.ext.chat.dao.UserPromptDao;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +18,9 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.quakoo.baseFramework.redis.RedisSortedSetZremrangeParam;
 import com.quakoo.baseFramework.redis.RedisSortData.RedisKeySortMemObj;
+import com.quakoo.framework.ext.chat.AbstractChatInfo;
+import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
+import com.quakoo.framework.ext.chat.dao.UserPromptDao;
 import com.quakoo.framework.ext.chat.model.UserPrompt;
 
 public class UserPromptDaoImpl extends BaseDaoHandle implements UserPromptDao {

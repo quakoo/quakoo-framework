@@ -16,6 +16,14 @@ import com.quakoo.framework.ext.chat.dao.ChatGroupDao;
 import com.quakoo.framework.ext.chat.model.ChatGroup;
 import com.quakoo.framework.ext.chat.service.ChatGroupService;
 
+/**
+ * 群组处理类
+ * class_name: ChatGroupServiceImpl
+ * package: com.quakoo.framework.ext.chat.service.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 17:17
+ **/
 public class ChatGroupServiceImpl implements ChatGroupService {
 
 	@Resource
@@ -27,7 +35,16 @@ public class ChatGroupServiceImpl implements ChatGroupService {
 	public ChatGroup load(long cgid) throws Exception {
 		return chatGroupDao.load(cgid);
 	}
-	
+
+	/**
+     * 创建一个群组
+	 * method_name: create
+	 * params: [name, uids, icon]
+	 * return: com.quakoo.framework.ext.chat.model.ChatGroup
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 17:17
+	 **/
 	public ChatGroup create(String name, List<Long> uids, String icon) throws Exception {
 		String uidStr = JsonUtils.toJson(uids);
 		ChatGroup chatGroup = new ChatGroup();
@@ -37,6 +54,15 @@ public class ChatGroupServiceImpl implements ChatGroupService {
 		return chatGroupDao.insert(chatGroup);
 	}
 
+	/**
+     * 更新群公告
+	 * method_name: updateNotice
+	 * params: [cgid, notice]
+	 * return: boolean
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 17:18
+	 **/
     @Override
     public boolean updateNotice(long cgid, String notice) throws Exception {
         ZkLock lock = null;
@@ -56,6 +82,15 @@ public class ChatGroupServiceImpl implements ChatGroupService {
         }
     }
 
+    /**
+     * 更新群主入群审核开关
+     * method_name: updateCheck
+     * params: [cgid, check]
+     * return: boolean
+     * creat_user: lihao
+     * creat_date: 2019/1/29
+     * creat_time: 17:18
+     **/
     @Override
     public boolean updateCheck(long cgid, int check) throws Exception {
         ZkLock lock = null;
@@ -75,8 +110,15 @@ public class ChatGroupServiceImpl implements ChatGroupService {
         }
     }
 
-
-
+    /**
+     * 添加用户到群组
+     * method_name: join
+     * params: [cgid, uid, icon]
+     * return: boolean
+     * creat_user: lihao
+     * creat_date: 2019/1/29
+     * creat_time: 17:19
+     **/
     public boolean join(long cgid, long uid, String icon) throws Exception {
         ZkLock lock = null;
         try {
@@ -100,6 +142,15 @@ public class ChatGroupServiceImpl implements ChatGroupService {
         }
 	}
 
+	/**
+     * 从群组删除用户
+	 * method_name: exit
+	 * params: [cgid, uid, icon]
+	 * return: boolean
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 17:19
+	 **/
 	public boolean exit(long cgid, long uid, String icon) throws Exception {
         ZkLock lock = null;
 	    try {
@@ -126,6 +177,15 @@ public class ChatGroupServiceImpl implements ChatGroupService {
 
 	}
 
+	/**
+     * 获取群组下所有UID
+	 * method_name: userIds
+	 * params: [cgid]
+	 * return: java.util.List<java.lang.Long>
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 17:19
+	 **/
 	public List<Long> userIds(long cgid) throws Exception {
 		List<Long> res = Lists.newArrayList();
 		ChatGroup chatGroup = chatGroupDao.load(cgid);

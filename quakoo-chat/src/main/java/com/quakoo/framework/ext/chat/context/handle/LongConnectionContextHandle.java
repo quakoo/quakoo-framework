@@ -10,10 +10,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 import javax.servlet.AsyncContext;
 
-import com.quakoo.framework.ext.chat.model.UserStream;
-import com.quakoo.framework.ext.chat.model.back.ConnectBack;
-import com.quakoo.framework.ext.chat.model.back.StreamBack;
-import com.quakoo.framework.ext.chat.model.param.UserLongConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +17,22 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.quakoo.baseFramework.jackson.JsonUtils;
+import com.quakoo.framework.ext.chat.model.UserStream;
+import com.quakoo.framework.ext.chat.model.back.ConnectBack;
+import com.quakoo.framework.ext.chat.model.back.StreamBack;
+import com.quakoo.framework.ext.chat.model.param.UserLongConnection;
 import com.quakoo.framework.ext.chat.service.ConnectService;
 import com.quakoo.framework.ext.chat.service.UserStreamService;
 
+/**
+ * http半长连接上下文
+ *
+ * class_name: LongConnectionContextHandle
+ * package: com.quakoo.framework.ext.chat.context.handle
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 16:38
+ **/
 public class LongConnectionContextHandle extends BaseContextHandle {
 
     Logger logger = LoggerFactory.getLogger(LongConnectionContextHandle.class);
@@ -36,9 +45,9 @@ public class LongConnectionContextHandle extends BaseContextHandle {
 	
 	private static final int num = Runtime.getRuntime().availableProcessors() * 2;
 	
-	public static final long time_out = 1000 * 60 * 2;
+	public static final long time_out = 1000 * 60 * 2; //超时时间，自动清理
 	
-	public static volatile List<Map<Long, Set<UserLongConnection>>> connection_context  = Lists.newArrayList();
+	public static volatile List<Map<Long, Set<UserLongConnection>>> connection_context  = Lists.newArrayList(); //半长连接字典
 	
 	private void init_context(){
 		if(connection_context.size() == 0){
@@ -68,7 +77,15 @@ public class LongConnectionContextHandle extends BaseContextHandle {
 
 		}
 	}
-	
+
+	/**
+     * 处理线程(拉模式，根据用户半长连接字典主动拉取用户的消息流)
+	 * class_name: LongConnectionContextHandle
+	 * package: com.quakoo.framework.ext.chat.context.handle
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 16:38
+	 **/
 	class Processer implements Runnable {
 		
 		private Map<Long, Set<UserLongConnection>> pool;
@@ -165,7 +182,15 @@ public class LongConnectionContextHandle extends BaseContextHandle {
 			}
 		}
 	}
-	
+
+	/**
+     * 清理线程
+	 * class_name: LongConnectionContextHandle
+	 * package: com.quakoo.framework.ext.chat.context.handle
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 16:39
+	 **/
     class Cleaner implements Runnable{
 		
         private Map<Long, Set<UserLongConnection>> pool;

@@ -10,8 +10,9 @@ import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.quakoo.framework.ext.chat.service.ext.ChatCheckService;
 import com.quakoo.framework.ext.chat.model.ext.ChatCheckRes;
+import com.quakoo.framework.ext.chat.service.*;
+import com.quakoo.framework.ext.chat.service.ext.ChatCheckService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,13 +32,16 @@ import com.quakoo.framework.ext.chat.model.back.ConnectBack;
 import com.quakoo.framework.ext.chat.model.back.PromptBack;
 import com.quakoo.framework.ext.chat.model.back.StreamBack;
 import com.quakoo.framework.ext.chat.model.param.UserLongConnection;
-import com.quakoo.framework.ext.chat.service.ChatService;
-import com.quakoo.framework.ext.chat.service.ConnectService;
-import com.quakoo.framework.ext.chat.service.UserInfoService;
-import com.quakoo.framework.ext.chat.service.UserPromptService;
-import com.quakoo.framework.ext.chat.service.UserStreamService;
 import com.quakoo.webframework.BaseController;
 
+/**
+ * HTTP聊天API
+ * class_name: ChatControllerHandle
+ * package: com.quakoo.framework.ext.chat.controller.handle
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 16:47
+ **/
 public class ChatControllerHandle extends BaseController {
 
     Logger logger = LoggerFactory.getLogger(ChatControllerHandle.class);
@@ -54,7 +58,7 @@ public class ChatControllerHandle extends BaseController {
 	
 	@Resource
 	private UserStreamService userStreamService;
-	
+
 	@Resource
 	private UserPromptService userPromptService;
 	
@@ -67,6 +71,15 @@ public class ChatControllerHandle extends BaseController {
 	@Resource
 	private ChatCheckService chatCheckService;
 
+	/**
+     * 获取用户聊天目录
+	 * method_name: directoryTree
+	 * params: [uid, lastIndex, request, response, model]
+	 * return: org.springframework.web.servlet.ModelAndView
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 16:48
+	 **/
     @RequestMapping("/directoryTree")
     public ModelAndView directoryTree(@RequestParam(value = "uid") long uid,
                                       @RequestParam(required = true, value = "lastIndex") double lastIndex,
@@ -77,7 +90,16 @@ public class ChatControllerHandle extends BaseController {
         return this.viewNegotiating(request, response, connectBack);
     }
 
-	
+
+    /**
+     * 获取一个目录下的聊天消息分页列表
+     * method_name: pager
+     * params: [uid, type, thirdId, pager, request, response, model]
+     * return: org.springframework.web.servlet.ModelAndView
+     * creat_user: lihao
+     * creat_date: 2019/1/29
+     * creat_time: 16:48
+     **/
 	@RequestMapping("/pager")
     public ModelAndView pager(@RequestParam(value = "uid") long uid,
     		@RequestParam(value = "type") int type,
@@ -88,7 +110,17 @@ public class ChatControllerHandle extends BaseController {
 		pager = userStreamService.getPager(uid, type, thirdId, pager);
 		return this.viewNegotiating(request, response, pager.toModelAttribute());
 	}
-	
+
+	/**
+     * 发送聊天
+     *
+	 * method_name: chat
+	 * params: [uid, clientId, type, thirdId, word, voice, voiceDuration, video, videoDuration, picture, ext, request, response]
+	 * return: org.springframework.web.servlet.ModelAndView
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 16:48
+	 **/
 	@RequestMapping("/chat")
 	public ModelAndView chat(
 			@RequestParam(required = true, value = "uid") long uid,
@@ -118,7 +150,16 @@ public class ChatControllerHandle extends BaseController {
 		if(sign) return super.viewNegotiating(request, response, successResult);
 		else return super.viewNegotiating(request, response, erroResult);
 	}
-	
+
+	/**
+     * 删除一条消息
+	 * method_name: delete
+	 * params: [uid, type, thirdId, mid, request, response]
+	 * return: org.springframework.web.servlet.ModelAndView
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 16:48
+	 **/
 	@RequestMapping("/delete")
 	public ModelAndView delete(
 			@RequestParam(required = true, value = "uid") long uid,
@@ -131,7 +172,16 @@ public class ChatControllerHandle extends BaseController {
 		if(sign) return super.viewNegotiating(request, response, successResult);
 		else return super.viewNegotiating(request, response, erroResult);
 	}
-	
+
+	/**
+     * 检测是否发送成功
+	 * method_name: checkChat
+	 * params: [uid, clientId, request, response]
+	 * return: org.springframework.web.servlet.ModelAndView
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 16:49
+	 **/
 	@RequestMapping("/checkChat")
 	public ModelAndView checkChat(
 			@RequestParam(required = true, value = "uid") long uid,
@@ -143,7 +193,15 @@ public class ChatControllerHandle extends BaseController {
 		else return super.viewNegotiating(request, response, erroResult);
 	}
 	
-	
+	/**
+     * HTTP半长连接
+	 * method_name: connect
+	 * params: [uid, lastIndex, request, response]
+	 * return: org.springframework.web.servlet.ModelAndView
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 16:49
+	 **/
 	@RequestMapping("/connect")
 	public ModelAndView connect(@RequestParam(value = "uid") long uid,
 			@RequestParam(required = true, value = "lastIndex") double lastIndex,
@@ -168,9 +226,9 @@ public class ChatControllerHandle extends BaseController {
 		List<StreamBack> streams = userStreamService.transformBack(newStream);
 		
 		ConnectBack connectBack = connectService.transformBack(streams, prompts);
-		if(connectBack.isSend()) {
+		if(connectBack.isSend()) { //如果连接上有消息则马上返回
 			return super.viewNegotiating(request, response, connectBack);
-		} else {
+		} else { //如果没有消息则将半长连接放入到半长连接字典里
 			AsyncContext asyncContext = request.startAsync(request, response);
 		    asyncContext.setTimeout(-1);
 		    UserLongConnection userLongConnection = new UserLongConnection(uid, lastIndex, 

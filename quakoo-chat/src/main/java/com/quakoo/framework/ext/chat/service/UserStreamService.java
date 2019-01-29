@@ -3,9 +3,9 @@ package com.quakoo.framework.ext.chat.service;
 import java.util.List;
 import java.util.Map;
 
+import com.quakoo.baseFramework.model.pagination.Pager;
 import com.quakoo.framework.ext.chat.model.UserStream;
 import com.quakoo.framework.ext.chat.model.back.StreamBack;
-import com.quakoo.baseFramework.model.pagination.Pager;
 
 public interface UserStreamService {
 	

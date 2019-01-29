@@ -33,16 +33,16 @@ public abstract class AbstractChatInfo implements InitializingBean {
 	public List<String> user_client_info_table_names = Lists.newArrayList();
 	public List<String> user_prompt_table_names = Lists.newArrayList();
 	
-	public String projectName;
-	public String lockZkAddress;
+	public String projectName; //项目名
+	public String lockZkAddress; //分布式锁
 //	public String lockProjectName;
-	public String nioConnectBootstrapIp;
-	public String nioConnectBootstrapPort;
-	public String distributedZkAddress;
+	public String nioConnectBootstrapIp; //长连接IP
+	public String nioConnectBootstrapPort; //长连接端口
+	public String distributedZkAddress; //分布式配置地址
 //	public String distributedProjectName;
 	
 	public String redis_will_push_queue;
-	public String user_stream_init_lock_key;
+	public String user_stream_init_lock_key; //信息流锁key
 	
 	protected void init(int tableNum) {
 		this.projectName = propertyUtil.getProperty("chat.project.name");

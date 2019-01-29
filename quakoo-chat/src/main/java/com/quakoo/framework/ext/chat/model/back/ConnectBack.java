@@ -2,16 +2,23 @@ package com.quakoo.framework.ext.chat.model.back;
 
 import java.util.List;
 
-
+/**
+ * 连接消息返回类
+ * class_name: ConnectBack
+ * package: com.quakoo.framework.ext.chat.model.back
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 17:05
+ **/
 public class ConnectBack {
 
-    private double maxStreamIndex;
+    private double maxStreamIndex; //最大的消息游标
 	
-	private List<StreamBack> streams;
+	private List<StreamBack> streams; //信息流
 	
 	private List<PromptBack> prompts;
 	
-	private boolean send;
+	private boolean send; //是否发送
 
 	public List<StreamBack> getStreams() {
 		return streams;

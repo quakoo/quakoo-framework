@@ -4,11 +4,11 @@
 //
 //import javax.annotation.Resource;
 //
-//import com.quakoo.framework.ext.chat.distributed.DistributedConfig;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 //
 //import com.google.common.util.concurrent.Uninterruptibles;
+//import com.quakoo.framework.ext.chat.distributed.DistributedConfig;
 //import com.quakoo.framework.ext.chat.service.PushQueueService;
 //
 //public class PushSchedulerContextHandle extends BaseContextHandle {

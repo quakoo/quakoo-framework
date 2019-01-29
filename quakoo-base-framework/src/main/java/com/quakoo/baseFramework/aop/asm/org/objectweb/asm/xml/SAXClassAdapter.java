@@ -43,7 +43,7 @@ import org.xml.sax.helpers.AttributesImpl;
  * {@link org.xml.sax.ContentHandler ContentHandler}, e.g. XML serializer, XSLT
  * or XQuery engines.
  *
- * @see com.s7.baseFramework.sensitive.processor.objectweb.asm.xml.Processor
+ * @see com.quakoo.baseFramework.sensitive.processor.objectweb.asm.xml.Processor
  * @see org.objectweb.asm.xml.ASMContentHandler
  *
  * @author Eugene Kuleshov

@@ -9,6 +9,14 @@ import com.quakoo.framework.ext.chat.model.back.PromptBack;
 import com.quakoo.framework.ext.chat.model.back.StreamBack;
 import com.quakoo.framework.ext.chat.service.ConnectService;
 
+/**
+ * 连接消息封装类
+ * class_name: ConnectServiceImpl
+ * package: com.quakoo.framework.ext.chat.service.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 18:18
+ **/
 @Service
 public class ConnectServiceImpl implements ConnectService {
 

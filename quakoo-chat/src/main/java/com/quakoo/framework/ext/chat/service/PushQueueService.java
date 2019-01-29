@@ -1,5 +1,8 @@
 //package com.quakoo.framework.ext.chat.service;
 //
+//import java.util.List;
+//
+//import com.quakoo.framework.ext.chat.model.PushQueue;
 //
 //public interface PushQueueService {
 //

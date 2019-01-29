@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import com.quakoo.framework.ext.chat.context.handle.BaseContextHandle;
-import com.quakoo.framework.ext.chat.distributed.DistributedConfig;
 import org.apache.commons.collections.ListUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -25,14 +23,24 @@ import org.springframework.beans.factory.DisposableBean;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.quakoo.framework.ext.chat.context.handle.BaseContextHandle;
+import com.quakoo.framework.ext.chat.distributed.DistributedConfig;
 
+/**
+ * 分布式调度上下文(调度多个服务器)
+ * class_name: DistributedSchedulerContextHandle
+ * package: com.quakoo.framework.ext.chat.context.handle.distributed
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 16:29
+ **/
 public class DistributedSchedulerContextHandle extends BaseContextHandle implements DisposableBean  {
 	
 	Logger logger = LoggerFactory.getLogger(DistributedSchedulerContextHandle.class);
 	
 	private static String chatHelpPath = "/chat_help";
 	
-	private String serialNumber;
+	private String serialNumber; //本服务器序列号
 	
 	private CuratorFramework client;
 	

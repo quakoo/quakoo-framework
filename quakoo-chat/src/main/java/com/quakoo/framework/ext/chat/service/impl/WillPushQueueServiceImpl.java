@@ -28,31 +28,40 @@ import com.quakoo.framework.ext.chat.model.UserInfo;
 import com.quakoo.framework.ext.chat.model.param.WillPushItem;
 import com.quakoo.framework.ext.chat.service.WillPushQueueService;
 
+/**
+ * 推送消息推流处理类
+ * class_name: WillPushQueueServiceImpl
+ * package: com.quakoo.framework.ext.chat.service.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 18:28
+ **/
 public class WillPushQueueServiceImpl implements WillPushQueueService {
+
     Logger logger = LoggerFactory.getLogger(WillPushQueueServiceImpl.class);
 
-    @Autowired(required = true)
+	@Autowired(required = true)
     @Qualifier("cachePool")
     private JedisX cache;
-
-    @Resource
-    private AbstractChatInfo chatInfo;
-
-    @Resource
-    private UserInfoDao userInfoDao;
-
-    @Resource
-    private MessageDao messageDao;
-
+	
+	@Resource
+	private AbstractChatInfo chatInfo;
+	
+	@Resource
+	private UserInfoDao userInfoDao;
+	
+	@Resource
+	private MessageDao messageDao;
+	
     @Autowired(required = false)
     @Qualifier("chatPushService")
     private ChatPushService chatPushService;
-
-    public void handle(long historyTime) {
-        Set<Object> list = cache.zrangeByScoreObject(chatInfo.redis_will_push_queue,
-                0, historyTime, null);
-        if(list.size() > 0) {
-            try {
+	
+	public void handle(long historyTime) {
+		Set<Object> list = cache.zrangeByScoreObject(chatInfo.redis_will_push_queue,
+				0, historyTime, null); //获取要推送的消息
+		if(list.size() > 0) {
+			try {
                 List<WillPushItem> items = Lists.newArrayList();
                 for(Object one : list) {
                     items.add((WillPushItem) one);
@@ -61,7 +70,7 @@ public class WillPushQueueServiceImpl implements WillPushQueueService {
                 for(WillPushItem item : items) {
                     uids.add(item.getUid());
                 }
-                List<UserInfo> userInfos = userInfoDao.loads(Lists.newArrayList(uids));
+                List<UserInfo> userInfos = userInfoDao.loads(Lists.newArrayList(uids)); //获取用户的最新登陆时间
                 Map<Long, Long> userLoginTimeMap = Maps.newHashMap();
                 for(UserInfo userInfo : userInfos) {
                     if(null != userInfo) {
@@ -74,7 +83,7 @@ public class WillPushQueueServiceImpl implements WillPushQueueService {
                     long itemFinishTime = item.getTime();
                     Long loginTime = userLoginTimeMap.get(uid);
                     if(null != loginTime && itemFinishTime > loginTime.longValue()) {
-                        pushItems.add(item);
+                        pushItems.add(item); //得到离线要推送的消息
                     }
                 }
                 if(pushItems.size() > 0) {
@@ -90,7 +99,7 @@ public class WillPushQueueServiceImpl implements WillPushQueueService {
                         willPushItems.add(one);
                         mids.add(one.getMid());
                     }
-                    List<Message> messages = messageDao.load(Lists.newArrayList(mids));
+                    List<Message> messages = messageDao.load(Lists.newArrayList(mids)); //封装消息
                     Map<Long, Message> messageMap = Maps.newHashMap();
                     for(Message message : messages) {
                         messageMap.put(message.getId(), message);
@@ -126,15 +135,26 @@ public class WillPushQueueServiceImpl implements WillPushQueueService {
                                     content = "您收到了一条通知";
                                 }
                             } else content = "您收到了一条消息";
-                            chatPushService.sendPush(uid, content);
+                            chatPushService.sendPush(uid, content); //批量推送
                         }
                     }
                 }
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
             }
-            cache.zremrangeByScore(chatInfo.redis_will_push_queue, 0, historyTime);
-        }
-    }
-
+			cache.zremrangeByScore(chatInfo.redis_will_push_queue, 0, historyTime);
+		}
+	}
 }
+//				List<PushQueue> pushQueues = Lists.newArrayList();
+//				for(WillPushItem item : pushItems) {
+//					PushQueue pushQueue = new PushQueue();
+//					pushQueue.setUid(item.getUid());
+//					pushQueue.setMid(item.getMid());
+//					pushQueue.setStatus(Status.unfinished);
+//					pushQueue.setTime(System.currentTimeMillis());
+//					pushQueues.add(pushQueue);
+//				}
+//				if(pushQueues.size() > 0) {
+//					pushQueueDao.insert(pushQueues);
+//				}

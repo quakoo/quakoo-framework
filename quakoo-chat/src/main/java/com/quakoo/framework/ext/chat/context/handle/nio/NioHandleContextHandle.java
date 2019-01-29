@@ -1,15 +1,8 @@
 package com.quakoo.framework.ext.chat.context.handle.nio;
 
-import com.quakoo.framework.ext.chat.context.handle.BaseContextHandle;
-import com.quakoo.framework.ext.chat.model.UserPrompt;
-import com.quakoo.framework.ext.chat.model.UserStream;
-import com.quakoo.framework.ext.chat.model.back.ConnectBack;
-import com.quakoo.framework.ext.chat.model.back.PromptBack;
-import com.quakoo.framework.ext.chat.model.back.StreamBack;
-import com.quakoo.framework.ext.chat.model.param.nio.ConnectResponse;
-import com.quakoo.framework.ext.chat.model.param.nio.NioPromptQueueItem;
-import com.quakoo.framework.ext.chat.model.param.nio.NioUserLongConnection;
-import com.quakoo.framework.ext.chat.nio.ChannelUtils;
+import com.quakoo.baseFramework.jackson.JsonUtils;
+import com.quakoo.framework.ext.chat.model.back.MessageBack;
+import com.quakoo.framework.ext.chat.model.constant.Type;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.Iterator;
@@ -27,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,21 +28,39 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.quakoo.framework.ext.chat.context.handle.BaseContextHandle;
+import com.quakoo.framework.ext.chat.model.UserPrompt;
+import com.quakoo.framework.ext.chat.model.UserStream;
+import com.quakoo.framework.ext.chat.model.back.ConnectBack;
+import com.quakoo.framework.ext.chat.model.back.PromptBack;
+import com.quakoo.framework.ext.chat.model.back.StreamBack;
+import com.quakoo.framework.ext.chat.model.param.nio.ConnectResponse;
+import com.quakoo.framework.ext.chat.model.param.nio.NioPromptQueueItem;
+import com.quakoo.framework.ext.chat.model.param.nio.NioUserLongConnection;
+import com.quakoo.framework.ext.chat.nio.ChannelUtils;
 import com.quakoo.framework.ext.chat.service.ConnectService;
 import com.quakoo.framework.ext.chat.service.UserInfoService;
 import com.quakoo.framework.ext.chat.service.UserPromptService;
 import com.quakoo.framework.ext.chat.service.UserStreamService;
 
+/**
+ * socket处理基类上下文
+ * class_name: NioHandleContextHandle
+ * package: com.quakoo.framework.ext.chat.context.handle.nio
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 16:30
+ **/
 public abstract class NioHandleContextHandle extends BaseContextHandle {
 	
 	Logger logger = LoggerFactory.getLogger(NioHandleContextHandle.class);
 	
-	public static volatile LinkedBlockingQueue<NioPromptQueueItem> prompt_queue =
+	public static volatile LinkedBlockingQueue<NioPromptQueueItem> prompt_queue = 
 			new LinkedBlockingQueue<NioPromptQueueItem>();
 	
-	public static volatile Map<ChannelHandlerContext, NioUserLongConnection> connection_context  = Maps.newConcurrentMap();
+	public static volatile Map<ChannelHandlerContext, NioUserLongConnection> connection_context  = Maps.newConcurrentMap(); //socket连接字典
 
-	public static final long time_out = 1000 * 60 * 2;
+	public static final long time_out = 1000 * 60 * 2; //超时时间，自动清理
 	
 	private final int threadNum = Runtime.getRuntime().availableProcessors() * 2 + 1;
 	
@@ -140,7 +152,14 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 		return res;
 	}
 	
-	
+	/**
+     * IM子处理线程(拉模式，根据socket字典主动拉取用户的消息流)
+	 * class_name: NioHandleContextHandle
+	 * package: com.quakoo.framework.ext.chat.context.handle.nio
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 16:35
+	 **/
 	class SubChatProcesser implements Callable<Boolean> {
 		
 		private List<Entry<ChannelHandlerContext, NioUserLongConnection>> handleList;
@@ -219,7 +238,15 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 			return false;
 		}
 	}
-	
+
+	/**
+     * IM处理线程
+	 * class_name: NioHandleContextHandle
+	 * package: com.quakoo.framework.ext.chat.context.handle.nio
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 16:33
+	 **/
 	class ChatProcesser implements Runnable {
 		@Override
 		public void run() {
@@ -247,7 +274,15 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 			}
 		}
 	}
-	
+
+	/**
+     * 清理线程
+	 * class_name: NioHandleContextHandle
+	 * package: com.quakoo.framework.ext.chat.context.handle.nio
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 16:32
+	 **/
 	class Cleaner implements Runnable {
 		@Override
 		public void run() {

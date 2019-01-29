@@ -2,7 +2,6 @@ package com.quakoo.framework.ext.chat.dao;
 
 import javax.annotation.Resource;
 
-import com.quakoo.framework.ext.chat.AbstractChatInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;

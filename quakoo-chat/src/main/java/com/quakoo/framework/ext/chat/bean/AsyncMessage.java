@@ -5,6 +5,14 @@ import io.netty.channel.ChannelHandlerContext;
 
 import java.io.Serializable;
 
+/**
+ * 异步消息
+ * class_name: AsyncMessage
+ * package: com.quakoo.framework.ext.chat.bean
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 16:28
+ **/
 public class AsyncMessage implements Serializable {
 
     private long id;

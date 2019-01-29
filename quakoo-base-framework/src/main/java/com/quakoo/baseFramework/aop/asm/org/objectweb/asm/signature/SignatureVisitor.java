@@ -71,7 +71,7 @@ public abstract class SignatureVisitor {
 
     /**
      * The ASM API version implemented by this visitor. The value of this field
-     * must be one of {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#ASM4}.
+     * must be one of {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#ASM4}.
      */
     protected final int api;
 
@@ -79,7 +79,7 @@ public abstract class SignatureVisitor {
      * Constructs a new {@link SignatureVisitor}.
      *
      * @param api the ASM API version implemented by this visitor. Must be one
-     *        of {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#ASM4}.
+     *        of {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#ASM4}.
      */
     public SignatureVisitor(final int api) {
         this.api = api;

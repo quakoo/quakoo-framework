@@ -134,7 +134,7 @@ public class ClassNode extends ClassVisitor {
 
     /**
      * The non standard attributes of this class. This list is a list of
-     * {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Attribute} objects. May be <tt>null</tt>.
+     * {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Attribute} objects. May be <tt>null</tt>.
      *
      * @associates org.objectweb.asm.Attribute
      */

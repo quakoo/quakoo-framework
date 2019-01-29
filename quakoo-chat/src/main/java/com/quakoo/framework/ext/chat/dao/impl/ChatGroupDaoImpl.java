@@ -8,9 +8,6 @@ import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 
-import com.quakoo.framework.ext.chat.AbstractChatInfo;
-import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
-import com.quakoo.framework.ext.chat.dao.ChatGroupDao;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +18,19 @@ import org.springframework.jdbc.support.incrementer.DataFieldMaxValueIncrementer
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.quakoo.framework.ext.chat.AbstractChatInfo;
+import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
+import com.quakoo.framework.ext.chat.dao.ChatGroupDao;
 import com.quakoo.framework.ext.chat.model.ChatGroup;
 
+/**
+ * 群组DAO
+ * class_name: ChatGroupDaoImpl
+ * package: com.quakoo.framework.ext.chat.dao.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 16:50
+ **/
 public class ChatGroupDaoImpl extends BaseDaoHandle implements ChatGroupDao {
 
     private Logger logger = LoggerFactory.getLogger(ChatGroupDaoImpl.class);
@@ -31,7 +39,16 @@ public class ChatGroupDaoImpl extends BaseDaoHandle implements ChatGroupDao {
     
     @Resource
     private DataFieldMaxValueIncrementer chatGroupMaxValueIncrementer;
-    
+
+    /**
+     * 获取表名(根据群组id获取表名)
+     * method_name: getTable
+     * params: [id]
+     * return: java.lang.String
+     * creat_user: lihao
+     * creat_date: 2019/1/29
+     * creat_time: 16:51
+     **/
     private String getTable(long id){
 		int index = (int) id % chatInfo.chat_group_table_names.size();
 		return chatInfo.chat_group_table_names.get(index);

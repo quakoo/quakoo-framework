@@ -10,6 +10,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.quakoo.framework.ext.chat.distributed.DistributedConfig;
 import com.quakoo.framework.ext.chat.model.NoticeAllQueue;
 import com.quakoo.framework.ext.chat.model.UserDirectory;
@@ -18,17 +24,19 @@ import com.quakoo.framework.ext.chat.model.UserStream;
 import com.quakoo.framework.ext.chat.model.constant.Status;
 import com.quakoo.framework.ext.chat.model.constant.Type;
 import com.quakoo.framework.ext.chat.service.NoticeAllQueueService;
-import com.quakoo.framework.ext.chat.util.SleepUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.Uninterruptibles;
 import com.quakoo.framework.ext.chat.service.UserDirectoryService;
 import com.quakoo.framework.ext.chat.service.UserInfoService;
 import com.quakoo.framework.ext.chat.service.UserStreamService;
+import com.quakoo.framework.ext.chat.util.SleepUtils;
 
+/**
+ * 废弃
+ * class_name: NoticeAllSchedulerContextHandle
+ * package: com.quakoo.framework.ext.chat.context.handle
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 16:44
+ **/
 public class NoticeAllSchedulerContextHandle extends BaseContextHandle {
 
     Logger logger = LoggerFactory.getLogger(NoticeAllSchedulerContextHandle.class);
@@ -135,7 +143,7 @@ public class NoticeAllSchedulerContextHandle extends BaseContextHandle {
 						stream.setAuthorId(authorId);
 						streams.add(stream);
 					}
-                    if(directories.size() > 0) {
+					if(directories.size() > 0) {
                         List<UserDirectory> directoryList = userDirectoryService.filterExists(Lists.newArrayList(directories));
                         if(directoryList.size() > 0)  userDirectoryService.batchInsert(Lists.newArrayList(directories));
                     }

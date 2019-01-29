@@ -1,5 +1,6 @@
 //package com.quakoo.framework.ext.chat.dao.impl;
 //
+//import java.sql.PreparedStatement;
 //import java.sql.ResultSet;
 //import java.sql.SQLException;
 //import java.util.List;
@@ -9,19 +10,21 @@
 //
 //import javax.annotation.Resource;
 //
-//import com.quakoo.framework.ext.chat.AbstractChatInfo;
-//import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
-//import com.quakoo.framework.ext.chat.dao.PushQueueDao;
+//import com.quakoo.framework.ext.chat.model.constant.Status;
 //import org.apache.commons.lang3.StringUtils;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 //import org.springframework.dao.DataAccessException;
+//import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 //import org.springframework.jdbc.core.RowMapper;
 //import org.springframework.jdbc.support.incrementer.DataFieldMaxValueIncrementer;
 //
 //import com.google.common.collect.Lists;
 //import com.google.common.collect.Maps;
 //import com.google.common.collect.Sets;
+//import com.quakoo.framework.ext.chat.AbstractChatInfo;
+//import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
+//import com.quakoo.framework.ext.chat.dao.PushQueueDao;
 //import com.quakoo.framework.ext.chat.model.PushQueue;
 //
 //public class PushQueueDaoImpl extends BaseDaoHandle implements PushQueueDao {
@@ -120,7 +123,7 @@
 //	}
 //
 //    @Override
-//    public void update(List<PushQueue> list, int oldStatus, int newStatus) throws DataAccessException {
+//    public boolean update(List<PushQueue> list, int oldStatus, int newStatus) throws DataAccessException {
 //        String sql = "update push_queue set status = %d where id in (%s) and status = %d ";
 //        List<Long> ids = Lists.newArrayList();
 //        for(PushQueue one : list) {
@@ -131,7 +134,7 @@
 //        long startTime = System.currentTimeMillis();
 //        int totalRes = this.jdbcTemplate.update(sql);
 //        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
-//        if(totalRes == list.size()) {
+//	    if(totalRes == list.size()) {
 //            String queue_key = String.format(push_queue_status_key, chatInfo.projectName, oldStatus);
 //            if(cache.exists(queue_key)) {
 //                List<Object> rems = Lists.newArrayList();
@@ -163,6 +166,7 @@
 //            String queue_null_key = String.format(push_queue_status_null_key, chatInfo.projectName, oldStatus);
 //            cache.delete(queue_null_key);
 //        }
+//        return false;
 //    }
 //
 ////    @Override
@@ -282,6 +286,7 @@
 ////		return Lists.newArrayList();
 ////	}
 //
+//    @Override
 //	public boolean list_null(int status) {
 //		String queue_null_key = String.format(push_queue_status_null_key, chatInfo.projectName, status);
 //		return cache.exists(queue_null_key);

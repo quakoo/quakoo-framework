@@ -6,28 +6,37 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
-import com.quakoo.framework.ext.chat.distributed.DistributedConfig;
-import com.quakoo.framework.ext.chat.model.SingleChatQueue;
-import com.quakoo.framework.ext.chat.model.UserDirectory;
-import com.quakoo.framework.ext.chat.model.UserStream;
-import com.quakoo.framework.ext.chat.model.constant.Status;
-import com.quakoo.framework.ext.chat.model.constant.Type;
-import com.quakoo.framework.ext.chat.util.SleepUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.quakoo.framework.ext.chat.distributed.DistributedConfig;
+import com.quakoo.framework.ext.chat.model.SingleChatQueue;
+import com.quakoo.framework.ext.chat.model.UserDirectory;
+import com.quakoo.framework.ext.chat.model.UserStream;
+import com.quakoo.framework.ext.chat.model.constant.Status;
+import com.quakoo.framework.ext.chat.model.constant.Type;
 import com.quakoo.framework.ext.chat.service.SingleChatQueueService;
 import com.quakoo.framework.ext.chat.service.UserDirectoryService;
 import com.quakoo.framework.ext.chat.service.UserStreamService;
+import com.quakoo.framework.ext.chat.util.SleepUtils;
 
+/**
+ * 单聊消息上下文(用于发送单人消息)
+ *
+ * class_name: SingleChatSchedulerContextHandle
+ * package: com.quakoo.framework.ext.chat.context.handle
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 16:45
+ **/
 public class SingleChatSchedulerContextHandle extends BaseContextHandle {
 
     Logger logger = LoggerFactory.getLogger(SingleChatSchedulerContextHandle.class);
 	
-	private int handle_size = 10;
+	private int handle_size = 20; //批量处理条数
 	
 	@Resource
 	private SingleChatQueueService singleChatQueueService;
@@ -62,7 +71,7 @@ public class SingleChatSchedulerContextHandle extends BaseContextHandle {
 					try {
 						boolean sign = singleChatQueueService.unfinishedIsNull(tableName);
 						if(!sign){
-							List<SingleChatQueue> list = singleChatQueueService.unfinishedList(tableName, handle_size);
+							List<SingleChatQueue> list = singleChatQueueService.unfinishedList(tableName, handle_size); //获取待操作的单人消息列表
 							if(null != list && list.size() > 0) {
 								Set<UserDirectory> directories = Sets.newHashSet();
 								List<UserStream> streams = Lists.newArrayList();
@@ -102,13 +111,13 @@ public class SingleChatSchedulerContextHandle extends BaseContextHandle {
 									twoStream.setAuthorId(uid);
 									streams.add(twoStream);
 								}
-                                if(directories.size() > 0) {
-                                    List<UserDirectory> directoryList = userDirectoryService.filterExists(Lists.newArrayList(directories));
-                                    if(directoryList.size() > 0)  userDirectoryService.batchInsert(Lists.newArrayList(directories));
+								if(directories.size() > 0) {
+                                    List<UserDirectory> directoryList = userDirectoryService.filterExists(Lists.newArrayList(directories)); //过滤用户消息目录
+                                    if(directoryList.size() > 0)  userDirectoryService.batchInsert(Lists.newArrayList(directories)); //如果有新的聊天目录则批量添加
                                 }
 								if(streams.size() > 0)
-									userStreamService.batchInsert(streams);
-                                if(list.size() > 0) singleChatQueueService.updateStatus(list, Status.finished);
+									userStreamService.batchInsert(streams);  //批量添加用户消息流
+								if(list.size() > 0) singleChatQueueService.updateStatus(list, Status.finished); //更新单人消息处理队列
 //								for(SingleChatQueue one : list) {
 //									singleChatQueueService.updateStatus(one, Status.finished);
 //								}

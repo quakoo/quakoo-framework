@@ -1,4 +1,4 @@
-package com.s7.util;
+package com.quakoo.util;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

@@ -1,8 +1,5 @@
 package com.quakoo.framework.ext.chat.model.back;
 
-import com.quakoo.framework.ext.chat.model.Message;
-import com.quakoo.framework.ext.chat.model.MessageChat;
-import com.quakoo.framework.ext.chat.model.MessageNotice;
 import com.quakoo.baseFramework.jackson.JsonUtils;
 import com.quakoo.framework.ext.chat.model.Message;
 import com.quakoo.framework.ext.chat.model.MessageChat;

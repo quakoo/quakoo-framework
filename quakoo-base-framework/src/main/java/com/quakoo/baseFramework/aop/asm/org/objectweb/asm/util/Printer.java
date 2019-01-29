@@ -115,7 +115,7 @@ public abstract class Printer {
 
     /**
      * The ASM API version implemented by this class. The value of this field
-     * must be one of {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#ASM4}.
+     * must be one of {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#ASM4}.
      */
     protected final int api;
 

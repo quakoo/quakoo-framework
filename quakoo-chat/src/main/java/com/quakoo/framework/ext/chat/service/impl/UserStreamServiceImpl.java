@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 
-import com.quakoo.framework.ext.chat.service.ext.UserWrapperService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,6 +38,14 @@ import com.quakoo.framework.ext.chat.model.param.UserStreamParam;
 import com.quakoo.framework.ext.chat.service.UserStreamService;
 import com.quakoo.framework.ext.chat.service.ext.UserWrapperService;
 
+/**
+ * 用户信息流处理类
+ * class_name: UserStreamServiceImpl
+ * package: com.quakoo.framework.ext.chat.service.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 18:24
+ **/
 public class UserStreamServiceImpl implements UserStreamService {
 
 	@Resource
@@ -57,6 +64,15 @@ public class UserStreamServiceImpl implements UserStreamService {
     @Qualifier("userWrapperService")
 	private UserWrapperService userWrapperService;
 
+	/**
+     * 初始化一个用户的信息流
+	 * method_name: init
+	 * params: [uid]
+	 * return: void
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 18:24
+	 **/
 	public void init(long uid) throws Exception {
 		userStreamDao.init(uid, false);
 		List<UserDirectory> directories = userDirectoryDao.list_all(uid);
@@ -67,6 +83,15 @@ public class UserStreamServiceImpl implements UserStreamService {
 		}
 	}
 
+	/**
+     * 获取用户消息目录的一条信息
+	 * method_name: getDirectoryStream
+	 * params: [uid, lastIndex]
+	 * return: java.util.List<com.quakoo.framework.ext.chat.model.UserStream>
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 18:25
+	 **/
     @Override
     public List<UserStream> getDirectoryStream(long uid, double lastIndex) throws Exception {
         List<UserStream> list = Lists.newArrayList();
@@ -87,6 +112,15 @@ public class UserStreamServiceImpl implements UserStreamService {
         return list;
     }
 
+    /**
+     * 获取单个用户新的消息
+     * method_name: newStream
+     * params: [uid, lastIndex]
+     * return: java.util.List<com.quakoo.framework.ext.chat.model.UserStream>
+     * creat_user: lihao
+     * creat_date: 2019/1/29
+     * creat_time: 18:25
+     **/
     public List<UserStream> newStream(long uid, double lastIndex)
 			throws Exception {
 		UserStreamParam param = new UserStreamParam(uid, lastIndex);
@@ -112,6 +146,15 @@ public class UserStreamServiceImpl implements UserStreamService {
 		return list;
 	}
 
+	/**
+     * 获取多个用户新的消息
+	 * method_name: newStream
+	 * params: [lastIndexMap]
+	 * return: java.util.Map<java.lang.Long,java.util.List<com.quakoo.framework.ext.chat.model.UserStream>>
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 18:26
+	 **/
 	public Map<Long, List<UserStream>> newStream(Map<Long, Double> lastIndexMap)
 			throws Exception {
 		Map<Long, List<UserStream>> res = Maps.newHashMap();
@@ -147,6 +190,15 @@ public class UserStreamServiceImpl implements UserStreamService {
 		return res;
 	}
 
+	/**
+     * 删除一条消息
+	 * method_name: delete
+	 * params: [uid, type, thirdId, mid]
+	 * return: boolean
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 18:26
+	 **/
 	public boolean delete(long uid, int type, long thirdId, long mid)
 			throws Exception {
 		boolean res = false;
@@ -162,6 +214,15 @@ public class UserStreamServiceImpl implements UserStreamService {
 		return res;
 	}
 
+	/**
+     * 获取一个消息分页列表
+	 * method_name: getPager
+	 * params: [uid, type, thirdId, pager]
+	 * return: com.quakoo.baseFramework.model.pagination.Pager
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 18:26
+	 **/
 	public Pager getPager(final long uid, final int type, final long thirdId, Pager pager)
 			throws Exception {
 		return new PagerRequestService<UserStream>(pager, 0) {
@@ -238,12 +299,30 @@ public class UserStreamServiceImpl implements UserStreamService {
 			}
 		}.getPager();
 	}
-	
+
+	/**
+     * 批量插入消息流
+	 * method_name: batchInsert
+	 * params: [streams]
+	 * return: int
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 18:27
+	 **/
 	public int batchInsert(List<UserStream> streams) throws Exception {
-		userStreamDao.create_sort(streams);
+		userStreamDao.create_sort(streams); //创建排序字段
 		return userStreamDao.insert(streams);
 	}
 
+	/**
+     * 封装信息流
+	 * method_name: transformBack
+	 * params: [list]
+	 * return: java.util.List<com.quakoo.framework.ext.chat.model.back.StreamBack>
+	 * creat_user: lihao
+	 * creat_date: 2019/1/29
+	 * creat_time: 18:27
+	 **/
 	@Override
 	public List<StreamBack> transformBack(List<UserStream> list)
 			throws Exception {

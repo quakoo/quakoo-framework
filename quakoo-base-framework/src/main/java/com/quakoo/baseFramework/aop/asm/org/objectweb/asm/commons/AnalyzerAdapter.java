@@ -41,7 +41,7 @@ import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes;
 import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Type;
 
 /**
- * A {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.MethodVisitor} that keeps track of stack map frame changes between
+ * A {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.MethodVisitor} that keeps track of stack map frame changes between
  * {@link #visitFrame(int, int, Object[], int, Object[]) visitFrame} calls. This
  * adapter must be used with the
  * {@link org.objectweb.asm.ClassReader#EXPAND_FRAMES} option. Each visit<i>X</i>
@@ -63,10 +63,10 @@ public class AnalyzerAdapter extends MethodVisitor {
 
     /**
      * <code>List</code> of the local variable slots for current execution
-     * frame. Primitive types are represented by {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#TOP},
-     * {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#INTEGER}, {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#FLOAT}, {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#LONG},
-     * {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#DOUBLE},{@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#NULL} or
-     * {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#UNINITIALIZED_THIS} (long and double are represented by a
+     * frame. Primitive types are represented by {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#TOP},
+     * {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#INTEGER}, {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#FLOAT}, {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#LONG},
+     * {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#DOUBLE},{@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#NULL} or
+     * {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#UNINITIALIZED_THIS} (long and double are represented by a
      * two elements, the second one being TOP). Reference types are represented
      * by String objects (representing internal names), and uninitialized types
      * by Label objects (this label designates the NEW instruction that created
@@ -77,10 +77,10 @@ public class AnalyzerAdapter extends MethodVisitor {
 
     /**
      * <code>List</code> of the operand stack slots for current execution
-     * frame. Primitive types are represented by {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#TOP},
-     * {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#INTEGER}, {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#FLOAT}, {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#LONG},
-     * {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#DOUBLE},{@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#NULL} or
-     * {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes#UNINITIALIZED_THIS} (long and double are represented by a
+     * frame. Primitive types are represented by {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#TOP},
+     * {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#INTEGER}, {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#FLOAT}, {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#LONG},
+     * {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#DOUBLE},{@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#NULL} or
+     * {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes#UNINITIALIZED_THIS} (long and double are represented by a
      * two elements, the second one being TOP). Reference types are represented
      * by String objects (representing internal names), and uninitialized types
      * by Label objects (this label designates the NEW instruction that created
@@ -126,9 +126,9 @@ public class AnalyzerAdapter extends MethodVisitor {
      * version.
      *
      * @param owner the owner's class name.
-     * @param access the method's access flags (see {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Opcodes}).
+     * @param access the method's access flags (see {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes}).
      * @param name the method's name.
-     * @param desc the method's descriptor (see {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Type Type}).
+     * @param desc the method's descriptor (see {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Type Type}).
      * @param mv the method visitor to which this adapter delegates calls. May
      *        be <tt>null</tt>.
      */
@@ -150,7 +150,7 @@ public class AnalyzerAdapter extends MethodVisitor {
      * @param owner the owner's class name.
      * @param access the method's access flags (see {@link Opcodes}).
      * @param name the method's name.
-     * @param desc the method's descriptor (see {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Type Type}).
+     * @param desc the method's descriptor (see {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Type Type}).
      * @param mv the method visitor to which this adapter delegates calls. May
      *        be <tt>null</tt>.
      */

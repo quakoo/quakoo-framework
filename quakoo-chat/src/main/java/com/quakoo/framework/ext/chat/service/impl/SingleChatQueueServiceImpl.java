@@ -9,7 +9,14 @@ import com.quakoo.framework.ext.chat.model.SingleChatQueue;
 import com.quakoo.framework.ext.chat.model.constant.Status;
 import com.quakoo.framework.ext.chat.service.SingleChatQueueService;
 
-
+/**
+ * 单聊消息队列处理类
+ * class_name: SingleChatQueueServiceImpl
+ * package: com.quakoo.framework.ext.chat.service.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 18:20
+ **/
 public class SingleChatQueueServiceImpl implements SingleChatQueueService {
 
 	@Resource
@@ -37,7 +44,7 @@ public class SingleChatQueueServiceImpl implements SingleChatQueueService {
         singleChatQueueDao.update(list, newStatus);
     }
 
-//    @Override
+    //    @Override
 //	public List<SingleChatQueue> finishedList(String tableName, long maxTime,
 //			int size) throws Exception {
 //		return singleChatQueueDao.list_time(tableName, Status.finished, maxTime, size);

@@ -52,7 +52,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * 2.0 event producers, e.g. XML parser, XSLT or XPath engines, or custom code.
  *
  * @see org.objectweb.asm.xml.SAXClassAdapter
- * @see com.s7.baseFramework.sensitive.processor.objectweb.asm.xml.Processor
+ * @see com.quakoo.baseFramework.sensitive.processor.objectweb.asm.xml.Processor
  *
  * @author Eugene Kuleshov
  */
@@ -69,13 +69,13 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
     String match = "";
 
     /**
-     * Current instance of the {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.ClassVisitor ClassVisitor} used to visit
+     * Current instance of the {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.ClassVisitor ClassVisitor} used to visit
      * classfile bytecode.
      */
     protected ClassVisitor cv;
 
     /**
-     * Map of the active {@link com.s7.baseFramework.aop.asm.org.objectweb.asm.Label Label} instances for current method.
+     * Map of the active {@link com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Label Label} instances for current method.
      */
     protected Map<Object, Label> labels;
 

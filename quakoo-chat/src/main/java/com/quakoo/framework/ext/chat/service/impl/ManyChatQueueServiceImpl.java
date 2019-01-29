@@ -9,7 +9,14 @@ import com.quakoo.framework.ext.chat.model.ManyChatQueue;
 import com.quakoo.framework.ext.chat.model.constant.Status;
 import com.quakoo.framework.ext.chat.service.ManyChatQueueService;
 
-
+/**
+ * 群聊消息队列处理类
+ * class_name: ManyChatQueueServiceImpl
+ * package: com.quakoo.framework.ext.chat.service.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 18:19
+ **/
 public class ManyChatQueueServiceImpl implements ManyChatQueueService {
 
 	@Resource
@@ -37,7 +44,7 @@ public class ManyChatQueueServiceImpl implements ManyChatQueueService {
         manyChatQueueDao.update(list, newStatus);
     }
 
-//    @Override
+    //    @Override
 //	public List<ManyChatQueue> finishedList(String tableName, long maxTime,
 //			int size) throws Exception {
 //		return manyChatQueueDao.list_time(tableName, Status.finished, maxTime, size);

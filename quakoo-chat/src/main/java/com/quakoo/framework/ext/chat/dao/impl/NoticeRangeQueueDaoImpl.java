@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.quakoo.framework.ext.chat.AbstractChatInfo;
-import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
-import com.quakoo.framework.ext.chat.dao.NoticeRangeQueueDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -18,6 +15,9 @@ import org.springframework.jdbc.core.RowMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.quakoo.baseFramework.lock.ZkLock;
+import com.quakoo.framework.ext.chat.AbstractChatInfo;
+import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
+import com.quakoo.framework.ext.chat.dao.NoticeRangeQueueDao;
 import com.quakoo.framework.ext.chat.model.NoticeRangeQueue;
 
 public class NoticeRangeQueueDaoImpl extends BaseDaoHandle implements NoticeRangeQueueDao {
@@ -88,7 +88,7 @@ public class NoticeRangeQueueDaoImpl extends BaseDaoHandle implements NoticeRang
 			ZkLock lock = null;
 			try {
 				lock = ZkLock.getAndLock(chatInfo.lockZkAddress,
-						chatInfo.projectName, queue_key + AbstractChatInfo.lock_suffix,
+						chatInfo.projectName, queue_key + AbstractChatInfo.lock_suffix, 
 						true, AbstractChatInfo.session_timout, AbstractChatInfo.lock_timeout);
 				if(!cache.exists(queue_null_key) && !cache.exists(queue_key)) {
 					String sql = "select * from notice_range_queue where status = %d order by time asc";

@@ -17,7 +17,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
-
+/**
+ * 用户信息处理类
+ * class_name: UserInfoServiceImpl
+ * package: com.quakoo.framework.ext.chat.service.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/29
+ * creat_time: 18:22
+ **/
 public class UserInfoServiceImpl implements UserInfoService, InitializingBean {
 
     private final static int handle_num = 50;
@@ -26,11 +33,10 @@ public class UserInfoServiceImpl implements UserInfoService, InitializingBean {
 
     Logger logger = LoggerFactory.getLogger(UserInfoServiceImpl.class);
 
-    @Resource
-    private UserInfoDao userInfoDao;
+	@Resource
+	private UserInfoDao userInfoDao;
 
-
-    private static volatile LinkedBlockingQueue<UserInfo> persistent_queue = new LinkedBlockingQueue<UserInfo>();
+    private static volatile LinkedBlockingQueue<UserInfo> persistent_queue = new LinkedBlockingQueue<UserInfo>(); //用户信息队列
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -38,6 +44,14 @@ public class UserInfoServiceImpl implements UserInfoService, InitializingBean {
         processer.start();
     }
 
+    /**
+     * 异步持久化用户信息
+     * class_name: UserInfoServiceImpl
+     * package: com.quakoo.framework.ext.chat.service.impl
+     * creat_user: lihao
+     * creat_date: 2019/1/29
+     * creat_time: 18:23
+     **/
     class Processer implements Runnable {
         @Override
         public void run() {
@@ -50,7 +64,7 @@ public class UserInfoServiceImpl implements UserInfoService, InitializingBean {
                         batchMap.put(userInfo.getUid(), userInfo);
                         if (batchMap.size() >= handle_num) {
                             List<UserInfo> userInfos = Lists.newArrayList(batchMap.values());
-                            userInfoDao.replace(userInfos);
+                            userInfoDao.replace(userInfos); //批量替换用户信息
                             userInfos.clear();
                             batchMap.clear();
                         }
@@ -87,27 +101,36 @@ public class UserInfoServiceImpl implements UserInfoService, InitializingBean {
         System.out.println(map.toString());
     }
 
+    /**
+     * 同步用户信息
+     * method_name: syncUserInfo
+     * params: [uid, lastIndex, userInfo]
+     * return: com.quakoo.framework.ext.chat.model.UserInfo
+     * creat_user: lihao
+     * creat_date: 2019/1/29
+     * creat_time: 18:23
+     **/
     public UserInfo syncUserInfo(final long uid, double lastIndex, UserInfo userInfo) throws Exception {
-        double loginTime = userInfoDao.create_login_time(uid);
-        userInfo = userInfoDao.cache_user_info(uid, lastIndex, loginTime, userInfo);
-        persistent_queue.add(userInfo);
-        return userInfo;
-    }
+		double loginTime = userInfoDao.create_login_time(uid);
+        userInfo = userInfoDao.cache_user_info(uid, lastIndex, loginTime, userInfo); //更新缓存
+        persistent_queue.add(userInfo); //插入到异步队列
+		return userInfo;
+	}
 
-    public boolean updatePromptIndex(long uid, double promptIndex)
-            throws Exception {
-        return userInfoDao.update_prompt_index(uid, promptIndex);
-    }
+	public boolean updatePromptIndex(long uid, double promptIndex)
+			throws Exception {
+		return userInfoDao.update_prompt_index(uid, promptIndex);
+	}
+	
+	public List<UserInfo> list(String tableName, double loginTime, int size)
+			throws Exception {
+		return userInfoDao.list(tableName, loginTime, size);
+	}
 
-    public List<UserInfo> list(String tableName, double loginTime, int size)
-            throws Exception {
-        return userInfoDao.list(tableName, loginTime, size);
-    }
-
-    @Override
-    public List<UserInfo> load(List<Long> uids) throws Exception {
-        return userInfoDao.loads(uids);
-    }
+	@Override
+	public List<UserInfo> load(List<Long> uids) throws Exception {
+		return userInfoDao.loads(uids);
+	}
 
     @Override
     public UserInfo load(long uid) throws Exception {

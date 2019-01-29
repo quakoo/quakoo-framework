@@ -4,10 +4,10 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import com.quakoo.framework.ext.chat.service.NoticeAllQueueService;
 import com.quakoo.framework.ext.chat.dao.NoticeAllQueueDao;
 import com.quakoo.framework.ext.chat.model.NoticeAllQueue;
 import com.quakoo.framework.ext.chat.model.constant.Status;
+import com.quakoo.framework.ext.chat.service.NoticeAllQueueService;
 
 
 public class NoticeAllQueueServiceImpl implements NoticeAllQueueService {

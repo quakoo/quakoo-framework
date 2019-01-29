@@ -12,7 +12,7 @@
 //
 //	public int insert(List<PushQueue> list) throws DataAccessException;
 //
-//    public void update(List<PushQueue> list, int oldStatus, int newStatus) throws DataAccessException;
+//    public boolean update(List<PushQueue> list, int oldStatus, int newStatus) throws DataAccessException;
 //
 ////	public boolean update(PushQueue one, int newStatus) throws DataAccessException;
 //
