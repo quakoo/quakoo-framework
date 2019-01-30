@@ -5,14 +5,22 @@ import com.google.common.collect.Maps;
 import java.io.Serializable;
 import java.util.Map;
 
+/**
+ * 推送通知
+ * class_name: PushMsg
+ * package: com.quakoo.framework.ext.push.model
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 12:00
+ **/
 public class PushMsg implements Serializable {
 
-    public static final int type_single = 1;
-    public static final int type_batch = 2;
-    public static final int type_all = 3;
+    public static final int type_single = 1; //单个用户消息类型
+    public static final int type_batch = 2; //多个用户消息类型
+    public static final int type_all = 3; //所有用户消息类型
 
-    public static final int status_wait = 0;
-    public static final int status_send = 1;
+    public static final int status_wait = 0; //等待
+    public static final int status_send = 1; //已发送
 
 
     private long id; // #b# @sk@ ^nn^

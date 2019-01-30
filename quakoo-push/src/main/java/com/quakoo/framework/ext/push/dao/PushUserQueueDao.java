@@ -14,5 +14,6 @@ public interface PushUserQueueDao {
 
 //	public void insert(PushUserQueue one) throws DataAccessException;
 
-    public List<PushUserQueue> getList(String table_name, long index, int size) throws DataAccessException;
+	public List<PushUserQueue> getList(String table_name, long index, int size) throws DataAccessException;
+
 }

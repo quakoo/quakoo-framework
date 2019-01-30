@@ -25,6 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * 推送所有用户DAO
+ * class_name: PushMsgHandleAllQueueDaoImpl
+ * package: com.quakoo.framework.ext.push.dao.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 11:35
+ **/
 public class PushMsgHandleAllQueueDaoImpl extends BaseDao implements PushMsgHandleAllQueueDao, InitializingBean {
 
     private Logger logger = LoggerFactory.getLogger(PushMsgHandleAllQueueDaoImpl.class);
@@ -38,6 +46,15 @@ public class PushMsgHandleAllQueueDaoImpl extends BaseDao implements PushMsgHand
         push_msg_handle_all_queue_null_key = pushInfo.projectName  + "_push_msg_handle_all_queue_null";
     }
 
+    /**
+     * 插入推送所有用户的通知队列
+     * method_name: insert
+     * params: [one]
+     * return: boolean
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 11:35
+     **/
     @Override
     public boolean insert(final PushMsgHandleAllQueue one) throws DataAccessException {
         boolean res = false;
@@ -74,6 +91,15 @@ public class PushMsgHandleAllQueueDaoImpl extends BaseDao implements PushMsgHand
         return res;
     }
 
+    /**
+     * 初始化队列
+     * method_name: init
+     * params: []
+     * return: void
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 11:36
+     **/
     private void init() {
         if(!cache.exists(push_msg_handle_all_queue_null_key) && !cache.exists(push_msg_handle_all_queue_key)) {
             ZkLock lock = null;
@@ -109,6 +135,15 @@ public class PushMsgHandleAllQueueDaoImpl extends BaseDao implements PushMsgHand
         }
     }
 
+    /**
+     * 获取推送所有用户的队列
+     * method_name: getList
+     * params: [minId, size]
+     * return: java.util.List<com.quakoo.framework.ext.push.model.PushMsgHandleAllQueue>
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 11:36
+     **/
     @Override
     public List<PushMsgHandleAllQueue> getList(long minId, int size)
             throws DataAccessException {

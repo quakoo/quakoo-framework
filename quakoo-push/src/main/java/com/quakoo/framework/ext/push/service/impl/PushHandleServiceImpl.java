@@ -1,5 +1,6 @@
 //package com.quakoo.framework.ext.push.service.impl;
 //
+//import java.util.Collections;
 //import java.util.Iterator;
 //import java.util.List;
 //import java.util.Map;
@@ -12,15 +13,23 @@
 //
 //import com.google.common.collect.Maps;
 //import com.quakoo.framework.ext.push.bean.PushMsg;
+//import com.quakoo.framework.ext.push.context.handle.PushNioHandleContextHandle;
+//import com.quakoo.framework.ext.push.model.param.InternalPushItem;
+//import com.quakoo.framework.ext.push.model.param.NioUserLongConnection;
+//import com.quakoo.framework.ext.push.model.param.PayloadResponse;
+//import com.quakoo.framework.ext.push.nio.ChannelUtils;
+//import io.netty.channel.ChannelHandlerContext;
+//import org.apache.commons.lang3.StringUtils;
+//
+//import com.google.common.collect.Lists;
+//import com.quakoo.baseFramework.transform.ListTransformUtils;
+//import com.quakoo.baseFramework.transform.ListTransformerStringToLong;
 //import com.quakoo.framework.ext.push.dao.PayloadDao;
 //import com.quakoo.framework.ext.push.dao.PushHandleQueueDao;
 //import com.quakoo.framework.ext.push.model.Payload;
 //import com.quakoo.framework.ext.push.model.PushHandleQueue;
 //import com.quakoo.framework.ext.push.service.BaseService;
 //import com.quakoo.framework.ext.push.service.PushHandleService;
-//import org.apache.commons.lang3.StringUtils;
-//
-//import com.google.common.collect.Lists;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 //import org.springframework.beans.factory.InitializingBean;
@@ -35,11 +44,11 @@
 //
 //    private final static int handle_expire_time = 1000 * 15;
 //
-//    @Resource
-//    private PayloadDao payloadDao;
+//	@Resource
+//	private PayloadDao payloadDao;
 //
-//    @Resource
-//    private PushHandleQueueDao pushHandleQueueDao;
+//	@Resource
+//	private PushHandleQueueDao pushHandleQueueDao;
 //
 //    private static volatile LinkedBlockingQueue<PushMsg> queue = new LinkedBlockingQueue<PushMsg>();
 //
@@ -144,8 +153,8 @@
 //    }
 //
 //    @Override
-//    public void push(long uid, String title, String content,
-//                     Map<String, String> extra, int platform) throws Exception {
+//	public void push(long uid, String title, String content,
+//			Map<String, String> extra, int platform) throws Exception {
 //        PushMsg pushMsg = new PushMsg();
 //        pushMsg.setUid(uid);
 //        pushMsg.setTitle(title);
@@ -168,13 +177,13 @@
 ////		handleQueue.setType(PushHandleQueue.type_single);
 ////		handleQueue.setUid(uid);
 ////		pushHandleQueueDao.insert(handleQueue);
-//    }
+//	}
 //
-//    @Override
-//    public void batchPush(List<Long> uids, String title, String content,
-//                          Map<String, String> extra, int platform) throws Exception {
-//        if(uids.size() == 1) {
-//            long uid = uids.get(0);
+//	@Override
+//	public void batchPush(List<Long> uids, String title, String content,
+//			Map<String, String> extra, int platform) throws Exception {
+//		if(uids.size() == 1) {
+//			long uid = uids.get(0);
 ////			this.push(uid, title, content, extra, platform);
 //            PushMsg pushMsg = new PushMsg();
 //            pushMsg.setUid(uid);
@@ -185,7 +194,7 @@
 //            pushMsg.setPlatform(platform);
 //            pushMsg.setTime(System.currentTimeMillis());
 //            queue.add(pushMsg);
-//        } else {
+//		} else {
 //            PushMsg pushMsg = new PushMsg();
 //            pushMsg.setUids(StringUtils.join(uids, ","));
 //            pushMsg.setTitle(title);
@@ -209,27 +218,27 @@
 ////			handleQueue.setType(PushHandleQueue.type_batch);
 ////			handleQueue.setUids(StringUtils.join(uids, ","));
 ////			pushHandleQueueDao.insert(handleQueue);
-//        }
-//    }
+//		}
+//	}
 //
-//    public static void main(String[] args) {
-//        List<String> a = Lists.newArrayList("a", "b");
-//        List<String> b = Lists.newArrayList(a);
-//        a.clear();
+//	public static void main(String[] args) {
+//		List<String> a = Lists.newArrayList("a", "b");
+//		List<String> b = Lists.newArrayList(a);
+//		a.clear();
 //        System.out.println(a.toString());
 //        System.out.println(b.toString());
-//    }
+//	}
 //
-//    @Override
-//    public List<PushHandleQueue> getHandleQueueItems(String tableName, int size)
-//            throws Exception {
-//        return pushHandleQueueDao.list(tableName, size);
-//    }
+//	@Override
+//	public List<PushHandleQueue> getHandleQueueItems(String tableName, int size)
+//			throws Exception {
+//		return pushHandleQueueDao.list(tableName, size);
+//	}
 //
-//    @Override
-//    public void deleteQueueItem(PushHandleQueue one) throws Exception {
-//        pushHandleQueueDao.delete(one);
-//    }
+//	@Override
+//	public void deleteQueueItem(PushHandleQueue one) throws Exception {
+//		pushHandleQueueDao.delete(one);
+//	}
 //
 //    @Override
 //    public void deleteQueueItems(List<PushHandleQueue> list) throws Exception {
@@ -237,8 +246,8 @@
 //    }
 //
 //    @Override
-//    public List<Payload> getPayloads(List<Long> pids) throws Exception {
-//        return payloadDao.load(pids);
-//    }
+//	public List<Payload> getPayloads(List<Long> pids) throws Exception {
+//		return payloadDao.load(pids);
+//	}
 //
 //}

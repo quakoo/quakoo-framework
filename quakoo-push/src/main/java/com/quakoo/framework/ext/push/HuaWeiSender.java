@@ -12,6 +12,14 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 华为推送客户端
+ * class_name: HuaWeiSender
+ * package: com.quakoo.framework.ext.push
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 15:15
+ **/
 public class HuaWeiSender {
 
     public static final int type_trans = 1;

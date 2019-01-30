@@ -2,6 +2,14 @@ package com.quakoo.framework.ext.push.bean;
 
 import java.io.Serializable;
 
+/**
+ * 异步推送用户信息
+ * class_name: PushUserInfoMsg
+ * package: com.quakoo.framework.ext.push.bean
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 11:02
+ **/
 public class PushUserInfoMsg implements Serializable {
 
     public static final int type_regist = 1;

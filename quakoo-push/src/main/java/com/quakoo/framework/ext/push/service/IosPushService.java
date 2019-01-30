@@ -7,10 +7,10 @@ import com.quakoo.framework.ext.push.model.PushUserInfoPool;
 
 public interface IosPushService {
 
-    public void push(PushUserInfoPool userInfo, PushMsg pushMsg);
-
-    public void batchPush(List<PushUserInfoPool> userInfos, PushMsg pushMsg);
-
-    public boolean clearBadge(long  uid);
+	public void push(PushUserInfoPool userInfo, PushMsg pushMsg);
+	
+	public void batchPush(List<PushUserInfoPool> userInfos, PushMsg pushMsg);
+	
+	public boolean clearBadge(long  uid);
 	
 }

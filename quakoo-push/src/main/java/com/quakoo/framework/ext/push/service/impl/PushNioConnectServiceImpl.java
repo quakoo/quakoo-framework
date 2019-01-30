@@ -5,14 +5,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.annotation.Resource;
 
-import com.quakoo.framework.ext.push.context.handle.PushNioHandleContextHandle;
-import com.quakoo.framework.ext.push.model.constant.Brand;
-import com.quakoo.framework.ext.push.model.constant.Platform;
-import com.quakoo.framework.ext.push.model.param.*;
-import com.quakoo.framework.ext.push.nio.ChannelUtils;
-import com.quakoo.framework.ext.push.service.IosPushService;
-import com.quakoo.framework.ext.push.service.PushNioConnectService;
-import com.quakoo.framework.ext.push.service.PushUserService;
 import com.quakoo.framework.ext.push.model.param.*;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -21,8 +13,23 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import com.google.common.collect.Maps;
+import com.quakoo.framework.ext.push.context.handle.PushNioHandleContextHandle;
+import com.quakoo.framework.ext.push.model.constant.Brand;
+import com.quakoo.framework.ext.push.model.constant.Platform;
+import com.quakoo.framework.ext.push.nio.ChannelUtils;
+import com.quakoo.framework.ext.push.service.IosPushService;
+import com.quakoo.framework.ext.push.service.PushNioConnectService;
+import com.quakoo.framework.ext.push.service.PushUserService;
 
 
+/**
+ * 长连接处理类
+ * class_name: PushNioConnectServiceImpl
+ * package: com.quakoo.framework.ext.push.service.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 14:59
+ **/
 public class PushNioConnectServiceImpl implements PushNioConnectService, InitializingBean {
 	
 	Logger logger = LoggerFactory.getLogger(PushNioConnectServiceImpl.class);
@@ -33,7 +40,7 @@ public class PushNioConnectServiceImpl implements PushNioConnectService, Initial
 	@Resource
 	private IosPushService iosPushService;
 	
-	private LinkedBlockingQueue<NioConnectQueueItem> queue =
+	private LinkedBlockingQueue<NioConnectQueueItem> queue = 
 			new LinkedBlockingQueue<NioConnectQueueItem>();
 	
 	private final int threadNum = Runtime.getRuntime().availableProcessors() * 2 + 1;
@@ -64,6 +71,15 @@ public class PushNioConnectServiceImpl implements PushNioConnectService, Initial
 		}
 	}
 
+	/**
+     * 接收到消息放入到队列
+	 * method_name: handle
+	 * params: [ctx, sessionRequest]
+	 * return: void
+	 * creat_user: lihao
+	 * creat_date: 2019/1/30
+	 * creat_time: 15:00
+	 **/
 	@Override
 	public void handle(ChannelHandlerContext ctx, SessionRequest sessionRequest) {
 		NioConnectQueueItem item = new NioConnectQueueItem();
@@ -76,7 +92,7 @@ public class PushNioConnectServiceImpl implements PushNioConnectService, Initial
 		ChannelHandlerContext ctx = queueItem.getCtx();
 		SessionRequest sessionRequest = queueItem.getSessionRequest();
 		String sessionId = sessionRequest.getSessionId();
-		if(sessionRequest instanceof RegistRequest) {
+		if(sessionRequest instanceof RegistRequest) { //处理注册请求
 			long uid = ((RegistRequest) sessionRequest).getUid();
 			int platform = ((RegistRequest) sessionRequest).getPlatform();
 			int brand = ((RegistRequest) sessionRequest).getBrand();
@@ -115,7 +131,7 @@ public class PushNioConnectServiceImpl implements PushNioConnectService, Initial
 				response.setErrMsg(e.getMessage());
 				ChannelUtils.write(ctx, response, false);
 			}
-		} else if(sessionRequest instanceof LogoutRequest) {
+		} else if(sessionRequest instanceof LogoutRequest) { //处理登出请求
             long uid = ((LogoutRequest) sessionRequest).getUid();
             int platform = ((LogoutRequest) sessionRequest).getPlatform();
             int brand = ((LogoutRequest) sessionRequest).getBrand();
@@ -134,7 +150,7 @@ public class PushNioConnectServiceImpl implements PushNioConnectService, Initial
                 response.setErrMsg(e.getMessage());
                 ChannelUtils.write(ctx, response, false);
             }
-        } else if(sessionRequest instanceof PingRequest) {
+        } else if(sessionRequest instanceof PingRequest) { //处理心跳请求
 			long uid = ((PingRequest) sessionRequest).getUid();
 			int platform = ((PingRequest) sessionRequest).getPlatform();
 			int brand = ((PingRequest) sessionRequest).getBrand();
@@ -156,7 +172,7 @@ public class PushNioConnectServiceImpl implements PushNioConnectService, Initial
 			response.setSessionId(sessionId);
 			response.setSuccess(true);
 			ChannelUtils.write(ctx, response, false);
-		} else if (sessionRequest instanceof IosClearBadgeRequest) {
+		} else if (sessionRequest instanceof IosClearBadgeRequest) { //处理清除IOS小红点请求
 			long uid = ((IosClearBadgeRequest) sessionRequest).getUid();
 			try {
 				boolean sign = iosPushService.clearBadge(uid);

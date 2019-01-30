@@ -1,7 +1,6 @@
 package com.quakoo.framework.ext.push.service;
 
 
-
 import com.quakoo.framework.ext.push.model.PushMsg;
 
 import java.util.List;

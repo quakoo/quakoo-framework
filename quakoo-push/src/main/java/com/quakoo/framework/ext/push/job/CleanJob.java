@@ -7,8 +7,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.Resource;
-import java.util.List;
 
+/**
+ * 清理任务
+ * class_name: CleanJob
+ * package: com.quakoo.framework.ext.push.job
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 11:58
+ **/
 public class CleanJob {
 
     private Logger logger = LoggerFactory.getLogger(CleanJob.class);
@@ -21,6 +28,15 @@ public class CleanJob {
     @Resource
     private JdbcTemplate jdbcTemplate;
 
+    /**
+     * 清理推送信息
+     * method_name: cleanPushMsg
+     * params: [time]
+     * return: void
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 11:58
+     **/
     private void cleanPushMsg(long time) {
         try {
             String sql = "delete from push_msg where time < %s";

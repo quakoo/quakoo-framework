@@ -5,6 +5,14 @@ import com.google.common.collect.Maps;
 import java.io.Serializable;
 import java.util.Map;
 
+/**
+ * 推送所有用户的消息队列
+ * class_name: PushMsgHandleAllQueue
+ * package: com.quakoo.framework.ext.push.model
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 12:01
+ **/
 public class PushMsgHandleAllQueue implements Serializable {
 
     private long id;

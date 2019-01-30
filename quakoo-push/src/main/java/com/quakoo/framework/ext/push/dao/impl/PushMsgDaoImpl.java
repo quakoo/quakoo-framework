@@ -17,6 +17,14 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * 推送通知DAO
+ * class_name: PushMsgDaoImpl
+ * package: com.quakoo.framework.ext.push.dao.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 11:33
+ **/
 public class PushMsgDaoImpl extends BaseDao implements PushMsgDao {
 
     private Logger logger = LoggerFactory.getLogger(PushMsgDaoImpl.class);
@@ -24,12 +32,30 @@ public class PushMsgDaoImpl extends BaseDao implements PushMsgDao {
     @Resource
     private DataFieldMaxValueIncrementer pushMsgMaxValueIncrementer;
 
+    /**
+     * 生成主键
+     * method_name: createId
+     * params: []
+     * return: long
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 11:33
+     **/
     @Override
     public long createId() {
         long id = pushMsgMaxValueIncrementer.nextLongValue();
         return id;
     }
 
+    /**
+     * sql注入判断
+     * method_name: sql_inj
+     * params: [str]
+     * return: boolean
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 11:33
+     **/
     private boolean sql_inj(String str){
         int srcLen, decLen = 0;
         str = str.toLowerCase().trim();
@@ -46,6 +72,15 @@ public class PushMsgDaoImpl extends BaseDao implements PushMsgDao {
         else return true;
     }
 
+    /**
+     * 批量插入
+     * method_name: insert
+     * params: [list]
+     * return: void
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 11:34
+     **/
     @Override
     public void insert(final List<PushMsg> list) throws DataAccessException {
         for(Iterator<PushMsg> it = list.iterator(); it.hasNext();) {
@@ -88,6 +123,15 @@ public class PushMsgDaoImpl extends BaseDao implements PushMsgDao {
         logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql + " , pushMsgs : " + list.toString() + " , res : " + Lists.newArrayList(res).toString());
     }
 
+    /**
+     * 批量更新
+     * method_name: update
+     * params: [list]
+     * return: void
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 11:34
+     **/
     @Override
     public void update(final List<PushMsg> list) throws DataAccessException {
         String sql = "replace into push_msg (id, title, content, extra, type, uid, uids, platform, `time`, status) values (?,?,?,?,?,?,?,?,?,?)";

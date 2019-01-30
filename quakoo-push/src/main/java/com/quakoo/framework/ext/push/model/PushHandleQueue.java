@@ -18,7 +18,7 @@
 //
 //	private String uids; // #m# ^n^
 //
-//	private long payloadId; // #b# ^nn^
+////	private long payloadId; // #b# ^nn^
 //
 //	private long time; // #b# ^nn^
 //
@@ -62,13 +62,13 @@
 //		this.uids = uids;
 //	}
 //
-//	public long getPayloadId() {
-//		return payloadId;
-//	}
+////	public long getPayloadId() {
+////		return payloadId;
+////	}
 //
-//	public void setPayloadId(long payloadId) {
-//		this.payloadId = payloadId;
-//	}
+////	public void setPayloadId(long payloadId) {
+////		this.payloadId = payloadId;
+////	}
 //
 //	public long getTime() {
 //		return time;
@@ -78,12 +78,24 @@
 //		this.time = time;
 //	}
 //
-//	@Override
-//	public String toString() {
-//		return "PushHandleQueue [id=" + id + ", shardNum=" + shardNum
-//				+ ", type=" + type + ", uid=" + uid + ", "
-//				+ (uids != null ? "uids=" + uids + ", " : "") + "payloadId="
-//				+ payloadId + ", time=" + time + "]";
-//	}
+////	@Override
+////	public String toString() {
+////		return "PushHandleQueue [id=" + id + ", shardNum=" + shardNum
+////				+ ", type=" + type + ", uid=" + uid + ", "
+////				+ (uids != null ? "uids=" + uids + ", " : "") + "payloadId="
+////				+ payloadId + ", time=" + time + "]";
+////	}
 //
+//
+//    @Override
+//    public String toString() {
+//        return "PushHandleQueue{" +
+//                "id=" + id +
+//                ", shardNum=" + shardNum +
+//                ", type=" + type +
+//                ", uid=" + uid +
+//                ", uids='" + uids + '\'' +
+//                ", time=" + time +
+//                '}';
+//    }
 //}

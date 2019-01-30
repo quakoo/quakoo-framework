@@ -61,7 +61,7 @@
 //
 //	@Override
 //	public List<PushUserQueue> getPushUserQueueItems(String table_name,
-//                                                     long index, int size) throws Exception {
+//			long index, int size) throws Exception {
 //		return pushUserQueueDao.getList(table_name, index, size);
 //	}
 //

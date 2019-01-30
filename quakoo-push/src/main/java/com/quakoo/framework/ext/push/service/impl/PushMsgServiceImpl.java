@@ -18,20 +18,28 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 推送消息类
+ * class_name: PushMsgServiceImpl
+ * package: com.quakoo.framework.ext.push.service.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 14:49
+ **/
 public class PushMsgServiceImpl extends BaseService implements PushMsgService, InitializingBean {
 
-    private Logger pushMsgLogger = LoggerFactory.getLogger("push_msg");
+    private Logger pushMsgLogger = LoggerFactory.getLogger("push_msg"); //特殊的日志记录推送的消息
 
-    private final static int handle_num = 30;
+    private final static int handle_num = 30; //一次处理的条数
 
-    private final static int handle_expire_time = 1000 * 60 * 1;
+    private final static int handle_expire_time = 1000 * 60 * 1; //超时处理的时间
 
-    private int persistence;
+    private int persistence; //是否持久化
 
     @Resource
     private PushMsgDao pushMsgDao;
 
-    private static volatile LinkedBlockingQueue<PushMsg> queue = new LinkedBlockingQueue<PushMsg>();
+    private static volatile LinkedBlockingQueue<PushMsg> queue = new LinkedBlockingQueue<PushMsg>(); //待处理的队列
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -40,15 +48,32 @@ public class PushMsgServiceImpl extends BaseService implements PushMsgService, I
         processer.start();
     }
 
+    /**
+     * 处理线程
+     * class_name: PushMsgServiceImpl
+     * package: com.quakoo.framework.ext.push.service.impl
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 14:56
+     **/
     class Processer implements Runnable {
 
+        /**
+         * 批量处理
+         * method_name: handle
+         * params: [list]
+         * return: void
+         * creat_user: lihao
+         * creat_date: 2019/1/30
+         * creat_time: 14:56
+         **/
         private void handle(List<PushMsg> list) throws Exception {
             Set<Long> exists = Sets.newHashSet();
             List<PushMsg> insertList = Lists.newArrayList();
             List<PushMsg> updateList = Lists.newArrayList();
             for(int i = list.size() - 1; i >= 0; i--) {
                 PushMsg one = list.get(i);
-                if(!exists.contains(one.getId())) {
+                if(!exists.contains(one.getId())) { //如果已经处理过，不再重复处理
                     if(one.getStatus() == PushMsg.status_wait) {
                         insertList.add(one);
                     } else {
@@ -57,8 +82,8 @@ public class PushMsgServiceImpl extends BaseService implements PushMsgService, I
                     exists.add(one.getId());
                 }
             }
-            if(insertList.size() > 0) pushMsgDao.insert(insertList);
-            if(updateList.size() > 0) pushMsgDao.update(updateList);
+            if(insertList.size() > 0) pushMsgDao.insert(insertList); //处理待发送的
+            if(updateList.size() > 0) pushMsgDao.update(updateList); //处理已发送的
         }
 
         @Override
@@ -93,22 +118,58 @@ public class PushMsgServiceImpl extends BaseService implements PushMsgService, I
 
     }
 
+    /**
+     * 讲待处理的消息放入队列
+     * method_name: add
+     * params: [pushMsg, status]
+     * return: void
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 14:57
+     **/
     private void add(PushMsg pushMsg, int status) {
         pushMsg.setStatus(status);
         queue.add(pushMsg);
     }
 
+    /**
+     * 生成消息ID
+     * method_name: createId
+     * params: []
+     * return: long
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 14:58
+     **/
     @Override
     public long createId() {
         return pushMsgDao.createId();
     }
 
+    /**
+     * 接收待推送消息
+     * method_name: accept
+     * params: [pushMsg]
+     * return: void
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 14:58
+     **/
     @Override
     public void accept(PushMsg pushMsg){
         if(persistence == 1) add(pushMsg, PushMsg.status_wait);
         pushMsgLogger.info("func:{},pushMsg:{},time:{}", new Object[]{"accept", JsonUtils.toJson(pushMsg), System.currentTimeMillis()});
     }
 
+    /**
+     * 完成推送消息
+     * method_name: finish
+     * params: [pushMsg]
+     * return: void
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 14:58
+     **/
     @Override
     public void finish(PushMsg pushMsg){
         if(persistence == 1) add(pushMsg, PushMsg.status_send);

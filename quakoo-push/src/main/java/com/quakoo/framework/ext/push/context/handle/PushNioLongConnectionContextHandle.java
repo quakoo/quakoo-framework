@@ -17,6 +17,14 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
+/**
+ * 推送长连接启动上下文
+ * class_name: PushNioLongConnectionContextHandle
+ * package: com.quakoo.framework.ext.push.context.handle
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 11:18
+ **/
 public class PushNioLongConnectionContextHandle extends PushNioHandleContextHandle {
 	
 	@Resource

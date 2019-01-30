@@ -9,8 +9,9 @@
 //import java.util.Set;
 //
 //import com.google.common.collect.Sets;
-//import com.quakoo.framework.ext.push.dao.BaseDao;
-//import com.quakoo.framework.ext.push.dao.PushHandleQueueDao;
+//import com.quakoo.baseFramework.jackson.JsonUtils;
+//import com.quakoo.baseFramework.redis.RedisSortData;
+//import com.quakoo.framework.ext.push.model.Payload;
 //import org.apache.commons.lang3.StringUtils;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
@@ -25,14 +26,16 @@
 //import com.google.common.collect.Lists;
 //import com.google.common.collect.Maps;
 //import com.quakoo.baseFramework.lock.ZkLock;
+//import com.quakoo.framework.ext.push.dao.BaseDao;
+//import com.quakoo.framework.ext.push.dao.PushHandleQueueDao;
 //import com.quakoo.framework.ext.push.model.PushHandleQueue;
 //
 //public class PushHandleQueueDaoImpl extends BaseDao implements PushHandleQueueDao, InitializingBean {
 //
 //    Logger logger = LoggerFactory.getLogger(PushHandleQueueDaoImpl.class);
 //
-//    private String push_handle_queue_key;
-//    private String push_handle_queue_null_key;
+//	private String push_handle_queue_key;
+//	private String push_handle_queue_null_key;
 //
 //    @Override
 //    public void afterPropertiesSet() throws Exception {
@@ -41,9 +44,9 @@
 //    }
 //
 //    private String getTable(int shardNum){
-//        int index = shardNum % pushInfo.push_handle_queue_table_names.size();
-//        return pushInfo.push_handle_queue_table_names.get(index);
-//    }
+//		int index = shardNum % pushInfo.push_handle_queue_table_names.size();
+//		return pushInfo.push_handle_queue_table_names.get(index);
+//	}
 //
 //    @Override
 //    public void insert(List<PushHandleQueue> list) throws DataAccessException {
@@ -118,26 +121,26 @@
 //    }
 //
 //    @Override
-//    public boolean insert(PushHandleQueue one) throws DataAccessException {
-//        boolean res = false;
-//        final int shardNum = Math.abs((String.valueOf(one.getType()) +
+//	public boolean insert(PushHandleQueue one) throws DataAccessException {
+//		boolean res = false;
+//		final int shardNum = Math.abs((String.valueOf(one.getType()) +
 //                String.valueOf(one.getUid()) + one.getUids()).hashCode());
-//        one.setShardNum(shardNum);
-//        String tableName = this.getTable(shardNum);
+//		one.setShardNum(shardNum);
+//		String tableName = this.getTable(shardNum);
 ////		final long payloadId = one.getPayloadId();
-//        final long time = System.currentTimeMillis();
-//        one.setTime(time);
-//        final long id = one.getId();
-//        final int type = one.getType();
-//        final long uid = one.getUid();
-//        final String uids = one.getUids();
-//        String sqlFormat = "insert ignore into %s (id, shardNum, type, uid, uids, time) values (?, ?, ?, ?, ?, ?)";
-//        final String sql = String.format(sqlFormat, tableName);
-//        PreparedStatementCreator preparedStatementCreator = new PreparedStatementCreator() {
-//            @Override
-//            public PreparedStatement createPreparedStatement(Connection con)
-//                    throws SQLException {
-//                PreparedStatement ps = con.prepareStatement(sql,
+//		final long time = System.currentTimeMillis();
+//		one.setTime(time);
+//		final long id = one.getId();
+//		final int type = one.getType();
+//		final long uid = one.getUid();
+//		final String uids = one.getUids();
+//	    String sqlFormat = "insert ignore into %s (id, shardNum, type, uid, uids, time) values (?, ?, ?, ?, ?, ?)";
+//		final String sql = String.format(sqlFormat, tableName);
+//		PreparedStatementCreator preparedStatementCreator = new PreparedStatementCreator() {
+//			@Override
+//			public PreparedStatement createPreparedStatement(Connection con)
+//					throws SQLException {
+//				PreparedStatement ps = con.prepareStatement(sql,
 //                        new String[] { "id" });
 //                ps.setLong(1, id);
 //                ps.setInt(2, shardNum);
@@ -146,25 +149,25 @@
 //                ps.setString(5, uids);
 //                ps.setLong(6, time);
 //                return ps;
-//            }
-//        };
+//			}
+//		};
 ////		KeyHolder key = new GeneratedKeyHolder();
 //        long startTime = System.currentTimeMillis();
-//        int ret = this.jdbcTemplate.update(preparedStatementCreator);
+//		int ret = this.jdbcTemplate.update(preparedStatementCreator);
 //        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
-//        res = ret > 0 ? true : false;
-//        if(res){
+//		res = ret > 0 ? true : false;
+//		if(res){
 ////			long id = key.getKey().longValue();
 ////			one.setId(id);
-//            String queue_key = String.format(push_handle_queue_key, tableName);
-//            String queue_null_key = String.format(push_handle_queue_null_key, tableName);
-//            cache.delete(queue_null_key);
-//            if(cache.exists(queue_key)){
-//                cache.zaddObject(queue_key, new Double(time), one);
-//            }
-//        }
-//        return res;
-//    }
+//			String queue_key = String.format(push_handle_queue_key, tableName);
+//			String queue_null_key = String.format(push_handle_queue_null_key, tableName);
+//			cache.delete(queue_null_key);
+//			if(cache.exists(queue_key)){
+//				cache.zaddObject(queue_key, new Double(time), one);
+//			}
+//		}
+//		return res;
+//	}
 //
 //    @Override
 //    public void delete(List<PushHandleQueue> list) throws DataAccessException {
@@ -225,99 +228,99 @@
 //    }
 //
 //    @Override
-//    public boolean delete(PushHandleQueue one) throws DataAccessException {
-//        boolean res = false;
-//        int shardNum = one.getShardNum();
-//        long id = one.getId();
-//        String tableName = getTable(shardNum);
-//        String sql = "delete from %s where id = ?";
-//        sql = String.format(sql, tableName);
+//	public boolean delete(PushHandleQueue one) throws DataAccessException {
+//		boolean res = false;
+//		int shardNum = one.getShardNum();
+//		long id = one.getId();
+//		String tableName = getTable(shardNum);
+//		String sql = "delete from %s where id = ?";
+//		sql = String.format(sql, tableName);
 //        long startTime = System.currentTimeMillis();
-//        int ret = this.jdbcTemplate.update(sql, id);
+//		int ret = this.jdbcTemplate.update(sql, id);
 //        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
-//        res = ret > 0 ? true : false;
-//        if(res){
-//            String queue_key = String.format(push_handle_queue_key, tableName);
-//            if(cache.exists(queue_key)){
-//                cache.zremObject(queue_key, one);
-//            }
-//        }
-//        return res;
-//    }
+//		res = ret > 0 ? true : false;
+//		if(res){
+//			String queue_key = String.format(push_handle_queue_key, tableName);
+//			if(cache.exists(queue_key)){
+//				cache.zremObject(queue_key, one);
+//			}
+//		}
+//		return res;
+//	}
 //
-//    private void init(String table_name) {
-//        String queue_key = String.format(push_handle_queue_key, table_name);
-//        String queue_null_key = String.format(push_handle_queue_null_key, table_name);
-//        if(!cache.exists(queue_null_key) && !cache.exists(queue_key)){
-//            ZkLock lock = null;
-//            try {
-//                lock = ZkLock.getAndLock(pushInfo.pushLockZkAddress,
-//                        pushInfo.projectName, queue_key + pushInfo.lock_suffix,
-//                        true, pushInfo.session_timout, pushInfo.lock_timeout);
-//                if(!cache.exists(queue_null_key) && !cache.exists(queue_key)) {
-//                    String sql = "select * from %s order by time asc";
-//                    sql = String.format(sql, table_name);
+//	private void init(String table_name) {
+//		String queue_key = String.format(push_handle_queue_key, table_name);
+//		String queue_null_key = String.format(push_handle_queue_null_key, table_name);
+//		if(!cache.exists(queue_null_key) && !cache.exists(queue_key)){
+//			ZkLock lock = null;
+//			try {
+//				lock = ZkLock.getAndLock(pushInfo.pushLockZkAddress,
+//						pushInfo.projectName, queue_key + pushInfo.lock_suffix,
+//						true, pushInfo.session_timout, pushInfo.lock_timeout);
+//				if(!cache.exists(queue_null_key) && !cache.exists(queue_key)) {
+//					String sql = "select * from %s order by time asc";
+//					sql = String.format(sql, table_name);
 //                    long startTime = System.currentTimeMillis();
-//                    List<PushHandleQueue> all_list = this.jdbcTemplate.query(sql,
-//                            new PushHandleQueueRowMapper());
+//					List<PushHandleQueue> all_list = this.jdbcTemplate.query(sql,
+//							new PushHandleQueueRowMapper());
 //                    logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
-//                    if(null != all_list && all_list.size() > 0){
-//                        Map<Object, Double> map = Maps.newHashMap();
-//                        for(PushHandleQueue one : all_list){
-//                            Double score = new Double(one.getTime());
-//                            map.put(one, score);
-//                        }
-//                        if(map.size() > 0){
-//                            cache.zaddMultiObject(queue_key, map);
-//                            cache.expire(queue_key, pushInfo.redis_overtime_long);
-//                        }
-//                    }else{
-//                        cache.setString(queue_null_key, pushInfo.redis_overtime_long, "true");
-//                    }
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            } finally {
-//                if (lock != null) lock.release();
-//            }
-//        }
-//    }
+//					if(null != all_list && all_list.size() > 0){
+//						Map<Object, Double> map = Maps.newHashMap();
+//				    	for(PushHandleQueue one : all_list){
+//				    		Double score = new Double(one.getTime());
+//				    		map.put(one, score);
+//				    	}
+//				    	if(map.size() > 0){
+//				    		cache.zaddMultiObject(queue_key, map);
+//				    		cache.expire(queue_key, pushInfo.redis_overtime_long);
+//				    	}
+//					}else{
+//						cache.setString(queue_null_key, pushInfo.redis_overtime_long, "true");
+//					}
+//				}
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			} finally {
+//				if (lock != null) lock.release();
+//			}
+//		}
+//	}
 //
-//    @Override
-//    public List<PushHandleQueue> list(String table_name, int size)
-//            throws DataAccessException {
-//        this.init(table_name);
-//        String queue_key = String.format(push_handle_queue_key, table_name);
-//        String queue_null_key = String.format(push_handle_queue_null_key, table_name);
-//        if(cache.exists(queue_null_key))
-//            return Lists.newArrayList();
-//        if(cache.exists(queue_key)){
-//            List<PushHandleQueue> res = Lists.newArrayList();
-//            Set<Object> set = cache.zrangeByScoreObject(queue_key, 0, Double.MAX_VALUE, 0, size, null);
-//            if(null != set && set.size() > 0){
-//                for(Object one : set){
-//                    res.add((PushHandleQueue) one);
-//                }
-//            }
-//            return res;
-//        }
-//        return Lists.newArrayList();
-//    }
+//	@Override
+//	public List<PushHandleQueue> list(String table_name, int size)
+//			throws DataAccessException {
+//		this.init(table_name);
+//		String queue_key = String.format(push_handle_queue_key, table_name);
+//		String queue_null_key = String.format(push_handle_queue_null_key, table_name);
+//		if(cache.exists(queue_null_key))
+//			return Lists.newArrayList();
+//		if(cache.exists(queue_key)){
+//			List<PushHandleQueue> res = Lists.newArrayList();
+//			Set<Object> set = cache.zrangeByScoreObject(queue_key, 0, Double.MAX_VALUE, 0, size, null);
+//			if(null != set && set.size() > 0){
+//			    for(Object one : set){
+//			   		res.add((PushHandleQueue) one);
+//			   	}
+//			}
+//			return res;
+//		}
+//		return Lists.newArrayList();
+//	}
 //
-//    class PushHandleQueueRowMapper implements RowMapper<PushHandleQueue> {
-//        @Override
-//        public PushHandleQueue mapRow(ResultSet rs, int rowNum)
-//                throws SQLException {
-//            PushHandleQueue res = new PushHandleQueue();
-//            res.setId(rs.getLong("id"));
+//	class PushHandleQueueRowMapper implements RowMapper<PushHandleQueue> {
+//		@Override
+//		public PushHandleQueue mapRow(ResultSet rs, int rowNum)
+//				throws SQLException {
+//			PushHandleQueue res = new PushHandleQueue();
+//			res.setId(rs.getLong("id"));
 ////			res.setPayloadId(rs.getLong("payloadId"));
-//            res.setShardNum(rs.getInt("shardNum"));
-//            res.setTime(rs.getLong("time"));
-//            res.setType(rs.getInt("type"));
-//            res.setUid(rs.getLong("uid"));
-//            res.setUids(rs.getString("uids"));
-//            return res;
-//        }
-//    }
+//			res.setShardNum(rs.getInt("shardNum"));
+//			res.setTime(rs.getLong("time"));
+//			res.setType(rs.getInt("type"));
+//			res.setUid(rs.getLong("uid"));
+//			res.setUids(rs.getString("uids"));
+//			return res;
+//		}
+//	}
 //
 //}

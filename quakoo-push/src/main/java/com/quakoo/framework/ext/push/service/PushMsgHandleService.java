@@ -1,11 +1,7 @@
 package com.quakoo.framework.ext.push.service;
 
 
-
-import com.quakoo.framework.ext.push.model.PushMsg;
-import com.quakoo.framework.ext.push.model.PushMsgHandleAllQueue;
-import com.quakoo.framework.ext.push.model.PushUserQueue;
-import com.quakoo.framework.ext.push.model.PushUserQueueInfo;
+import com.quakoo.framework.ext.push.model.*;
 
 import java.util.List;
 import java.util.Map;

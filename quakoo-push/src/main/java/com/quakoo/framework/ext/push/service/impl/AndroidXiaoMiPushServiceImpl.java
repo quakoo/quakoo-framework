@@ -17,12 +17,20 @@ import org.springframework.beans.factory.InitializingBean;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 小米推送处理类
+ * class_name: AndroidXiaoMiPushServiceImpl
+ * package: com.quakoo.framework.ext.push.service.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 13:57
+ **/
 public class AndroidXiaoMiPushServiceImpl extends BaseService implements AndroidXiaoMiPushService,
         InitializingBean {
 
     Logger logger = LoggerFactory.getLogger(AndroidXiaoMiPushServiceImpl.class);
 
-    private Sender sender;
+    private Sender sender; //小米推送客户端
     private String packageName;
 
     private String notifyIdKey;
@@ -36,6 +44,15 @@ public class AndroidXiaoMiPushServiceImpl extends BaseService implements Android
         notifyIdKey = pushInfo.projectName + "_android_xiaomi_notifyId";
     }
 
+    /**
+     * 推送单个用户
+     * method_name: push
+     * params: [userInfo, pushMsg]
+     * return: void
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 13:58
+     **/
     @Override
     public void push(PushUserInfoPool userInfo, PushMsg pushMsg) {
         try {
@@ -57,6 +74,15 @@ public class AndroidXiaoMiPushServiceImpl extends BaseService implements Android
         }
     }
 
+    /**
+     * 推送多个用户
+     * method_name: batchPush
+     * params: [userInfos, pushMsg]
+     * return: void
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 13:59
+     **/
     @Override
     public void batchPush(List<PushUserInfoPool> userInfos, PushMsg pushMsg) {
         try {

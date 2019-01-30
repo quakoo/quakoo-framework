@@ -7,6 +7,6 @@ import io.netty.channel.ChannelHandlerContext;
 
 public interface PushNioConnectService {
 
-	public void handle(ChannelHandlerContext ctx, SessionRequest sessionRequest);
+	public void handle(ChannelHandlerContext ctx, SessionRequest sessionRequest); 
 	
 }

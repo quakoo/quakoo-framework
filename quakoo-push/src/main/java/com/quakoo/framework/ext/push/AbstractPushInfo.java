@@ -7,18 +7,29 @@ import org.springframework.beans.factory.InitializingBean;
 
 import com.google.common.collect.Lists;
 
+/**
+ * 推送用到的表和信息
+ * class_name: AbstractPushInfo
+ * package: com.quakoo.framework.ext.push
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 15:16
+ **/
 public abstract class AbstractPushInfo implements InitializingBean {
 
 	private PropertyUtil propertyUtil = PropertyUtil.getInstance("push.properties");
 	
 //	public List<String> payload_table_names = Lists.newArrayList();
 //	public List<String> push_handle_queue_table_names = Lists.newArrayList();
-	public List<String> push_user_info_pool_table_names = Lists.newArrayList();
+
+    public List<String> push_user_info_pool_table_names = Lists.newArrayList();
 	public List<String> push_user_queue_table_names = Lists.newArrayList();
-    public List<String> push_msg_queue_names = Lists.newArrayList();
+
+	public List<String> push_msg_queue_names = Lists.newArrayList();
 
     public String projectName;
     public String persistence;
+
 
 	public String iosPushCertificateFileName;
 	public String iosPushPassword;
@@ -47,13 +58,16 @@ public abstract class AbstractPushInfo implements InitializingBean {
 	
 	protected void init(int tableNum) {
 	    this.projectName = propertyUtil.getProperty("project.name");
-        this.persistence = propertyUtil.getProperty("persistence").trim();
+	    this.persistence = propertyUtil.getProperty("persistence").trim();
 
 		this.iosPushCertificateFileName = propertyUtil.getProperty("ios.push.certificate.file.name");
 		this.iosPushPassword = propertyUtil.getProperty("ios.push.password");
+
 		this.pushLockZkAddress = propertyUtil.getProperty("push.lock.zk.address");
 		this.pushNioConnectIp = propertyUtil.getProperty("push.nio.connect.bootstrap.ip");
 		this.pushNioConnectPort = propertyUtil.getProperty("push.nio.connect.bootstrap.port");
+
+
 		this.distributedZkAddress = propertyUtil.getProperty("push.distributed.zk.address");
 		this.androidXiaomiPushSecretkey = propertyUtil.getProperty("android.xiaomi.push.secretkey");
         this.androidXiaomiPushPackagename = propertyUtil.getProperty("android.xiaomi.push.packagename");
@@ -67,10 +81,11 @@ public abstract class AbstractPushInfo implements InitializingBean {
 
 //		String payload_table_name = "payload";
 //		String push_handle_queue_table_name = "push_handle_queue";
+
 		String push_user_info_pool_table_name = "push_user_info_pool";
 		String push_user_queue_table_name = "push_user_queue";
 
-        String push_msg_queue_name = "push_msg_queue";
+		String push_msg_queue_name = "push_msg_queue";
 
 		for(int i = 0; i < tableNum; i++) {
 			if(i == 0) {

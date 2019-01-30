@@ -2,6 +2,14 @@ package com.quakoo.framework.ext.push.model;
 
 import java.io.Serializable;
 
+/**
+ * 推送用户队列
+ * class_name: PushUserQueue
+ * package: com.quakoo.framework.ext.push.model
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 12:03
+ **/
 public class PushUserQueue implements Serializable {
 
 	private static final long serialVersionUID = 1L;

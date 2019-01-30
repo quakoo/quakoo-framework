@@ -17,11 +17,20 @@ import org.springframework.beans.factory.InitializingBean;
 import java.util.List;
 import java.util.Map;
 
+
+/**
+ * 魅族推送处理类
+ * class_name: AndroidMeiZuPushServiceImpl
+ * package: com.quakoo.framework.ext.push.service.impl
+ * creat_user: lihao
+ * creat_date: 2019/1/30
+ * creat_time: 13:54
+ **/
 public class AndroidMeiZuPushServiceImpl extends BaseService implements AndroidMeiZuPushService, InitializingBean {
 
     Logger logger = LoggerFactory.getLogger(AndroidMeiZuPushServiceImpl.class);
 
-    private IFlymePush push;
+    private IFlymePush push; //魅族推送客户端
 
     private long appId;
 
@@ -32,6 +41,15 @@ public class AndroidMeiZuPushServiceImpl extends BaseService implements AndroidM
         appId = Long.parseLong(pushInfo.androidMeizuPushAppid);
     }
 
+    /**
+     * 批量推送
+     * method_name: batchPush
+     * params: [userInfos, pushMsg]
+     * return: void
+     * creat_user: lihao
+     * creat_date: 2019/1/30
+     * creat_time: 13:55
+     **/
     @Override
     public void batchPush(List<PushUserInfoPool> userInfos, PushMsg pushMsg) {
         try {
