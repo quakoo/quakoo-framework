@@ -7,7 +7,6 @@ import com.quakoo.baseFramework.http.MultiHttpPool;
 import com.quakoo.baseFramework.jackson.JsonUtils;
 import com.quakoo.baseFramework.secure.Base64Util;
 import com.quakoo.baseFramework.secure.MD5Utils;
-import com.quakoo.live.room.model.LiveRoom;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.crypto.Mac;
@@ -32,6 +31,9 @@ public class LiveClient {
     private static final String signMethod = "hmac-sha1";
     private static final String signVersion = "1.0";
     private static final String gateway = "http://live.aliyuncs.com";
+
+    public static final int playType_m3u8=1;
+    public static final int playType_flv=2;
     
     public LiveClient(String accessKey, String accessSecret,String liveDomainName) {
     	this.accessKey = accessKey;
@@ -134,11 +136,11 @@ public class LiveClient {
         long time=System.currentTimeMillis()/1000;
         String playUrlFormat = "rtmp://%s/%s/%d?auth_key=%d-0-0-%s";
         String url=String.format("/%s/%d-%d-0-0-%s", appName, id, time, authKey);
-        if(playType== LiveRoom.playType_m3u8){
+        if(playType == playType_m3u8){
             playUrlFormat =  "http://%s/%s/%d.m3u8?auth_key=%d-0-0-%s";
             url=String.format("/%s/%d.m3u8-%d-0-0-%s", appName, id, time, authKey);
         }
-        if(playType==LiveRoom.playType_flv){
+        if(playType == playType_flv){
             playUrlFormat =   "http://%s/%s/%d.flv?auth_key=%d-0-0-%s";
             url=String.format("/%s/%d.flv-%d-0-0-%s", appName, id, time, authKey);
         }
