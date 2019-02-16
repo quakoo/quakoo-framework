@@ -19,6 +19,7 @@ import com.quakoo.space.helper.BaseJdbcHelper;
 import com.quakoo.space.mapper.HyperspaceBeanPropertySqlParameterSource;
 import com.quakoo.space.model.FieldInfo;
 import org.apache.commons.lang.IllegalClassException;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -327,7 +328,9 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 					}
 					
 					if (autowareMap != null) {
-						dbName = autowareMap.column();
+						if(StringUtils.isNotBlank(autowareMap.column())){
+							dbName = autowareMap.column();
+						}
 						isJson=autowareMap.isJson();
 					}
 					

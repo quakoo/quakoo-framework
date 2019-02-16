@@ -7,6 +7,7 @@ import com.quakoo.space.enums.JsonTypeReference;
 import com.quakoo.space.model.FieldInfo;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.IllegalClassException;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
@@ -47,7 +48,9 @@ public class ResultSetExtractorHelp<T> implements ResultSetExtractor<T> {
                         Method readMethod = one.getReadMethod();
                         boolean isJson=false;
                         if (autowareMap != null) {
-                            dbName = autowareMap.column();
+                            if(StringUtils.isNotBlank(autowareMap.column())){
+                                dbName = autowareMap.column();
+                            }
                             isJson=autowareMap.isJson();
                         }
                         FieldInfo fieldInfo = new FieldInfo(field, name, dbName,

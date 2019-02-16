@@ -6,6 +6,7 @@ import com.quakoo.space.annotation.domain.HyperspaceColumn;
 import com.quakoo.space.enums.JsonTypeReference;
 import com.quakoo.space.model.FieldInfo;
 import org.apache.commons.lang.IllegalClassException;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.beans.Introspector;
@@ -45,7 +46,9 @@ public class RowMapperHelp<T> implements RowMapper<T> {
                         Method readMethod = one.getReadMethod();
                         boolean isJson=false;
                         if (autowareMap != null) {
-                            dbName = autowareMap.column();
+                            if(StringUtils.isNotBlank(autowareMap.column())){
+                                dbName = autowareMap.column();
+                            }
                             isJson=autowareMap.isJson();
                         }
                         FieldInfo fieldInfo = new FieldInfo(field, name, dbName,
