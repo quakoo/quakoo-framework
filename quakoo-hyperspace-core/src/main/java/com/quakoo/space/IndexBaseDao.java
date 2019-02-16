@@ -199,7 +199,7 @@ public class IndexBaseDao<T> extends JdbcBaseDao<T> implements InitializingBean 
                         Method readMethod = one.getReadMethod();
 
                         FieldInfo fieldInfo = new FieldInfo(field, name,
-                                dbName, writeMethod, readMethod);
+                                dbName, writeMethod, readMethod,null,null);
                         indexSortFieldInfos.put(sortKey.value(), fieldInfo);
                     }
                 }

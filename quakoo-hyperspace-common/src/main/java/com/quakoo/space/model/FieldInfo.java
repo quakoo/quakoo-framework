@@ -1,11 +1,18 @@
 package com.quakoo.space.model;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.quakoo.space.enums.JsonTypeReference;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 public class FieldInfo {
 
     private Field field;
+
+    private Class josnType;
+
+    private JsonTypeReference jsonTypeReference;
 
     private String name;
 
@@ -15,13 +22,15 @@ public class FieldInfo {
 
     private Method readMethod;
 
-    public FieldInfo(Field field, String name, String dbName, Method writeMethod, Method readMethod) {
+    public FieldInfo(Field field, String name, String dbName, Method writeMethod, Method readMethod,Class josnType,JsonTypeReference jsonTypeReference) {
         super();
         this.field = field;
         this.name = name;
         this.dbName = dbName;
         this.writeMethod = writeMethod;
         this.readMethod = readMethod;
+        this.josnType=josnType;
+        this.jsonTypeReference=jsonTypeReference;
     }
 
     public String getName() {
@@ -62,6 +71,22 @@ public class FieldInfo {
 
     public void setField(Field field) {
         this.field = field;
+    }
+
+    public Class getJosnType() {
+        return josnType;
+    }
+
+    public void setJosnType(Class josnType) {
+        this.josnType = josnType;
+    }
+
+    public JsonTypeReference getJsonTypeReference() {
+        return jsonTypeReference;
+    }
+
+    public void setJsonTypeReference(JsonTypeReference jsonTypeReference) {
+        this.jsonTypeReference = jsonTypeReference;
     }
 
     @Override

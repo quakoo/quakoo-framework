@@ -14,10 +14,12 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.quakoo.baseFramework.json.JsonUtils;
 import com.quakoo.space.annotation.domain.*;
-import com.quakoo.space.enums.HyperspaceDomainType;
-import com.quakoo.space.enums.IdentityType;
+import com.quakoo.space.enums.*;
 import com.quakoo.space.helper.BaseJdbcHelper;
+import com.quakoo.space.mapper.HypeyspaceBeanPropertySqlParameterSource;
 import com.quakoo.space.model.FieldInfo;
 import org.apache.commons.lang.IllegalClassException;
 import org.slf4j.Logger;
@@ -26,7 +28,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -325,13 +326,16 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 					String dbName = name;
 					Method writeMethod = one.getWriteMethod();
 					Method readMethod = one.getReadMethod();
-					
+					Class jsonType=null;
+					JsonTypeReference jsonTypeReference=null;
 					if(this.hibernateDbName){
 						dbName=StringUtil.camelToUnderline(name);
 					}
 					
 					if (autowareMap != null) {
 						dbName = autowareMap.column();
+						jsonType=autowareMap.jsonType();
+						jsonTypeReference=autowareMap.jsonTypeReference();
 					}
 					
 					
@@ -341,7 +345,7 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 						dbName = "`" + dbName + "`";
 					}
 					FieldInfo fieldInfo = new FieldInfo(field, name, dbName,
-							writeMethod, readMethod);
+							writeMethod, readMethod,jsonType,jsonTypeReference);
 					fields.add(fieldInfo);
 					if (fieldName.equals("utime")) {
 						utimeFieldInfo = fieldInfo;
@@ -374,7 +378,7 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 						Method writeMethod = one.getWriteMethod();
 						Method readMethod = one.getReadMethod();
 						FieldInfo tempFieldInfo = new FieldInfo(field, name,
-								dbName, writeMethod, readMethod);
+								dbName, writeMethod, readMethod,null,null);
 						for (FieldInfo fieldInfo : fields) {
 							if (fieldInfo.equals(tempFieldInfo)) {
 								this.primaryFieldInfo = fieldInfo;
@@ -409,7 +413,7 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 						Method readMethod = one.getReadMethod();
 
 						FieldInfo tempFieldInfo = new FieldInfo(field, name,
-								dbName, writeMethod, readMethod);
+								dbName, writeMethod, readMethod,null,null);
 						for (FieldInfo fieldInfo : fields) {
 							if (fieldInfo.equals(tempFieldInfo)) {
 								this.shardingFieldInfo = fieldInfo;
@@ -449,7 +453,7 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 						Method writeMethod = one.getWriteMethod();
 						Method readMethod = one.getReadMethod();
 						FieldInfo tempFieldInfo = new FieldInfo(field, name,
-								dbName, writeMethod, readMethod);
+								dbName, writeMethod, readMethod,null,null);
 						for (FieldInfo fieldInfo : fields) {
 							if (fieldInfo.equals(tempFieldInfo)) {
 								this.combinationFieldInfos.add(fieldInfo);
@@ -481,7 +485,7 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 						Method readMethod = one.getReadMethod();
 
 						FieldInfo tempFieldInfo = new FieldInfo(field, name,
-								dbName, writeMethod, readMethod);
+								dbName, writeMethod, readMethod,null,null);
 						for (FieldInfo fieldInfo : fields) {
 							if (fieldInfo.equals(tempFieldInfo)) {
 								this.sortFieldInfo = fieldInfo;
@@ -622,9 +626,17 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 					c = c.substring(1, c.length() - 1);
 				}
 				Method writeMethod = info.getWriteMethod();
-				Type type = info.getField().getGenericType();
-				writeMethod.invoke(o,
-						ReflectUtil.getValueFormRsByType(type, rs, c));
+				if(info.getJosnType()!=null&&info.getJosnType()!=Object.class){
+					String jsonString= (String) ReflectUtil.getValueFormRsByType(String.class, rs, c);
+					writeMethod.invoke(o, JsonUtils.parse(jsonString,info.getJosnType()));
+				}else if(info.getJsonTypeReference()!=null&&info.getJsonTypeReference()!=JsonTypeReference.type_null){
+					String jsonString= (String) ReflectUtil.getValueFormRsByType(String.class, rs, c);
+					writeMethod.invoke(o, JsonUtils.parse(jsonString,info.getJsonTypeReference().getType()));
+				}else{
+					Type type = info.getField().getGenericType();
+					writeMethod.invoke(o, ReflectUtil.getValueFormRsByType(type, rs, c));
+				}
+
 
 			}
 			return (T) o;
@@ -673,7 +685,7 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 				&& this.identityType == IdentityType.origin_indentity) {
 			KeyHolder key = new GeneratedKeyHolder();
 			ret = getJdbcTemplate(model, false).update(sql,
-							new BeanPropertySqlParameterSource(model), key);
+							new HypeyspaceBeanPropertySqlParameterSource(model), key);
 			try {
 				this.primaryFieldInfo.getWriteMethod().invoke(model,
 						key.getKey().longValue());
@@ -683,7 +695,7 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 			}
 		} else {
 			ret = getJdbcTemplate(model, false).update(sql,
-							new BeanPropertySqlParameterSource(model));
+							new HypeyspaceBeanPropertySqlParameterSource(model));
 		}
 
 		try {
@@ -735,7 +747,7 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 			}
 
 			int ret = getJdbcTemplate(model, false).update(sql,
-					new BeanPropertySqlParameterSource(model));
+					new HypeyspaceBeanPropertySqlParameterSource(model));
 
 			logger.info(daoClassName + "update id sql:{},time:{}", sql,(System.currentTimeMillis()-startTime));
 			return ret >= 1 ? true : false;
@@ -784,7 +796,7 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 			}
 
 			int ret = getJdbcTemplate(model, false).update(sql,
-					new BeanPropertySqlParameterSource(model));
+					new HypeyspaceBeanPropertySqlParameterSource(model));
 			logger.info(daoClassName + "update combination sql:{},time:{}", sql,(System.currentTimeMillis()-startTime));
 
 			return ret >= 1 ? true : false;

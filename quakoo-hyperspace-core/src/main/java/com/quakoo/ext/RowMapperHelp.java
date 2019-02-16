@@ -3,6 +3,7 @@ package com.quakoo.ext;
 import com.google.common.collect.Lists;
 import com.quakoo.baseFramework.reflect.ReflectUtil;
 import com.quakoo.space.annotation.domain.HyperspaceColumn;
+import com.quakoo.space.enums.JsonTypeReference;
 import com.quakoo.space.model.FieldInfo;
 import org.apache.commons.lang.IllegalClassException;
 import org.springframework.jdbc.core.RowMapper;
@@ -42,11 +43,15 @@ public class RowMapperHelp<T> implements RowMapper<T> {
                         String dbName = name;
                         Method writeMethod = one.getWriteMethod();
                         Method readMethod = one.getReadMethod();
+                        Class jsonType=null;
+                        JsonTypeReference jsonTypeReference=null;
                         if (autowareMap != null) {
                             dbName = autowareMap.column();
+                            jsonType=autowareMap.jsonType();
+                            jsonTypeReference=autowareMap.jsonTypeReference();
                         }
                         FieldInfo fieldInfo = new FieldInfo(field, name, dbName,
-                                writeMethod, readMethod);
+                                writeMethod, readMethod,jsonType,jsonTypeReference);
                         fields.add(fieldInfo);
                     }
                 }

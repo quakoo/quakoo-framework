@@ -100,9 +100,5 @@ public class JsonUtils {
 		
 	}
 	public static void main(String[] dsf) throws JsonGenerationException, JsonMappingException, IOException{
-		User user=new User();
-		user.setIcon("sdfwe");
-		user.setName("name");
-		System.out.println(JsonUtils.format(user));
 	}
 }
