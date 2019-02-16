@@ -56,7 +56,7 @@ import java.util.List;
  * @see NamedParameterJdbcTemplate
  * @see BeanWrapper
  */
-public class HypeyspaceBeanPropertySqlParameterSource extends AbstractSqlParameterSource {
+public class HyperspaceBeanPropertySqlParameterSource extends AbstractSqlParameterSource {
 
 	private final BeanWrapper beanWrapper;
 
@@ -70,7 +70,7 @@ public class HypeyspaceBeanPropertySqlParameterSource extends AbstractSqlParamet
 	 * Create a new BeanPropertySqlParameterSource for the given bean.
 	 * @param object the bean instance to wrap
 	 */
-	public HypeyspaceBeanPropertySqlParameterSource(Object object) throws DataAccessException {
+	public HyperspaceBeanPropertySqlParameterSource(Object object) throws DataAccessException {
 		this.beanWrapper = PropertyAccessorFactory.forBeanPropertyAccess(object);
 		try {
 			PropertyDescriptor[] propertyDescriptors = Introspector.getBeanInfo(object.getClass())
@@ -82,12 +82,7 @@ public class HypeyspaceBeanPropertySqlParameterSource extends AbstractSqlParamet
 							.getFieldByName(fieldName, object.getClass());
 					if (field != null) {
 						HyperspaceColumn autowareMap = field.getAnnotation(HyperspaceColumn.class);
-						if (autowareMap != null && autowareMap.jsonType()!=null
-								&& autowareMap.jsonType()!=Object.class) {
-							josnParams.add(one.getName());
-						}
-						if (autowareMap != null && autowareMap.jsonTypeReference()!=null
-								&& autowareMap.jsonTypeReference()!=JsonTypeReference.type_null) {
+						if (autowareMap != null && autowareMap.isJson()==true) {
 							josnParams.add(one.getName());
 						}
 					}

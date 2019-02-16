@@ -45,15 +45,13 @@ public class ResultSetExtractorHelp<T> implements ResultSetExtractor<T> {
                         String dbName = name;
                         Method writeMethod = one.getWriteMethod();
                         Method readMethod = one.getReadMethod();
-                        Class jsonType=null;
-                        JsonTypeReference jsonTypeReference=null;
+                        boolean isJson=false;
                         if (autowareMap != null) {
                             dbName = autowareMap.column();
-                            jsonType=autowareMap.jsonType();
-                            jsonTypeReference=autowareMap.jsonTypeReference();
+                            isJson=autowareMap.isJson();
                         }
                         FieldInfo fieldInfo = new FieldInfo(field, name, dbName,
-                                writeMethod, readMethod,jsonType,jsonTypeReference);
+                                writeMethod, readMethod,isJson);
                         fields.add(fieldInfo);
                     }
                 }

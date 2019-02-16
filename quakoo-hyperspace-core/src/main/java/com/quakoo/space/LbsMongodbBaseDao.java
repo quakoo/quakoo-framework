@@ -181,7 +181,7 @@ public class LbsMongodbBaseDao<T extends Place> implements InitializingBean {
 					Method writeMethod = one.getWriteMethod();
 					Method readMethod = one.getReadMethod();
 					FieldInfo fieldInfo = new FieldInfo(field, name, dbName,
-							writeMethod, readMethod,null,null);
+							writeMethod, readMethod,false);
 					fields.add(fieldInfo);
 				}
 			}

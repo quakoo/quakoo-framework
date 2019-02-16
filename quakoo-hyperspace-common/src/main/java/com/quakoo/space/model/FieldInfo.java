@@ -10,9 +10,7 @@ public class FieldInfo {
 
     private Field field;
 
-    private Class josnType;
-
-    private JsonTypeReference jsonTypeReference;
+    private boolean isJson;
 
     private String name;
 
@@ -22,15 +20,14 @@ public class FieldInfo {
 
     private Method readMethod;
 
-    public FieldInfo(Field field, String name, String dbName, Method writeMethod, Method readMethod,Class josnType,JsonTypeReference jsonTypeReference) {
+    public FieldInfo(Field field, String name, String dbName, Method writeMethod, Method readMethod,boolean isJson) {
         super();
         this.field = field;
         this.name = name;
         this.dbName = dbName;
         this.writeMethod = writeMethod;
         this.readMethod = readMethod;
-        this.josnType=josnType;
-        this.jsonTypeReference=jsonTypeReference;
+        this.isJson=isJson;
     }
 
     public String getName() {
@@ -73,20 +70,13 @@ public class FieldInfo {
         this.field = field;
     }
 
-    public Class getJosnType() {
-        return josnType;
+
+    public boolean isJson() {
+        return isJson;
     }
 
-    public void setJosnType(Class josnType) {
-        this.josnType = josnType;
-    }
-
-    public JsonTypeReference getJsonTypeReference() {
-        return jsonTypeReference;
-    }
-
-    public void setJsonTypeReference(JsonTypeReference jsonTypeReference) {
-        this.jsonTypeReference = jsonTypeReference;
+    public void setJson(boolean json) {
+        isJson = json;
     }
 
     @Override
