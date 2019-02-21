@@ -10,7 +10,9 @@ public interface UserInfoDao {
 	
 	public double create_login_time(long uid) throws Exception;
 
-	public UserInfo cache_user_info(long uid, double lastIndex, double loginTime, UserInfo userInfo) throws Exception;
+//	public UserInfo cache_user_info(long uid, double lastIndex, double loginTime, UserInfo userInfo) throws Exception;
+
+    public void cache_user_info(UserInfo userInfo) throws Exception;
 
 	public void replace(List<UserInfo> userInfos) throws DataAccessException;
 	

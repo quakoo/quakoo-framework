@@ -57,7 +57,7 @@
         <xstream.version>1.2.2</xstream.version>
         <quartz.version>1.8.6</quartz.version>
         <xmemcached.version>1.4.1</xmemcached.version>
-        <jedis.version>2.0.0</jedis.version>
+        <jedis.version>2.9.0</jedis.version>
         <dom4j.version>1.6.1</dom4j.version>
         <json-lib.version>2.4</json-lib.version>
         <zkclient.version>2.1.1</zkclient.version>

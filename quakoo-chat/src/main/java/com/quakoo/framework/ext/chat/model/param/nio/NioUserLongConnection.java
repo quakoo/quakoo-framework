@@ -1,7 +1,11 @@
 package com.quakoo.framework.ext.chat.model.param.nio;
 
 
+import java.text.DecimalFormat;
+
 public class NioUserLongConnection {
+
+    private DecimalFormat decimalFormat = new DecimalFormat("###################.###");
 
 	private long uid;
 	
@@ -33,10 +37,8 @@ public class NioUserLongConnection {
 		this.activeTime = activeTime;
 	}
 
-	@Override
-	public String toString() {
-		return "NioUserLongConnection [uid=" + uid + ", lastMsgSort="
-				+ lastMsgSort + ", activeTime=" + activeTime + "]";
-	}
-
+    @Override
+    public String toString() {
+        return "{uid=" + uid + ", lastMsgSort=" + decimalFormat.format(lastMsgSort) + "}";
+    }
 }

@@ -54,7 +54,7 @@ public class AndroidHuaWeiPushServiceImpl extends BaseService implements Android
                 tokens.add(one.getHuaWeiToken());
             }
             if(null != sender) sender.send(Lists.newArrayList(tokens), pushMsg.getTitle(), pushMsg.getContent(), HuaWeiSender.type_notice,  pushMsg.getExtra());
-            logger.error("===========huawei tokens : "+ tokens.toString() + " pushMsg : " + pushMsg.getTitle());
+//            logger.error("===========huawei tokens : "+ tokens.toString() + " pushMsg : " + pushMsg.getTitle());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

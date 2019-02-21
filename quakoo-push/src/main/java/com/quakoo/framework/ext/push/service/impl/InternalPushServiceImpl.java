@@ -53,7 +53,7 @@ public class InternalPushServiceImpl extends BaseService implements InternalPush
 		InternalPushItem pushItem = new InternalPushItem();
 		pushItem.setUids(Lists.newArrayList(uid));
 		pushItem.setPushMsg(pushMsg);
-        logger.error("===========internal uid : "+ uid + " pushMsg : " + pushMsg.getTitle());
+//        logger.error("===========internal uid : "+ uid + " pushMsg : " + pushMsg.getTitle());
 		redisTemplate.convertAndSend(channel, JsonUtils.toJson(pushItem));
 	}
 
@@ -71,7 +71,7 @@ public class InternalPushServiceImpl extends BaseService implements InternalPush
 		InternalPushItem pushItem = new InternalPushItem();
 		pushItem.setUids(uids);
 		pushItem.setPushMsg(pushMsg);
-        logger.error("===========internal uids : "+ uids.toString() + " pushMsg : " + pushMsg.getTitle());
+//        logger.error("===========internal uids : "+ uids.toString() + " pushMsg : " + pushMsg.getTitle());
 		redisTemplate.convertAndSend(channel, JsonUtils.toJson(pushItem));
 	}
 	

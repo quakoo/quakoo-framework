@@ -94,61 +94,66 @@ public class UserDirectoryDaoImpl extends BaseDaoHandle implements UserDirectory
      **/
     @Override
     public void insert(List<UserDirectory> messageDirectories) throws DataAccessException {
-        List<String> sqls = Lists.newArrayList();
-        String sql = "insert ignore into %s (uid, `type`, thirdId, ctime) values (%d, %d, %d, %d)";
-        for (UserDirectory directory : messageDirectories) {
-            long uid = directory.getUid();
-            long thirdId = directory.getThirdId();
-            int type = directory.getType();
-            long ctime = directory.getCtime();
-            String tableName = getTable(uid);
-            String sqlOne = String.format(sql, tableName, uid, type, thirdId, ctime);
-            sqls.add(sqlOne);
-        }
-        long startTime = System.currentTimeMillis();
-        int[] resList = this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
-        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sqls : " + sqls.toString());
-        Set<String> list_key_set = Sets.newHashSet();
-        Set<String> list_null_set = Sets.newHashSet();
-        for (UserDirectory one : messageDirectories) {
-            String key = String.format(user_directory_list_key, chatInfo.projectName, one.getUid());
-            String null_key = String.format(user_directory_list_null_key, chatInfo.projectName, one.getUid());
-            list_key_set.add(key);
-            list_null_set.add(null_key);
-        }
-        if (list_null_set.size() > 0) {
-            cache.multiDelete(Lists.newArrayList(list_null_set));
-        }
-        if (messageDirectories.size() != resList.length) {
-            cache.multiDelete(Lists.newArrayList(list_key_set));
-        } else {
-            list_key_set.clear();
-            for (int i = 0; i < resList.length; i++) {
-                UserDirectory one = messageDirectories.get(i);
-                int num = resList[i];
-                if (num > 0) {
-                    String key = String.format(user_directory_list_key, chatInfo.projectName, one.getUid());
-                    list_key_set.add(key);
-                }
+        chatInfo.segmentLock.lock(messageDirectories);
+        try {
+            List<String> sqls = Lists.newArrayList();
+            String sql = "insert ignore into %s (uid, `type`, thirdId, ctime) values (%d, %d, %d, %d)";
+            for (UserDirectory directory : messageDirectories) {
+                long uid = directory.getUid();
+                long thirdId = directory.getThirdId();
+                int type = directory.getType();
+                long ctime = directory.getCtime();
+                String tableName = getTable(uid);
+                String sqlOne = String.format(sql, tableName, uid, type, thirdId, ctime);
+                sqls.add(sqlOne);
             }
-            Map<String, Boolean> exists_map = cache.pipExists(Lists.newArrayList(list_key_set));
-            List<RedisKeySortMemObj> redisParams = Lists.newArrayList();
-            Map<String, Object> objectRedisMap = Maps.newHashMap();
-            for (int i = 0; i < resList.length; i++) {
-                UserDirectory one = messageDirectories.get(i);
-                int num = resList[i];
-                if (num > 0) {
-                    String key = String.format(user_directory_list_key, chatInfo.projectName, one.getUid());
-                    if (exists_map.get(key)) {
-                        RedisKeySortMemObj redisParam = new RedisKeySortMemObj(key, one, new Double(one.getCtime()));
-                        redisParams.add(redisParam);
+            long startTime = System.currentTimeMillis();
+            int[] resList = this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
+            logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sqls : " + sqls.toString());
+            Set<String> list_key_set = Sets.newHashSet();
+            Set<String> list_null_set = Sets.newHashSet();
+            for (UserDirectory one : messageDirectories) {
+                String key = String.format(user_directory_list_key, chatInfo.projectName, one.getUid());
+                String null_key = String.format(user_directory_list_null_key, chatInfo.projectName, one.getUid());
+                list_key_set.add(key);
+                list_null_set.add(null_key);
+            }
+            if (list_null_set.size() > 0) {
+                cache.multiDelete(Lists.newArrayList(list_null_set));
+            }
+            if (messageDirectories.size() != resList.length) {
+                cache.multiDelete(Lists.newArrayList(list_key_set));
+            } else {
+                list_key_set.clear();
+                for (int i = 0; i < resList.length; i++) {
+                    UserDirectory one = messageDirectories.get(i);
+                    int num = resList[i];
+                    if (num > 0) {
+                        String key = String.format(user_directory_list_key, chatInfo.projectName, one.getUid());
+                        list_key_set.add(key);
                     }
-                    String objecKey = String.format(user_directory_object_key, chatInfo.projectName, one.getUid(), one.getType(), one.getThirdId());
-                    objectRedisMap.put(objecKey, one);
                 }
+                Map<String, Boolean> exists_map = cache.pipExists(Lists.newArrayList(list_key_set));
+                List<RedisKeySortMemObj> redisParams = Lists.newArrayList();
+                Map<String, Object> objectRedisMap = Maps.newHashMap();
+                for (int i = 0; i < resList.length; i++) {
+                    UserDirectory one = messageDirectories.get(i);
+                    int num = resList[i];
+                    if (num > 0) {
+                        String key = String.format(user_directory_list_key, chatInfo.projectName, one.getUid());
+                        if (exists_map.get(key)) {
+                            RedisKeySortMemObj redisParam = new RedisKeySortMemObj(key, one, new Double(one.getCtime()));
+                            redisParams.add(redisParam);
+                        }
+                        String objecKey = String.format(user_directory_object_key, chatInfo.projectName, one.getUid(), one.getType(), one.getThirdId());
+                        objectRedisMap.put(objecKey, one);
+                    }
+                }
+                if (redisParams.size() > 0) cache.pipZaddObject(redisParams);
+                if (objectRedisMap.size() > 0) cache.multiSetObject(objectRedisMap, AbstractChatInfo.redis_overtime_long);
             }
-            if (redisParams.size() > 0) cache.pipZaddObject(redisParams);
-            if (objectRedisMap.size() > 0) cache.multiSetObject(objectRedisMap, AbstractChatInfo.redis_overtime_long);
+        } finally {
+            chatInfo.segmentLock.unlock(messageDirectories);
         }
     }
 

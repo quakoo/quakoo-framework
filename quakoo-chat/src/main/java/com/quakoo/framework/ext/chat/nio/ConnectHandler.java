@@ -72,7 +72,6 @@ public class ConnectHandler extends ChannelInboundHandlerAdapter {
                     RecallRequest recallRequest = JsonUtils.fromJson(msg, RecallRequest.class);
                     nioConnectService.handle(ctx, recallRequest);
                 } else if(type == NioRequest.type_other_chat) { //其他类型消息
-				    logger.error("======= other_chat");
                     OtherChatRequest otherChatRequest = JsonUtils.fromJson(msg, OtherChatRequest.class);
                     nioConnectService.handle(ctx, otherChatRequest);
                 } else {

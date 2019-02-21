@@ -50,9 +50,19 @@ public class IosPushServiceImpl extends BaseService implements IosPushService,
         badgeKeyFormat = pushInfo.projectName + "_ios_badge_%d";
 		InputStream inputStream = ClassloadUtil.getClassLoader()
 				.getResourceAsStream(pushInfo.iosPushCertificateFileName);
-		apnsService = APNS.newService().withCert(inputStream, pushInfo.iosPushPassword)
-			    .withProductionDestination().asQueued().asPool(poolSize).
-			    withNoErrorDetection().build();
+        int iosPushSandbox = 0;
+        if(StringUtils.isNotBlank(pushInfo.iosPushSandbox))
+            iosPushSandbox = Integer.parseInt(pushInfo.iosPushSandbox);
+		if(iosPushSandbox == 1) {
+            apnsService = APNS.newService().withCert(inputStream, pushInfo.iosPushPassword)
+                    .withSandboxDestination().asQueued().asPool(poolSize).
+                            withNoErrorDetection().build();
+        } else {
+            apnsService = APNS.newService().withCert(inputStream, pushInfo.iosPushPassword)
+                    .withProductionDestination().asQueued().asPool(poolSize).
+                            withNoErrorDetection().build();
+        }
+
 	}
 
 	@Override
@@ -132,7 +142,7 @@ public class IosPushServiceImpl extends BaseService implements IosPushService,
                 Date expiry = new Date(System.currentTimeMillis() + 1000 * 60 * 60);
                 List<String> tokens = entry.getValue();
                 apnsService.push(tokens, payloadStr, expiry);
-                logger.error("===========ios token : "+ tokens.toString() + " pushMsg : " + pushMsg.getTitle());
+//                logger.error("===========ios token : "+ tokens.toString() + " pushMsg : " + pushMsg.getTitle());
             } catch (Exception e) {
                 cache.decr(String.format(badgeKeyFormat, uid));
                 logger.error(e.getMessage(), e);
@@ -174,8 +184,8 @@ public class IosPushServiceImpl extends BaseService implements IosPushService,
 				String payloadStr = payloadBuilder.build();
 				Date expiry = new Date(System.currentTimeMillis() + 1000 * 60 * 60);
                 ApnsNotification apnsNotification = apnsService.push(token, payloadStr, expiry);
-                logger.error("===========ios token : "+ token + " pushMsg : " + pushMsg.getTitle() +
-                        "apnsNotification : " + apnsNotification.toString());
+//                logger.error("===========ios token : "+ token + " pushMsg : " + pushMsg.getTitle() +
+//                        "apnsNotification : " + apnsNotification.toString());
 			} catch (Exception e) {
 				cache.decr(String.format(badgeKeyFormat, uid));
 				logger.error(e.getMessage(), e);

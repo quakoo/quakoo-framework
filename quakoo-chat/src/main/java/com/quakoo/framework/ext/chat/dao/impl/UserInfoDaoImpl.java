@@ -73,7 +73,7 @@ public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
 		return loginTime;
 	}
 
-	/**
+    /**
      * 缓存用户信息
 	 * method_name: cache_user_info
 	 * params: [uid, lastIndex, loginTime, userInfo]
@@ -83,32 +83,49 @@ public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
 	 * creat_time: 16:59
 	 **/
     @Override
-    public UserInfo cache_user_info(long uid, double lastIndex, double loginTime, UserInfo userInfo) throws Exception {
-        String tableName = this.getTable(uid);
-        String object_key = String.format(user_info_object_key, chatInfo.projectName, uid);
+    public void cache_user_info(UserInfo userInfo) throws Exception {
+        String tableName = this.getTable(userInfo.getUid());
+        String object_key = String.format(user_info_object_key, chatInfo.projectName, userInfo.getUid());
         String queue_null_key = String.format(user_info_queue_null_key, chatInfo.projectName, tableName);
         String queue_key = String.format(user_info_queue_key, chatInfo.projectName, tableName);
         cache.delete(queue_null_key);
-        if(null == userInfo) {
-            userInfo = new UserInfo();
-            userInfo.setLastIndex(lastIndex);
-            userInfo.setLoginTime(loginTime);
-            userInfo.setPromptIndex(0);
-            userInfo.setUid(uid);
-        } else {
-            userInfo.setLastIndex(lastIndex);
-            userInfo.setLoginTime(loginTime);
-        }
         cache.setObject(object_key, AbstractChatInfo.redis_overtime_long, userInfo);
         if(cache.exists(queue_key)){
-            cache.zaddObject(queue_key, loginTime, uid);
+            cache.zaddObject(queue_key, userInfo.getLoginTime(), userInfo.getUid());
             long length = cache.zcard(queue_key);
             if(length > max_queue_num){
                 cache.zremrangeByRank(queue_key, 0, (int)(length - max_queue_num -1));
             }
         }
-        return userInfo;
     }
+
+//    @Override
+//    public UserInfo cache_user_info(long uid, double lastIndex, double loginTime, UserInfo userInfo) throws Exception {
+//        String tableName = this.getTable(uid);
+//        String object_key = String.format(user_info_object_key, chatInfo.projectName, uid);
+//        String queue_null_key = String.format(user_info_queue_null_key, chatInfo.projectName, tableName);
+//        String queue_key = String.format(user_info_queue_key, chatInfo.projectName, tableName);
+//        cache.delete(queue_null_key);
+//        if(null == userInfo) {
+//            userInfo = new UserInfo();
+//            userInfo.setLastIndex(lastIndex);
+//            userInfo.setLoginTime(loginTime);
+//            userInfo.setPromptIndex(0);
+//            userInfo.setUid(uid);
+//        } else {
+//            userInfo.setLastIndex(lastIndex);
+//            userInfo.setLoginTime(loginTime);
+//        }
+//        cache.setObject(object_key, AbstractChatInfo.redis_overtime_long, userInfo);
+//        if(cache.exists(queue_key)){
+//            cache.zaddObject(queue_key, loginTime, uid);
+//            long length = cache.zcard(queue_key);
+//            if(length > max_queue_num){
+//                cache.zremrangeByRank(queue_key, 0, (int)(length - max_queue_num -1));
+//            }
+//        }
+//        return userInfo;
+//    }
 
 //    @Override
 //    public UserInfo sync(long uid, double lastIndex, double loginTime, UserInfo userInfo) throws Exception {
@@ -167,37 +184,42 @@ public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
      **/
     @Override
     public void replace(List<UserInfo> userInfos) throws DataAccessException {
-        String sqlPrev = "replace into %s (uid, lastIndex, promptIndex, loginTime) values ";
-        String sqlValueFormat = "(%d, %s, %s, %s)";
-        Map<String, List<UserInfo>> maps = Maps.newHashMap();
-        for(UserInfo userInfo : userInfos){
-            String tableName = getTable(userInfo.getUid());
-            List<UserInfo> list = maps.get(tableName);
-            if(null == list){
-                list = Lists.newArrayList();
-                maps.put(tableName, list);
+        chatInfo.segmentLock.lock(userInfos);
+        try {
+            String sqlPrev = "replace into %s (uid, lastIndex, promptIndex, loginTime) values ";
+            String sqlValueFormat = "(%d, %s, %s, %s)";
+            Map<String, List<UserInfo>> maps = Maps.newHashMap();
+            for(UserInfo userInfo : userInfos){
+                String tableName = getTable(userInfo.getUid());
+                List<UserInfo> list = maps.get(tableName);
+                if(null == list){
+                    list = Lists.newArrayList();
+                    maps.put(tableName, list);
+                }
+                list.add(userInfo);
             }
-            list.add(userInfo);
-        }
-        List<String> sqls = Lists.newArrayList();
-        for(Entry<String, List<UserInfo>> entry : maps.entrySet()){
-            String tableName = entry.getKey();
-            List<UserInfo> list = entry.getValue();
-            List<String> sqlValueList = Lists.newArrayList();
-            for(UserInfo userInfo : list){
-                String sqlValue = String.format(sqlValueFormat, userInfo.getUid(), userInfo.getLastIndex(),
-                        userInfo.getPromptIndex(), userInfo.getLoginTime());
-                sqlValueList.add(sqlValue);
+            List<String> sqls = Lists.newArrayList();
+            for(Entry<String, List<UserInfo>> entry : maps.entrySet()){
+                String tableName = entry.getKey();
+                List<UserInfo> list = entry.getValue();
+                List<String> sqlValueList = Lists.newArrayList();
+                for(UserInfo userInfo : list){
+                    String sqlValue = String.format(sqlValueFormat, userInfo.getUid(), userInfo.getLastIndex(),
+                            userInfo.getPromptIndex(), userInfo.getLoginTime());
+                    sqlValueList.add(sqlValue);
+                }
+                String sqlValues = StringUtils.join(sqlValueList.toArray(), ",");
+                String sql = sqlPrev + sqlValues;
+                sql = String.format(sql, tableName);
+                sqls.add(sql);
             }
-            String sqlValues = StringUtils.join(sqlValueList.toArray(), ",");
-            String sql = sqlPrev + sqlValues;
-            sql = String.format(sql, tableName);
-            sqls.add(sql);
+            long startTime = System.currentTimeMillis();
+            int[] resList = this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
+            logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sqls : " + sqls.toString()
+                    + " res : " + ArrayUtils.toString(resList));
+        } finally {
+            chatInfo.segmentLock.unlock(userInfos);
         }
-        long startTime = System.currentTimeMillis();
-        int[] resList = this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
-        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sqls : " + sqls.toString()
-        + " res : " + ArrayUtils.toString(resList));
     }
 
     public static void main(String[] args) {

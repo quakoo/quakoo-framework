@@ -33,39 +33,6 @@ CREATE TABLE `chat_group_seq` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
 
-CREATE TABLE `many_chat_queue` (
-  `uid` bigint(20) NOT NULL,
-  `cgid` bigint(20) NOT NULL,
-  `mid` bigint(20) NOT NULL,
-  `status` tinyint(5) NOT NULL DEFAULT '0',
-  `time` bigint(20) NOT NULL,
-  PRIMARY KEY (`uid`,`cgid`,`mid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
-create index many_chat_queue_status_index
-  on many_chat_queue (status);
-
-CREATE TABLE `many_chat_queue_1` (
-  `uid` bigint(20) NOT NULL,
-  `cgid` bigint(20) NOT NULL,
-  `mid` bigint(20) NOT NULL,
-  `status` tinyint(5) NOT NULL DEFAULT '0',
-  `time` bigint(20) NOT NULL,
-  PRIMARY KEY (`uid`,`cgid`,`mid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
-create index many_chat_queue_1_status_index
-  on many_chat_queue_1 (status);
-
-CREATE TABLE `many_chat_queue_2` (
-  `uid` bigint(20) NOT NULL,
-  `cgid` bigint(20) NOT NULL,
-  `mid` bigint(20) NOT NULL,
-  `status` tinyint(5) NOT NULL DEFAULT '0',
-  `time` bigint(20) NOT NULL,
-  PRIMARY KEY (`uid`,`cgid`,`mid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
-create index many_chat_queue_2_status_index
-  on many_chat_queue_2 (status);
-
 CREATE TABLE `message` (
   `id` bigint(20) NOT NULL,
   `authorId` bigint(20) NOT NULL,
@@ -120,39 +87,6 @@ CREATE TABLE `notice_range_queue` (
   `time` bigint(20) NOT NULL,
   PRIMARY KEY (`authorId`,`mid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
-
-CREATE TABLE `single_chat_queue` (
-  `uid` bigint(20) NOT NULL,
-  `toUid` bigint(20) NOT NULL,
-  `mid` bigint(20) NOT NULL,
-  `time` bigint(20) NOT NULL,
-  `status` tinyint(5) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`uid`,`toUid`,`mid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
-create index single_chat_queue_status_index
-  on single_chat_queue (status);
-
-CREATE TABLE `single_chat_queue_1` (
-  `uid` bigint(20) NOT NULL,
-  `toUid` bigint(20) NOT NULL,
-  `mid` bigint(20) NOT NULL,
-  `time` bigint(20) NOT NULL,
-  `status` tinyint(5) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`uid`,`toUid`,`mid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
-create index single_chat_queue_1_status_index
-  on single_chat_queue_1 (status);
-
-CREATE TABLE `single_chat_queue_2` (
-  `uid` bigint(20) NOT NULL,
-  `toUid` bigint(20) NOT NULL,
-  `mid` bigint(20) NOT NULL,
-  `time` bigint(20) NOT NULL,
-  `status` tinyint(5) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`uid`,`toUid`,`mid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
-create index single_chat_queue_2_status_index
-  on single_chat_queue_2 (status);
 
 CREATE TABLE `user_directory` (
   `uid` bigint(20) NOT NULL,

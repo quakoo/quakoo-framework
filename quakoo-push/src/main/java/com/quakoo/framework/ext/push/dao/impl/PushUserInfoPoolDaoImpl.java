@@ -61,7 +61,7 @@ public class PushUserInfoPoolDaoImpl extends BaseDao implements PushUserInfoPool
 		return pushInfo.push_user_info_pool_table_names.get(index);
 	}
 
-	/**
+    /**
      * 缓存插入
 	 * method_name: cache_insert
 	 * params: [one]

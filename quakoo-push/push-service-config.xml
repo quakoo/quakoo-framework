@@ -29,5 +29,5 @@
     <bean id="pushMsgService" class="com.quakoo.framework.ext.push.service.impl.PushMsgServiceImpl" />
     <bean id="pushMsgHandleService" class="com.quakoo.framework.ext.push.service.impl.PushMsgHandleServiceImpl" />
 
-
+    <bean id="localCacheService" class="com.quakoo.framework.ext.push.service.impl.LocalCacheServiceImpl" />
 </beans>

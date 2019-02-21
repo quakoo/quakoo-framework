@@ -177,6 +177,7 @@ public class ChatServiceImpl implements ChatService, InitializingBean {
                         batchList.add(asyncMessage);
                         if (batchList.size() >= handle_num) {
                             handle(Lists.newArrayList(batchList)); //批量处理
+                            batchList.clear();
                         }
                     }
                     List<AsyncMessage> list = Lists.newArrayList();

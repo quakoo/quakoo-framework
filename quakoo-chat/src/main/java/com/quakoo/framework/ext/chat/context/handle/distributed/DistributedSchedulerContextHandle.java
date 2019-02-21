@@ -158,17 +158,23 @@ public class DistributedSchedulerContextHandle extends BaseContextHandle impleme
 				}
 			}
 			if(serverIndex >= 0) {
-				List<String> canRunManyChatTable = getHandleTableNames(chatInfo.many_chat_queue_table_names,
-						serverNum, serverIndex);
-				boolean sign = ListUtils.isEqualList(DistributedConfig.canRunManyChatTable, canRunManyChatTable);
+//				List<String> canRunManyChatTable = getHandleTableNames(chatInfo.many_chat_queue_table_names,
+//						serverNum, serverIndex);
+                List<String> canRunManyQueue = getHandleTableNames(chatInfo.many_chat_queue_names, serverNum, serverIndex);
+//				boolean sign = ListUtils.isEqualList(DistributedConfig.canRunManyChatTable, canRunManyChatTable);
+                boolean sign = ListUtils.isEqualList(DistributedConfig.canRunManyQueue, canRunManyQueue);
 				if(!sign)
-					DistributedConfig.canRunManyChatTable = canRunManyChatTable;
+//					DistributedConfig.canRunManyChatTable = canRunManyChatTable;
+                    DistributedConfig.canRunManyQueue = canRunManyQueue;
 				
-				List<String> canRunSingleChatTable = getHandleTableNames(chatInfo.single_chat_queue_table_names, 
-						serverNum, serverIndex);
-				sign = ListUtils.isEqualList(DistributedConfig.canRunSingleChatTable, canRunSingleChatTable);
+//				List<String> canRunSingleChatTable = getHandleTableNames(chatInfo.single_chat_queue_table_names,
+//						serverNum, serverIndex);
+                List<String> canRunSingleQueue = getHandleTableNames(chatInfo.single_chat_queue_names, serverNum, serverIndex);
+//				sign = ListUtils.isEqualList(DistributedConfig.canRunSingleChatTable, canRunSingleChatTable);
+                sign = ListUtils.isEqualList(DistributedConfig.canRunSingleQueue, canRunSingleQueue);
 				if(!sign)
-					DistributedConfig.canRunSingleChatTable = canRunSingleChatTable;
+//					DistributedConfig.canRunSingleChatTable = canRunSingleChatTable;
+                    DistributedConfig.canRunSingleQueue = canRunSingleQueue;
 				
 				if(serverIndex == 0) {
 					DistributedConfig.canRunNoticeAll = true;

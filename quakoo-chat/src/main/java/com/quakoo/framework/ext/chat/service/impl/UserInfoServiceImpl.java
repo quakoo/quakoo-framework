@@ -27,7 +27,7 @@ import org.springframework.beans.factory.InitializingBean;
  **/
 public class UserInfoServiceImpl implements UserInfoService, InitializingBean {
 
-    private final static int handle_num = 50;
+    private final static int handle_num = 20;
 
     private final static int handle_expire_time = 1000 * 60 * 5;
 
@@ -111,8 +111,22 @@ public class UserInfoServiceImpl implements UserInfoService, InitializingBean {
      * creat_time: 18:23
      **/
     public UserInfo syncUserInfo(final long uid, double lastIndex, UserInfo userInfo) throws Exception {
-		double loginTime = userInfoDao.create_login_time(uid);
-        userInfo = userInfoDao.cache_user_info(uid, lastIndex, loginTime, userInfo); //更新缓存
+        if(userInfo != null && userInfo.getLastIndex() == lastIndex) {
+            logger.info("==== hit lastIndex not change uid : " + uid + " ,lastIndex : " + lastIndex);
+            return userInfo;
+        }
+        double loginTime = userInfoDao.create_login_time(uid);
+        if(userInfo == null) {
+            userInfo = new UserInfo();
+            userInfo.setLastIndex(lastIndex);
+            userInfo.setLoginTime(loginTime);
+            userInfo.setPromptIndex(0);
+            userInfo.setUid(uid);
+        } else {
+            userInfo.setLastIndex(lastIndex);
+            userInfo.setLoginTime(loginTime);
+        }
+        userInfoDao.cache_user_info(userInfo); //更新缓存
         persistent_queue.add(userInfo); //插入到异步队列
 		return userInfo;
 	}

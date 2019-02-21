@@ -31,33 +31,33 @@ public class CleanJob {
     private JdbcTemplate jdbcTemplate;
 
 
-    private void cleanSingleChatQueue(long time) {
-        try {
-            List<String> tableNames = chatInfo.single_chat_queue_table_names;
-            String sqlFormat = "delete from %s where status = %d and time < %d";
-            List<String> sqls = Lists.newArrayList();
-            for(String tableName : tableNames) {
-                sqls.add(String.format(sqlFormat, tableName, Status.finished, time));
-            }
-            this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
+//    private void cleanSingleChatQueue(long time) {
+//        try {
+//            List<String> tableNames = chatInfo.single_chat_queue_table_names;
+//            String sqlFormat = "delete from %s where status = %d and time < %d";
+//            List<String> sqls = Lists.newArrayList();
+//            for(String tableName : tableNames) {
+//                sqls.add(String.format(sqlFormat, tableName, Status.finished, time));
+//            }
+//            this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
+//        } catch (Exception e) {
+//            logger.error(e.getMessage(), e);
+//        }
+//    }
 
-    private void cleanManyChatQueue(long time) {
-        try {
-            List<String> tableNames = chatInfo.many_chat_queue_table_names;
-            String sqlFormat = "delete from %s where status = %d and time < %d";
-            List<String> sqls = Lists.newArrayList();
-            for(String tableName : tableNames) {
-                sqls.add(String.format(sqlFormat, tableName, Status.finished, time));
-            }
-            this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
+//    private void cleanManyChatQueue(long time) {
+//        try {
+//            List<String> tableNames = chatInfo.many_chat_queue_table_names;
+//            String sqlFormat = "delete from %s where status = %d and time < %d";
+//            List<String> sqls = Lists.newArrayList();
+//            for(String tableName : tableNames) {
+//                sqls.add(String.format(sqlFormat, tableName, Status.finished, time));
+//            }
+//            this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
+//        } catch (Exception e) {
+//            logger.error(e.getMessage(), e);
+//        }
+//    }
 
     private void cleanMessage(long time) {
         try {
@@ -114,11 +114,11 @@ public class CleanJob {
 
     public void handle() {
         long currentTime = System.currentTimeMillis();
-        cleanSingleChatQueue(currentTime - step_day);
-        cleanManyChatQueue(currentTime - step_day);
+//        cleanSingleChatQueue(currentTime - step_day);
+//        cleanManyChatQueue(currentTime - step_day);
 //        cleanPushQueue(currentTime - step_day);
-        cleanUserStream(currentTime - step_day * 7);
-        cleanMessage(currentTime - step_day * 7);
+        cleanUserStream(currentTime - step_day * 4);
+        cleanMessage(currentTime - step_day * 4);
 //        cleanUserClientInfo(currentTime - step_day * 7);
     }
 

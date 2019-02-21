@@ -106,7 +106,7 @@ public class AndroidXiaoMiPushServiceImpl extends BaseService implements Android
                     .notifyType(1).notifyId(notifyId)
                     .build();
             if(null != sender) sender.sendToAlias(message, alias, 2);
-            logger.error("===========xiaomi uids : "+ uids.toString() + " pushMsg : " + pushMsg.getTitle());
+//            logger.error("===========xiaomi uids : "+ uids.toString() + " pushMsg : " + pushMsg.getTitle());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

@@ -14,9 +14,13 @@ import com.google.common.collect.Lists;
  **/
 public class DistributedConfig {
 
-	public static List<String> canRunManyChatTable = Lists.newArrayList(); //本机能运行的群聊消息队列名称
+//	public static List<String> canRunManyChatTable = Lists.newArrayList(); //本机能运行的群聊消息队列名称
 	
-	public static List<String> canRunSingleChatTable = Lists.newArrayList(); //本机能运行的单聊消息队列名称
+//	public static List<String> canRunSingleChatTable = Lists.newArrayList(); //本机能运行的单聊消息队列名称
+
+    public static List<String> canRunManyQueue = Lists.newArrayList(); //本机能运行的群聊消息队列名称
+
+    public static List<String> canRunSingleQueue = Lists.newArrayList(); //本机能运行的单聊消息队列名称
 	
     public static boolean canRunNoticeAll = false;
     

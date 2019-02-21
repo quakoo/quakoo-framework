@@ -10,12 +10,15 @@ import javax.annotation.Resource;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.quakoo.baseFramework.jackson.JsonUtils;
 import com.quakoo.framework.ext.push.bean.PushUserInfoMsg;
 import com.quakoo.framework.ext.push.dao.PushUserInfoPoolDao;
 import com.quakoo.framework.ext.push.dao.PushUserQueueDao;
 import com.quakoo.framework.ext.push.model.PushUserInfoPool;
 import com.quakoo.framework.ext.push.service.BaseService;
+import com.quakoo.framework.ext.push.service.LocalCacheService;
 import com.quakoo.framework.ext.push.service.PushUserService;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -32,15 +35,20 @@ public class PushUserServiceImpl extends BaseService implements PushUserService,
 
     Logger logger = LoggerFactory.getLogger(PushUserServiceImpl.class);
 
-    private final static int handle_num = 50; //批量处理条数
+    private final static int handle_num = 20; //批量处理条数
 
     private final static int handle_expire_time = 1000 * 60 * 5; //处理超时时间
+
+    private String cache_user_info_key = "user_info_%d";
 
 	@Resource
 	private PushUserInfoPoolDao pushUserInfoPoolDao;
 	
 	@Resource
 	private PushUserQueueDao pushUserQueueDao;
+
+	@Resource
+	private LocalCacheService localCacheService;
 
     private static volatile LinkedBlockingQueue<PushUserInfoMsg> queue = new LinkedBlockingQueue<PushUserInfoMsg>(); //待处理队列
 
@@ -136,22 +144,34 @@ public class PushUserServiceImpl extends BaseService implements PushUserService,
         pool.setIosToken(iosToken);
         pool.setHuaWeiToken(huaWeiToken);
         pool.setMeiZuPushId(meiZuPushId);
-        logger.info("====== registUserInfo : " + pool.toString());
-        boolean res = pushUserInfoPoolDao.cache_insert(pool); //更新缓存
-        if(res) {
-            PushUserInfoMsg msg = new PushUserInfoMsg();
-            msg.setType(PushUserInfoMsg.type_regist);
-            msg.setUid(uid);
-            msg.setPlatform(platform);
-            msg.setBrand(brand);
-            msg.setSessionId(sessionId);
-            msg.setIosToken(iosToken);
-            msg.setHuaWeiToken(huaWeiToken);
-            msg.setMeiZuPushId(meiZuPushId);
-            msg.setTime(System.currentTimeMillis());
-            queue.add(msg); //添加到待处理队列
+
+        String key = String.format(cache_user_info_key, uid);
+
+        String now = JsonUtils.toJson(pool);
+        String old = localCacheService.getString(key);
+
+        if(StringUtils.isNotBlank(old) && old.equals(now)) { //如果已经存储了最新的用户推送信息，则不再存储到redis和mysql里
+            logger.info("==== hit local cache uid : " + uid);
+            return true;
+        } else {
+            boolean res = pushUserInfoPoolDao.cache_insert(pool); //更新缓存
+            if(res) {
+                PushUserInfoMsg msg = new PushUserInfoMsg();
+                msg.setType(PushUserInfoMsg.type_regist);
+                msg.setUid(uid);
+                msg.setPlatform(platform);
+                msg.setBrand(brand);
+                msg.setSessionId(sessionId);
+                msg.setIosToken(iosToken);
+                msg.setHuaWeiToken(huaWeiToken);
+                msg.setMeiZuPushId(meiZuPushId);
+                msg.setTime(System.currentTimeMillis());
+                queue.add(msg); //添加到待处理队列
+
+                localCacheService.set(key, now);
+            }
+            return res;
         }
-        return res;
 	}
 
 	/**
@@ -165,7 +185,9 @@ public class PushUserServiceImpl extends BaseService implements PushUserService,
 	 **/
     @Override
     public boolean logoutUserInfo(long uid) throws Exception {
-        logger.info("====== logoutUserInfo : " + uid);
+        String key = String.format(cache_user_info_key, uid);
+        localCacheService.remove(key);
+//        logger.info("====== logoutUserInfo : " + uid);
         boolean res = pushUserInfoPoolDao.cache_clear(uid); //缓存清除
         if(res) {
             PushUserInfoMsg msg = new PushUserInfoMsg();

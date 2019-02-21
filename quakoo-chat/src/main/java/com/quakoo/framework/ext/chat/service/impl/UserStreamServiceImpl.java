@@ -254,16 +254,18 @@ public class UserStreamServiceImpl implements UserStreamService {
 				List<Message> messages = messageDao.load(mids);
 				Map<Long, Message> message_map = Maps.newHashMap();
 				for(Message message : messages){
-					message_map.put(message.getId(), message);
+					if(null != message) message_map.put(message.getId(), message);
 				}
 				List<MessageBack> res = Lists.newArrayList();
 				Set<Long> uids = Sets.newHashSet();
 				for(UserStream one : unTransformDatas){
 					long mid = one.getMid();
 					Message message = message_map.get(mid);
-					uids.add(message.getAuthorId());
-					MessageBack messageBack = new MessageBack(message, one.getSort());
-					res.add(messageBack);
+					if(null != message) {
+                        uids.add(message.getAuthorId());
+                        MessageBack messageBack = new MessageBack(message, one.getSort());
+                        res.add(messageBack);
+                    }
 				}
 
                 Map<Long, UserBack> remarkUserMap = Maps.newHashMap();
@@ -346,7 +348,7 @@ public class UserStreamServiceImpl implements UserStreamService {
 			List<Message> messages = messageDao.load(mids);
 			Map<Long, Message> message_map = Maps.newHashMap();
 			for(Message message : messages){
-				message_map.put(message.getId(), message);
+				if(null != message) message_map.put(message.getId(), message);
 			}
 			
 			for(Entry<UserDirectory, List<UserStream>> entry:map.entrySet()) {
@@ -366,17 +368,19 @@ public class UserStreamServiceImpl implements UserStreamService {
 					UserStream one = streams.get(i);
 					if(i == 0) maxIndex = one.getSort();
 					Message message = message_map.get(one.getMid());
-					int type = one.getType();
-					long thirdId = one.getThirdId();
-					long authorId = one.getAuthorId();
-					uids.add(authorId);
-					if(type == Type.type_single_chat || type == Type.type_notice) {
-						uids.add(thirdId);
-					} else if(type == Type.type_many_chat) {
-						cgids.add(thirdId);
-					}
-					MessageBack messageBack = new MessageBack(message, one.getSort());
-					data.add(messageBack);
+					if(message != null) {
+                        int type = one.getType();
+                        long thirdId = one.getThirdId();
+                        long authorId = one.getAuthorId();
+                        uids.add(authorId);
+                        if(type == Type.type_single_chat || type == Type.type_notice) {
+                            uids.add(thirdId);
+                        } else if(type == Type.type_many_chat) {
+                            cgids.add(thirdId);
+                        }
+                        MessageBack messageBack = new MessageBack(message, one.getSort());
+                        data.add(messageBack);
+                    }
 				}
 
                 Map<Long, UserBack> remarkUserMap = Maps.newHashMap();

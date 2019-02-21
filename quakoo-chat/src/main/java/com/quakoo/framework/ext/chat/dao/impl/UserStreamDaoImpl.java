@@ -116,6 +116,7 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 	 * creat_time: 17:02
 	 **/
 	public int insert(List<UserStream> streams) throws DataAccessException {
+	    chatInfo.segmentLock.lock(streams);
 		int res = 0;
 		try {
 			String sqlPrev = "insert ignore into %s (uid, `type`, thirdId, mid, authorId, sort) values ";
@@ -243,6 +244,7 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 			}
 			return res;
 		} finally {
+		    chatInfo.segmentLock.unlock(streams);
 			try {
 				if(res > 0) {
 					long currentTime = System.currentTimeMillis();
@@ -251,8 +253,9 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 						long authorId = stream.getAuthorId();
 						long uid = stream.getUid();
 						long mid = stream.getMid();
+						double sort = stream.getSort();
 						if(authorId != uid) {
-							WillPushItem item = new WillPushItem(uid, mid, currentTime);
+							WillPushItem item = new WillPushItem(uid, mid, sort);
 							map.put(item, new Double(currentTime + (1000 * 20)));
 						}
 					}

@@ -64,7 +64,7 @@ public class AndroidMeiZuPushServiceImpl extends BaseService implements AndroidM
                 pushIds.add(userInfo.getMeiZuPushId());
             }
             if(null != push) push.pushMessage(message, pushIds);
-            logger.error("===========meizu pushids : "+ pushIds.toString() + " pushMsg : " + pushMsg.getTitle());
+//            logger.error("===========meizu pushids : "+ pushIds.toString() + " pushMsg : " + pushMsg.getTitle());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

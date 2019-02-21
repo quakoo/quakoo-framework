@@ -1,5 +1,8 @@
 package com.quakoo.framework.ext.push.model;
 
+import com.quakoo.framework.ext.push.model.constant.Brand;
+import com.quakoo.framework.ext.push.model.constant.Platform;
+
 import java.io.Serializable;
 
 /**

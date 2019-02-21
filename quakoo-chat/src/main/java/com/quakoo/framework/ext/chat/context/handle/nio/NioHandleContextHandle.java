@@ -1,10 +1,8 @@
 package com.quakoo.framework.ext.chat.context.handle.nio;
 
-import com.quakoo.baseFramework.jackson.JsonUtils;
-import com.quakoo.framework.ext.chat.model.back.MessageBack;
-import com.quakoo.framework.ext.chat.model.constant.Type;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -208,8 +205,11 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 							}
 						}
 					}
+
+					long startTime = System.currentTimeMillis();
 					Map<Long, List<UserStream>> streamMap = userStreamService.newStream(user_index_map);
 					List<ChannelHandlerContext> removeList = Lists.newArrayList();
+					List<NioUserLongConnection> sendConns = Lists.newArrayList();
 					for(Entry<ChannelHandlerContext, NioUserLongConnection> one : list) {
 						ChannelHandlerContext ctx = one.getKey();
 						NioUserLongConnection nioUserLongConnection = one.getValue();
@@ -223,10 +223,14 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 							ConnectBack connectBack = connectService.transformBack(sendStreams, null);
 							if(connectBack.isSend()) {
 								send(ctx, new ConnectResponse(connectBack), activeTime);
+                                sendConns.add(nioUserLongConnection);
 								removeList.add(ctx);
 							}
 						}
 					}
+					if(sendConns.size() > 0)
+					    logger.info("==== sign monitoring send time : " + (System.currentTimeMillis() - startTime) +
+                                " ,sendConns : " + sendConns.toString());
 					for(ChannelHandlerContext ctx : removeList) {
 						removeChannelHandlerContext(ctx);
 					}
@@ -284,6 +288,9 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 	 * creat_time: 16:32
 	 **/
 	class Cleaner implements Runnable {
+
+	    private DecimalFormat decimalFormat = new DecimalFormat("###################.###");
+
 		@Override
 		public void run() {
 			while(true) {
@@ -306,12 +313,21 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 					removeChannelHandlerContext(ctx);
 					ctx.close();
 				}
+
+				for(Entry<ChannelHandlerContext, NioUserLongConnection> entry : connection_context.entrySet()) {
+                    NioUserLongConnection info = entry.getValue();
+				    logger.info("==== sign monitoring long connection info uid : " + info.getUid() + " ,index : " + decimalFormat.format(info.getLastMsgSort()));
+                }
+
 				logger.info("=== connection_context size : "+ connection_context.size());
 			}
 		}
 	}
 	
 	public static void main(String[] args) {
+        DecimalFormat decimalFormat = new DecimalFormat("###################.###");
+	    double d = 1536549328863.002d;
+        System.out.println(decimalFormat.format(d));
 //		
 //		int threadNum = 3;
 //		Map<Integer, Integer> maps = Maps.newConcurrentMap();

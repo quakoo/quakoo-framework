@@ -30,7 +30,7 @@ public abstract class AbstractPushInfo implements InitializingBean {
     public String projectName;
     public String persistence;
 
-
+    public String iosPushSandbox;
 	public String iosPushCertificateFileName;
 	public String iosPushPassword;
 	public String pushLockZkAddress;
@@ -60,6 +60,7 @@ public abstract class AbstractPushInfo implements InitializingBean {
 	    this.projectName = propertyUtil.getProperty("project.name");
 	    this.persistence = propertyUtil.getProperty("persistence").trim();
 
+	    this.iosPushSandbox = propertyUtil.getProperty("ios.push.sandbox");
 		this.iosPushCertificateFileName = propertyUtil.getProperty("ios.push.certificate.file.name");
 		this.iosPushPassword = propertyUtil.getProperty("ios.push.password");
 

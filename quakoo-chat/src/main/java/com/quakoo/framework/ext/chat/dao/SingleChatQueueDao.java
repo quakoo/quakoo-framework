@@ -12,21 +12,25 @@ public interface SingleChatQueueDao {
 	
 	public boolean exist(SingleChatQueue one) throws DataAccessException;
 	
-//	public boolean delete(SingleChatQueue one) throws DataAccessException;
-	
-	public boolean update(SingleChatQueue one, int newStatus) throws DataAccessException;
+	public boolean delete(SingleChatQueue one) throws DataAccessException;
 
-	public void update(List<SingleChatQueue> queues, int newStatus) throws DataAccessException;
+    public void delete(List<SingleChatQueue> queues) throws DataAccessException;
+	
+//	public boolean update(SingleChatQueue one, int newStatus) throws DataAccessException;
+
+//	public void update(List<SingleChatQueue> queues, int newStatus) throws DataAccessException;
 
 
 	
-	public List<SingleChatQueue> all_list(String table_name, int status,
-			int size) throws DataAccessException;
-	
+//	public List<SingleChatQueue> all_list(String table_name, int status,
+//			int size) throws DataAccessException;
+
+    public List<SingleChatQueue> list(String queue_name, int size) throws DataAccessException;
+
 //	public List<SingleChatQueue> list_time(String table_name, int status,
 //			long maxTime, int size) throws DataAccessException;
 	
-	public boolean list_null(String table_name, int status);
+//	public boolean list_null(String table_name, int status);
 
 
 

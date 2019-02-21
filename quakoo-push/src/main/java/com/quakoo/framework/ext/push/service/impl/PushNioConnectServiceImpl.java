@@ -101,24 +101,28 @@ public class PushNioConnectServiceImpl implements PushNioConnectService, Initial
             String huaWeiToken = ((RegistRequest) sessionRequest).getHuaWeiToken();
             String meiZuPushId = ((RegistRequest) sessionRequest).getMeiZuPushId();
 			try {
-				boolean sign = pushUserService.registUserInfo(uid, platform, brand, phoneSessionId, iosToken, huaWeiToken, meiZuPushId);
-				if(sign) {
-					if(platform == Platform.android && brand == Brand.common) {
-						NioUserLongConnection nioUserLongConnection = new NioUserLongConnection();
-						nioUserLongConnection.setUid(uid);
-						nioUserLongConnection.setPlatform(platform);
-						nioUserLongConnection.setBrand(brand);
-						nioUserLongConnection.setSessionId(phoneSessionId);
-						nioUserLongConnection.setActiveTime(System.currentTimeMillis());
-						Map<ChannelHandlerContext, NioUserLongConnection> map = PushNioHandleContextHandle.
-								connection_context.get(uid);
-						if(null == map) {
-							map = Maps.newConcurrentMap();
-							PushNioHandleContextHandle.connection_context.put(uid, map);
-						}
-						map.put(ctx, nioUserLongConnection);
-					}
-				}
+                boolean sign = pushUserService.registUserInfo(uid, platform, brand, phoneSessionId, iosToken, huaWeiToken, meiZuPushId);
+                if(sign) {
+                    if (platform == Platform.android && brand == Brand.common) {
+                        NioUserLongConnection nioUserLongConnection = new NioUserLongConnection();
+                        nioUserLongConnection.setUid(uid);
+                        nioUserLongConnection.setPlatform(platform);
+                        nioUserLongConnection.setBrand(brand);
+                        nioUserLongConnection.setSessionId(phoneSessionId);
+                        nioUserLongConnection.setActiveTime(System.currentTimeMillis());
+                        Map<ChannelHandlerContext, NioUserLongConnection> map = Maps.newConcurrentMap();
+                        map.put(ctx, nioUserLongConnection);
+                        PushNioHandleContextHandle.connection_context.put(uid, map);
+
+//                        Map<ChannelHandlerContext, NioUserLongConnection> map = PushNioHandleContextHandle.
+//                                connection_context.get(uid);
+//                        if (null == map) {
+//                            map = Maps.newConcurrentMap();
+//                            PushNioHandleContextHandle.connection_context.put(uid, map);
+//                        }
+//                        map.put(ctx, nioUserLongConnection);
+                    }
+                }
 				RegistResponse response = new RegistResponse();
 				response.setSessionId(sessionId);
 				response.setSuccess(sign);
@@ -138,6 +142,9 @@ public class PushNioConnectServiceImpl implements PushNioConnectService, Initial
             String phoneSessionId = ((LogoutRequest) sessionRequest).getPhoneSessionId();
             try {
                 boolean sign = pushUserService.logoutUserInfo(uid);
+                if(sign) {
+                    PushNioHandleContextHandle.connection_context.remove(uid);
+                }
                 LogoutResponse response = new LogoutResponse();
                 response.setSessionId(sessionId);
                 response.setSuccess(sign);

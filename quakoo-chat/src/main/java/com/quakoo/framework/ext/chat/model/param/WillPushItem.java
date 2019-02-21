@@ -10,18 +10,26 @@ public class WillPushItem implements Serializable {
 	
 	private long mid;
 	
-	private long time;
-	
+//	private long time;
+    private double sort;
+
 	public WillPushItem() {
 		super();
 	}
 
-	public WillPushItem(long uid, long mid, long time) {
-		super();
-		this.uid = uid;
-		this.mid = mid;
-		this.time = time;
-	}
+    public WillPushItem(long uid, long mid, double sort) {
+        super();
+        this.uid = uid;
+        this.mid = mid;
+        this.sort = sort;
+    }
+
+    //	public WillPushItem(long uid, long mid, long time) {
+//		super();
+//		this.uid = uid;
+//		this.mid = mid;
+//		this.time = time;
+//	}
 
 	public long getUid() {
 		return uid;
@@ -39,18 +47,35 @@ public class WillPushItem implements Serializable {
 		this.mid = mid;
 	}
 
-	public long getTime() {
-		return time;
-	}
+    public double getSort() {
+        return sort;
+    }
 
-	public void setTime(long time) {
-		this.time = time;
-	}
+    public void setSort(double sort) {
+        this.sort = sort;
+    }
 
-	@Override
-	public String toString() {
-		return "WillPushItem [uid=" + uid + ", mid=" + mid + ", time=" + time
-				+ "]";
-	}
-	
+    //	public long getTime() {
+//		return time;
+//	}
+//
+//	public void setTime(long time) {
+//		this.time = time;
+//	}
+
+//	@Override
+//	public String toString() {
+//		return "WillPushItem [uid=" + uid + ", mid=" + mid + ", time=" + time
+//				+ "]";
+//	}
+
+
+    @Override
+    public String toString() {
+        return "WillPushItem{" +
+                "uid=" + uid +
+                ", mid=" + mid +
+                ", sort=" + sort +
+                '}';
+    }
 }

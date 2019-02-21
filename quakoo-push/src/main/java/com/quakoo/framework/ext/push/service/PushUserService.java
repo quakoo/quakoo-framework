@@ -7,7 +7,7 @@ import com.quakoo.framework.ext.push.model.PushUserInfoPool;
 
 public interface PushUserService {
 
-	public boolean registUserInfo(long uid, int platform, int brand, 
+	public boolean registUserInfo(long uid, int platform, int brand,
 			String sessionId, String iosToken, String huaWeiToken, String meiZuPushId) throws Exception;
 
 //	public boolean logoutUserInfo(long uid, int platform, int brand, String sessionId) throws Exception;
