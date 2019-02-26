@@ -23,6 +23,10 @@ import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.GeoNearOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
+import org.springframework.data.mongodb.core.aggregation.SortOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.mongodb.core.query.Query;
@@ -141,9 +145,10 @@ public class LbsMongodbBaseDao<T extends Place> implements InitializingBean {
         }
 	    return res;
 	}
-	
+
+	//aggregate
 	public List<T> box(Coordinate leftLowCoordinate, Coordinate rightUpperCoordinate, Query query){
-		Box box = new Box(new Point(leftLowCoordinate.getLongitude(), leftLowCoordinate.getLatitude()), 
+		Box box = new Box(new Point(leftLowCoordinate.getLongitude(), leftLowCoordinate.getLatitude()),
 				new Point(rightUpperCoordinate.getLongitude(), rightUpperCoordinate.getLatitude()));
 		 if (query != null) {
 	            query.addCriteria(Criteria.where(INDEX_INFO_NAME).within(box));

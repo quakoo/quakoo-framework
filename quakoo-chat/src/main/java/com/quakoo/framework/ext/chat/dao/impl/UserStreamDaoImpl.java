@@ -256,7 +256,7 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 						double sort = stream.getSort();
 						if(authorId != uid) {
 							WillPushItem item = new WillPushItem(uid, mid, sort);
-							map.put(item, new Double(currentTime + (1000 * 20)));
+							map.put(item, new Double(currentTime + (1000 * 10)));
 						}
 					}
 					if(map.size() > 0) {
