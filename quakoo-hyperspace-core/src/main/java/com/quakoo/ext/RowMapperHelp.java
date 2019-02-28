@@ -1,9 +1,9 @@
 package com.quakoo.ext;
 
 import com.google.common.collect.Lists;
+import com.quakoo.baseFramework.json.JsonUtils;
 import com.quakoo.baseFramework.reflect.ReflectUtil;
 import com.quakoo.space.annotation.domain.HyperspaceColumn;
-import com.quakoo.space.enums.JsonTypeReference;
 import com.quakoo.space.model.FieldInfo;
 import org.apache.commons.lang.IllegalClassException;
 import org.apache.commons.lang.StringUtils;
@@ -73,8 +73,11 @@ public class RowMapperHelp<T> implements RowMapper<T> {
                 }
                 Method writeMethod = info.getWriteMethod();
                 Type type = info.getField().getGenericType();
-                writeMethod.invoke(o,
-                        ReflectUtil.getValueFormRsByType(type, rs, c));
+                boolean isJson = info.isJson();
+                if(isJson) {
+                    String jsonValue = rs.getString(c);
+                    writeMethod.invoke(o, JsonUtils.parse(jsonValue, type));
+                } else writeMethod.invoke(o, ReflectUtil.getValueFormRsByType(type, rs, c));
             }
             return (T) o;
         } catch (Exception e) {
