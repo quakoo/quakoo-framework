@@ -33,6 +33,7 @@ public class NoticeServiceImpl implements NoticeService {
 		String content = JsonUtils.toJson(messageNotice);
 		Message message = new Message();
 		message.setAuthorId(authorId);
+		message.setClientId(String.valueOf(System.currentTimeMillis()));
 		message.setType(Type.type_notice);
 		message.setContent(content);
 		message = messageDao.insert(message);
@@ -51,6 +52,7 @@ public class NoticeServiceImpl implements NoticeService {
 		String content = JsonUtils.toJson(messageNotice);
 		Message message = new Message();
 		message.setAuthorId(authorId);
+        message.setClientId(String.valueOf(System.currentTimeMillis()));
 		message.setType(Type.type_notice);
 		message.setContent(content);
 		message = messageDao.insert(message);
