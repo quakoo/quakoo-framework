@@ -196,18 +196,21 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 						cache.multiDelete(Lists.newArrayList(sub_null_key_set));
 					} else {
 						Map<String, Boolean> exists_map = cache.pipExists(Lists.newArrayList(sub_key_set));
-						List<RedisKeySortMemObj> list = Lists.newArrayList();
+                        Map<String, Boolean> exists_null_map = cache.pipExists(Lists.newArrayList(sub_null_key_set));
+                        List<RedisKeySortMemObj> list = Lists.newArrayList();
 					    for(UserStream stream : sub_streams){
 					    	long uid = stream.getUid();
 					    	long type = stream.getType();
 							long thirdId = stream.getThirdId();
 							String key = String.format(user_stream_key, chatInfo.projectName, uid);
-							String sub_key = String.format(user_stream_sub_key, chatInfo.projectName, uid, type, thirdId);
-							if(exists_map.get(key).booleanValue()) {
+                            String null_key = String.format(user_stream_null_key, chatInfo.projectName, uid);
+                            String sub_key = String.format(user_stream_sub_key, chatInfo.projectName, uid, type, thirdId);
+                            String null_sub_key = String.format(user_stream_sub_null_key, chatInfo.projectName, uid, type, thirdId);
+                            if(exists_map.get(key).booleanValue() || exists_null_map.get(null_key).booleanValue()) {
 								RedisKeySortMemObj one = new RedisKeySortMemObj(key, stream, stream.getSort());
 					    		list.add(one);
 							}
-							if(exists_map.get(sub_key).booleanValue()) { 
+							if(exists_map.get(sub_key).booleanValue() || exists_null_map.get(null_sub_key).booleanValue()) {
 								RedisKeySortMemObj one = new RedisKeySortMemObj(sub_key, stream, stream.getSort());
 					    		list.add(one);
 							}
