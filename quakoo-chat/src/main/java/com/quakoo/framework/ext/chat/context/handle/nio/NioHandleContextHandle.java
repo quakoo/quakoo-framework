@@ -293,6 +293,7 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 
 		@Override
 		public void run() {
+		    int i = 1;
 			while(true) {
 				Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
 				long currentTime = System.currentTimeMillis();
@@ -314,9 +315,12 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 					ctx.close();
 				}
 
-				for(Entry<ChannelHandlerContext, NioUserLongConnection> entry : connection_context.entrySet()) {
-                    NioUserLongConnection info = entry.getValue();
-				    logger.info("==== sign monitoring long connection info uid : " + info.getUid() + " ,index : " + decimalFormat.format(info.getLastMsgSort()));
+				if(i++ >= 60) {
+                    for(Entry<ChannelHandlerContext, NioUserLongConnection> entry : connection_context.entrySet()) {
+                        NioUserLongConnection info = entry.getValue();
+                        logger.info("==== sign monitoring long connection info uid : " + info.getUid() + " ,index : " + decimalFormat.format(info.getLastMsgSort()));
+                    }
+                    i = 1;
                 }
 
 				logger.info("=== connection_context size : "+ connection_context.size());
