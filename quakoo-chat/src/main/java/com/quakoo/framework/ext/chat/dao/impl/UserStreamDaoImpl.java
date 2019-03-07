@@ -41,7 +41,7 @@ import com.quakoo.framework.ext.chat.model.param.WillPushItem;
  **/
 public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 
-    private final static long MAX_LENGTH = 2000; //跟AbstractChatInfo 的 pull_length的保持一致
+    private final static long MAX_LENGTH = AbstractChatInfo.pull_length; //跟AbstractChatInfo 的 pull_length的保持一致
 
     private final static String user_stream_key = "%s_user_stream_uid_%d";
 	private final static String user_stream_null_key = "%s_user_stream_uid_%d_null";
