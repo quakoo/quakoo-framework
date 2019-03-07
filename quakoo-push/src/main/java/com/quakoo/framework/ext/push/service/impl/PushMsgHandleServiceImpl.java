@@ -51,8 +51,8 @@ public class PushMsgHandleServiceImpl extends BaseService implements PushMsgHand
      * creat_time: 14:12
      **/
     private String getQueueName(long id){
-        int index = (int) id % pushInfo.push_msg_queue_names.size();
-        return pushInfo.push_msg_queue_names.get(index);
+        long index = id % pushInfo.push_msg_queue_names.size();
+        return pushInfo.push_msg_queue_names.get((int) index);
     }
 
     @Override
