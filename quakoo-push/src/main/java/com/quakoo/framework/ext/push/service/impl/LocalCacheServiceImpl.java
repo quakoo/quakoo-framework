@@ -17,7 +17,7 @@ public class LocalCacheServiceImpl implements LocalCacheService, InitializingBea
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Configuration configuration = new Configuration().cache(new CacheConfiguration("local", 5000)
+        Configuration configuration = new Configuration().cache(new CacheConfiguration("local", 20000)
                 .memoryStoreEvictionPolicy(MemoryStoreEvictionPolicy.LFU)
                 .timeToIdleSeconds(60 * 60 * 24)
                 .timeToLiveSeconds(60 * 60 * 24)

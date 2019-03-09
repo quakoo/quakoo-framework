@@ -55,8 +55,8 @@ public class MessageDaoImpl extends BaseDaoHandle implements MessageDao {
      * creat_time: 16:55
      **/
     private String getTable(long id){
-		int index = (int) id % chatInfo.message_table_names.size();
-		return chatInfo.message_table_names.get(index);
+		long index = id % chatInfo.message_table_names.size();
+		return chatInfo.message_table_names.get((int) index);
 	}
 
     @Override

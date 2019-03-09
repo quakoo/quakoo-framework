@@ -63,8 +63,8 @@ public class SingleChatQueueDaoImpl extends BaseDaoHandle implements SingleChatQ
      * creat_time: 16:56
      **/
     private String getQueue(long uid) {
-        int index = (int) uid % chatInfo.single_chat_queue_names.size();
-        return chatInfo.single_chat_queue_names.get(index);
+        long index = uid % chatInfo.single_chat_queue_names.size();
+        return chatInfo.single_chat_queue_names.get((int) index);
     }
 //    private String getTable(long uid){
 //		int index = (int) uid % chatInfo.single_chat_queue_table_names.size();
@@ -86,7 +86,7 @@ public class SingleChatQueueDaoImpl extends BaseDaoHandle implements SingleChatQ
             String object_key = String.format(single_chat_object_key, chatInfo.projectName, one.getUid(), one.getToUid(), one.getMid());
             objectKeys.add(object_key);
         }
-        Map<String, Boolean> existsMap = queueClient.pipExists(objectKeys);
+        Map<String, Boolean> existsMap = cache.pipExists(objectKeys);
         for (Iterator<SingleChatQueue> it = queues.iterator(); it.hasNext(); ) {
             SingleChatQueue one = it.next();
             String object_key = String.format(single_chat_object_key, chatInfo.projectName, one.getUid(), one.getToUid(), one.getMid());
@@ -122,7 +122,7 @@ public class SingleChatQueueDaoImpl extends BaseDaoHandle implements SingleChatQ
                 String object_key = String.format(single_chat_object_key, chatInfo.projectName, one.getUid(), one.getToUid(), one.getMid());
                 redisMap.put(object_key, one);
             }
-            queueClient.multiSetObject(redisMap, AbstractChatInfo.redis_overtime_long);
+            cache.multiSetObject(redisMap, AbstractChatInfo.redis_overtime_long);
         }
         return success;
     }
@@ -202,7 +202,7 @@ public class SingleChatQueueDaoImpl extends BaseDaoHandle implements SingleChatQ
         String queue_key = String.format(single_chat_queue_key, chatInfo.projectName, queueName);
         queueClient.zaddObject(queue_key, new Double(one.getTime()), one);
         String object_key = String.format(single_chat_object_key, chatInfo.projectName, one.getUid(), one.getToUid(), one.getMid());
-        queueClient.setObject(object_key, AbstractChatInfo.redis_overtime_long, one);
+        cache.setObject(object_key, AbstractChatInfo.redis_overtime_long, one);
         return true;
     }
 
@@ -243,7 +243,7 @@ public class SingleChatQueueDaoImpl extends BaseDaoHandle implements SingleChatQ
         long toUid = one.getToUid();
         long mid = one.getMid();
         String object_key = String.format(single_chat_object_key, chatInfo.projectName, uid, toUid, mid);
-        Object obj = queueClient.getObject(object_key, null);
+        Object obj = cache.getObject(object_key, null);
         if (null != obj) {
             return true;
         } else {

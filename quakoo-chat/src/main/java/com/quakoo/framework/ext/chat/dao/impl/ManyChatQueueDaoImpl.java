@@ -65,8 +65,8 @@ public class ManyChatQueueDaoImpl extends BaseDaoHandle implements ManyChatQueue
 //		return chatInfo.many_chat_queue_table_names.get(index);
 //	}
     private String getQueue(long uid) {
-        int index = (int) uid % chatInfo.many_chat_queue_names.size();
-        return chatInfo.many_chat_queue_names.get(index);
+        long index = uid % chatInfo.many_chat_queue_names.size();
+        return chatInfo.many_chat_queue_names.get((int) index);
     }
 
 	/**
@@ -85,7 +85,7 @@ public class ManyChatQueueDaoImpl extends BaseDaoHandle implements ManyChatQueue
             String object_key = String.format(many_chat_object_key, chatInfo.projectName, one.getUid(), one.getCgid(), one.getMid());
             objectKeys.add(object_key);
         }
-        Map<String, Boolean> existsMap = queueClient.pipExists(objectKeys);
+        Map<String, Boolean> existsMap = cache.pipExists(objectKeys);
         for (Iterator<ManyChatQueue> it = queues.iterator(); it.hasNext(); ) {
             ManyChatQueue one = it.next();
             String object_key = String.format(many_chat_object_key, chatInfo.projectName, one.getUid(), one.getCgid(), one.getMid());
@@ -121,7 +121,7 @@ public class ManyChatQueueDaoImpl extends BaseDaoHandle implements ManyChatQueue
                 String object_key = String.format(many_chat_object_key, chatInfo.projectName, one.getUid(), one.getCgid(), one.getMid());
                 redisMap.put(object_key, one);
             }
-            queueClient.multiSetObject(redisMap, AbstractChatInfo.redis_overtime_long);
+            cache.multiSetObject(redisMap, AbstractChatInfo.redis_overtime_long);
         }
         return success;
     }
@@ -201,7 +201,7 @@ public class ManyChatQueueDaoImpl extends BaseDaoHandle implements ManyChatQueue
         String queue_key = String.format(many_chat_queue_key, chatInfo.projectName, queueName);
         queueClient.zaddObject(queue_key, new Double(one.getTime()), one);
         String object_key = String.format(many_chat_object_key, chatInfo.projectName, one.getUid(), one.getCgid(), one.getMid());
-        queueClient.setObject(object_key, AbstractChatInfo.redis_overtime_long, one);
+        cache.setObject(object_key, AbstractChatInfo.redis_overtime_long, one);
         return true;
     }
 //    @Override
@@ -241,7 +241,7 @@ public class ManyChatQueueDaoImpl extends BaseDaoHandle implements ManyChatQueue
         long cgid = one.getCgid();
         long mid = one.getMid();
         String object_key = String.format(many_chat_object_key, chatInfo.projectName, uid, cgid, mid);
-        Object obj = queueClient.getObject(object_key, null);
+        Object obj = cache.getObject(object_key, null);
         if (null != obj) {
             return true;
         } else {

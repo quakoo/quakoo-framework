@@ -35,7 +35,7 @@ public class PushUserServiceImpl extends BaseService implements PushUserService,
 
     Logger logger = LoggerFactory.getLogger(PushUserServiceImpl.class);
 
-    private final static int handle_num = 20; //批量处理条数
+    private final static int handle_num = 5; //批量处理条数
 
     private final static int handle_expire_time = 1000 * 60 * 5; //处理超时时间
 
@@ -151,7 +151,6 @@ public class PushUserServiceImpl extends BaseService implements PushUserService,
         String old = localCacheService.getString(key);
 
         if(StringUtils.isNotBlank(old) && old.equals(now)) { //如果已经存储了最新的用户推送信息，则不再存储到redis和mysql里
-            logger.info("==== hit local cache uid : " + uid);
             return true;
         } else {
             boolean res = pushUserInfoPoolDao.cache_insert(pool); //更新缓存

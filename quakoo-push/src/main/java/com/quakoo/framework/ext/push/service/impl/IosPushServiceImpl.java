@@ -184,10 +184,11 @@ public class IosPushServiceImpl extends BaseService implements IosPushService,
 					customFields.putAll(pushMsg.getExtra());
 				}
                 String sound = pushMsg.getExtra().get("sound");
-                if(StringUtils.isBlank(sound)) {
-                    sound = "default";
+				if(StringUtils.isBlank(sound)) {
+				    sound = "default";
                 }
                 payloadBuilder.sound(sound);
+
 				payloadBuilder.customFields(customFields);
 				String payloadStr = payloadBuilder.build();
 				Date expiry = new Date(System.currentTimeMillis() + 1000 * 60 * 60);

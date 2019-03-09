@@ -12,4 +12,6 @@ public class DistributedConfig {
 
 	public static int serverNum = 0;
 
+    public static boolean canRunClean = false;
+
 }

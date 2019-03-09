@@ -31,4 +31,7 @@
     <bean id="connectService" class="com.quakoo.framework.ext.chat.service.impl.ConnectServiceImpl" />
     <bean id="messageService" class="com.quakoo.framework.ext.chat.service.impl.MessageServiceImpl" />
 
+    <bean id="userStreamQueueService" class="com.quakoo.framework.ext.chat.service.impl.UserStreamQueueServiceImpl" />
+    <bean id="userInfoQueueService" class="com.quakoo.framework.ext.chat.service.impl.UserInfoQueueServiceImpl" />
+
 </beans>

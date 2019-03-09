@@ -14,19 +14,26 @@ public interface UserStreamDao {
 	
 	public void init_sub(long uid, int type, long thirdId, boolean lockSign) throws Exception;
 	
-	public int insert(List<UserStream> streams) throws DataAccessException;
+	public int insert_cold_data(List<UserStream> streams) throws DataAccessException; //插入冷数据
+
+    public int insert_hot_data(List<UserStream> streams) throws DataAccessException; //插入热数据
 	
 	public void create_sort(List<UserStream> streams) throws Exception;
 	
-	public UserStream load(UserStream one) throws DataAccessException;
+//	public UserStream load(UserStream one) throws DataAccessException;
 	
 	public boolean delete(UserStream one) throws DataAccessException;
 	
 	public List<UserStream> page_list(long uid, long type, long thirdId, 
 			double cursor, int size) throws DataAccessException; 
 	
-	public void new_data(List<UserStreamParam> list) throws Exception;
-	
-	public void one_new_data(List<UserOneStreamParam> list) throws Exception;
+	public void new_cold_data(List<UserStreamParam> list) throws Exception; //获取一批用户的冷数据
+
+	public void new_hot_data(List<UserStreamParam> list) throws Exception; //获取一批用户的热数据
+
+	public void one_new_cold_data(List<UserOneStreamParam> list) throws Exception; //获取一批用户的冷数据(子集)
+
+
+    public void clear_hot_data_by_sort(long uid, double sort) throws Exception;
 	
 }

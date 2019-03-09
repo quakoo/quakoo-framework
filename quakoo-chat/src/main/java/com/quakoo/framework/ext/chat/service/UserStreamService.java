@@ -19,7 +19,13 @@ public interface UserStreamService {
 	 
 	 public Pager getPager(long uid, int type, long thirdId, Pager pager) throws Exception;
 	 
-	 public int batchInsert(List<UserStream> streams) throws Exception;
+	 public int batchInsertColdData(List<UserStream> streams) throws Exception;
+
+	 public int batchInsertHotData(List<UserStream> streams) throws Exception;
+
+	 public void clearHotData(long uid, double sort) throws Exception;
+
+	 public void createSort(List<UserStream> streams) throws Exception;
 	 
 	 public List<StreamBack> transformBack(List<UserStream> list) throws Exception;
 

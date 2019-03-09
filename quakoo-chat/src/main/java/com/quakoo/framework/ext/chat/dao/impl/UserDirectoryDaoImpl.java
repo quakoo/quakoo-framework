@@ -53,8 +53,8 @@ public class UserDirectoryDaoImpl extends BaseDaoHandle implements UserDirectory
      * creat_time: 16:57
      **/
 	private String getTable(long uid){
-		int index = (int) uid % chatInfo.user_directory_table_names.size();
-		return chatInfo.user_directory_table_names.get(index);
+		long index = uid % chatInfo.user_directory_table_names.size();
+		return chatInfo.user_directory_table_names.get((int) index);
 	}
 
 //	@Override
@@ -94,7 +94,7 @@ public class UserDirectoryDaoImpl extends BaseDaoHandle implements UserDirectory
      **/
     @Override
     public void insert(List<UserDirectory> messageDirectories) throws DataAccessException {
-        chatInfo.segmentLock.lock(messageDirectories);
+//        chatInfo.segmentLock.lock(messageDirectories);
         try {
             List<String> sqls = Lists.newArrayList();
             String sql = "insert ignore into %s (uid, `type`, thirdId, ctime) values (%d, %d, %d, %d)";
@@ -153,7 +153,7 @@ public class UserDirectoryDaoImpl extends BaseDaoHandle implements UserDirectory
                 if (objectRedisMap.size() > 0) cache.multiSetObject(objectRedisMap, AbstractChatInfo.redis_overtime_long);
             }
         } finally {
-            chatInfo.segmentLock.unlock(messageDirectories);
+//            chatInfo.segmentLock.unlock(messageDirectories);
         }
     }
 

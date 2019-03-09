@@ -175,7 +175,18 @@ public class DistributedSchedulerContextHandle extends BaseContextHandle impleme
 				if(!sign)
 //					DistributedConfig.canRunSingleChatTable = canRunSingleChatTable;
                     DistributedConfig.canRunSingleQueue = canRunSingleQueue;
-				
+
+
+                List<String> canRunUserStreamQueue = getHandleTableNames(chatInfo.user_stream_queue_names, serverNum, serverIndex);
+                sign = ListUtils.isEqualList(DistributedConfig.canRunUserStreamQueue, canRunUserStreamQueue);
+                if(!sign)
+                    DistributedConfig.canRunUserStreamQueue = canRunUserStreamQueue;
+
+                List<String> canRunUserInfoQueue = getHandleTableNames(chatInfo.user_info_queue_names, serverNum, serverIndex);
+                sign = ListUtils.isEqualList(DistributedConfig.canRunUserInfoQueue, canRunUserInfoQueue);
+                if(!sign)
+                    DistributedConfig.canRunUserInfoQueue = canRunUserInfoQueue;
+
 				if(serverIndex == 0) {
 					DistributedConfig.canRunNoticeAll = true;
 				} else {
@@ -188,13 +199,21 @@ public class DistributedSchedulerContextHandle extends BaseContextHandle impleme
 					DistributedConfig.canRunNoticeRange = false;
 				}
 				
-				if(serverNum >= 3) {
-					if(serverIndex == 1) DistributedConfig.canRunPush = true;
-					else DistributedConfig.canRunPush = false;
-				} else {
-					if(serverIndex == 0) DistributedConfig.canRunPush = true;
-					else DistributedConfig.canRunPush = false; 
-				}
+//				if(serverNum >= 3) {
+//					if(serverIndex == 1) DistributedConfig.canRunPush = true;
+//					else DistributedConfig.canRunPush = false;
+//				} else {
+//					if(serverIndex == 0) DistributedConfig.canRunPush = true;
+//					else DistributedConfig.canRunPush = false;
+//				}
+
+                if (serverNum >= 3) {
+                    if (serverIndex == 1) DistributedConfig.canRunClean = true;
+                    else DistributedConfig.canRunClean = false;
+                } else {
+                    if (serverIndex == 0) DistributedConfig.canRunClean = true;
+                    else DistributedConfig.canRunClean = false;
+                }
 				
 				if(serverNum >= 4) {
 					if(serverIndex == 2) DistributedConfig.canRunWillPush = true;
@@ -213,7 +232,7 @@ public class DistributedSchedulerContextHandle extends BaseContextHandle impleme
 	private List<String> getHandleTableNames(List<String> allTableNames, int serverNum, int serverIndex) {
 		List<List<String>> partitionTableNames = partition(allTableNames, serverNum);
 		List<String> handleTableNames = partitionTableNames.get(serverIndex);
-		logger.error("====  handleTableNames : " + handleTableNames.toString());
+		logger.info("====  handleNames : " + handleTableNames.toString());
 		return handleTableNames;
 	}
 	

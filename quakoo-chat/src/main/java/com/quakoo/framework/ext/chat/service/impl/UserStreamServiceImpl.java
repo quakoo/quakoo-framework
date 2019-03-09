@@ -1,14 +1,13 @@
 package com.quakoo.framework.ext.chat.service.impl;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -64,6 +63,8 @@ public class UserStreamServiceImpl implements UserStreamService {
     @Qualifier("userWrapperService")
 	private UserWrapperService userWrapperService;
 
+	private Logger logger = LoggerFactory.getLogger(UserStreamServiceImpl.class);
+
 	/**
      * 初始化一个用户的信息流
 	 * method_name: init
@@ -94,8 +95,28 @@ public class UserStreamServiceImpl implements UserStreamService {
 	 **/
     @Override
     public List<UserStream> getDirectoryStream(long uid, double lastIndex) throws Exception {
+        UserStreamParam hotParam = new UserStreamParam(uid, lastIndex);
+        userStreamDao.new_hot_data(Lists.newArrayList(hotParam));
+        List<UserStream> hotList = hotParam.getDataList();
+        if(null == hotList) hotList = Lists.newArrayList();
+
         List<UserStream> list = Lists.newArrayList();
+        Set<String> filterStrs = Sets.newHashSet();
+        for(UserStream one : hotList) {
+            String filterStr = String.format("uid_%d_type_%d_thirdId_%d", one.getUid(), one.getType(), one.getThirdId());
+            if(!filterStrs.contains(filterStr)) {
+                list.add(one);
+            }
+            filterStrs.add(filterStr);
+        }
         List<UserDirectory> directories = userDirectoryDao.list_all(uid);
+        for(Iterator<UserDirectory> it = directories.iterator(); it.hasNext();) {
+            UserDirectory directory = it.next();
+            String key = String.format("uid_%d_type_%d_thirdId_%d", directory.getUid(), directory.getType(), directory.getThirdId());
+            if(filterStrs.contains(key)) {
+                it.remove();
+            }
+        }
         List<UserOneStreamParam> subParams = Lists.newArrayList();
         for(UserDirectory directory : directories) {
             UserOneStreamParam subParam = new UserOneStreamParam(uid,
@@ -103,7 +124,7 @@ public class UserStreamServiceImpl implements UserStreamService {
             subParam.setCount(1);
             subParams.add(subParam);
         }
-        userStreamDao.one_new_data(subParams);
+        userStreamDao.one_new_cold_data(subParams);
         for(UserOneStreamParam subParam : subParams){
             List<UserStream> subList = subParam.getDataList();
             if(null != subList) list.addAll(subList);
@@ -123,28 +144,100 @@ public class UserStreamServiceImpl implements UserStreamService {
      **/
     public List<UserStream> newStream(long uid, double lastIndex)
 			throws Exception {
-		UserStreamParam param = new UserStreamParam(uid, lastIndex);
-		userStreamDao.new_data(Lists.newArrayList(param));
-		List<UserStream> list = param.getDataList();
-		if(null != list && list.size() >= AbstractChatInfo.pull_length) {
+		UserStreamParam hotParam = new UserStreamParam(uid, lastIndex);
+		userStreamDao.new_hot_data(Lists.newArrayList(hotParam));
+        List<UserStream> hotList = hotParam.getDataList();
+        if(null == hotList) hotList = Lists.newArrayList();
+
+        UserStreamParam coldParam = new UserStreamParam(uid, lastIndex);
+		userStreamDao.new_cold_data(Lists.newArrayList(coldParam));
+		List<UserStream> coldList = coldParam.getDataList();
+		if(null != coldList && coldList.size() >= AbstractChatInfo.pull_length) {
 			List<UserDirectory> directories = userDirectoryDao.list_all(uid);
 			List<UserOneStreamParam> subParams = Lists.newArrayList();
 			for(UserDirectory directory : directories) {
 				UserOneStreamParam subParam = new UserOneStreamParam(uid,
 						directory.getType(), directory.getThirdId(), lastIndex);
-                subParam.setCount(60);
 				subParams.add(subParam);
 			}
-			userStreamDao.one_new_data(subParams);
-			list.clear();
+			userStreamDao.one_new_cold_data(subParams);
+            coldList.clear();
 			for(UserOneStreamParam subParam : subParams){
 				List<UserStream> subList = subParam.getDataList();
-				if(null != subList) list.addAll(subList);
+				if(null != subList) coldList.addAll(subList);
 			}
-			if(list.size() > 0) Collections.sort(list);
+			if(coldList.size() > 0) Collections.sort(coldList);
 		}
-		return list;
+		if(null == coldList) coldList = Lists.newArrayList();
+
+		Set<Long> mids = Sets.newHashSet();
+		List<UserStream> res = Lists.newArrayList();
+		for(UserStream one : hotList) {
+		    mids.add(one.getMid());
+		    res.add(one);
+        }
+        for(UserStream one : coldList) {
+		    if(!mids.contains(one.getMid())) {
+                res.add(one);
+            }
+        }
+		return res;
 	}
+
+    private Map<Long, List<UserStream>> newHotDataStream(Map<Long, Double> lastIndexMap) throws Exception {
+        Map<Long, List<UserStream>> res = Maps.newHashMap();
+        List<UserStreamParam> params = Lists.newArrayList();
+        for(Entry<Long, Double> entry : lastIndexMap.entrySet()){
+            long uid = entry.getKey();
+            double lastIndex = entry.getValue();
+            UserStreamParam param = new UserStreamParam(uid, lastIndex);
+            params.add(param);
+        }
+        userStreamDao.new_hot_data(params);
+        for(UserStreamParam param : params) {
+            long uid = param.getUid();
+            List<UserStream> list = param.getDataList();
+            if(null == list) list = Lists.newArrayList();
+            res.put(uid, list);
+        }
+        return res;
+    }
+
+	private Map<Long, List<UserStream>> newColdDataStream(Map<Long, Double> lastIndexMap) throws Exception {
+        Map<Long, List<UserStream>> res = Maps.newHashMap();
+        List<UserStreamParam> params = Lists.newArrayList();
+        for(Entry<Long, Double> entry : lastIndexMap.entrySet()){
+            long uid = entry.getKey();
+            double lastIndex = entry.getValue();
+            UserStreamParam param = new UserStreamParam(uid, lastIndex);
+            params.add(param);
+        }
+        userStreamDao.new_cold_data(params);
+        for(UserStreamParam param : params) {
+            long uid = param.getUid();
+            double lastIndex = lastIndexMap.get(uid);
+            List<UserStream> list = param.getDataList();
+            if(null != list && list.size() >= AbstractChatInfo.pull_length){
+                List<UserDirectory> directories = userDirectoryDao.list_all(uid);
+                List<UserOneStreamParam> subParams = Lists.newArrayList();
+                for(UserDirectory directory : directories) {
+                    UserOneStreamParam subParam = new UserOneStreamParam(uid,
+                            directory.getType(), directory.getThirdId(), lastIndex);
+                    subParams.add(subParam);
+                }
+                userStreamDao.one_new_cold_data(subParams);
+                list.clear();
+                for(UserOneStreamParam subParam : subParams){
+                    List<UserStream> subList = subParam.getDataList();
+                    if(null != subList) list.addAll(subList);
+                }
+                if(list.size() > 0) Collections.sort(list);
+            }
+            if(null == list) list = Lists.newArrayList();
+            res.put(uid, list);
+        }
+        return res;
+    }
 
 	/**
      * 获取多个用户新的消息
@@ -155,38 +248,29 @@ public class UserStreamServiceImpl implements UserStreamService {
 	 * creat_date: 2019/1/29
 	 * creat_time: 18:26
 	 **/
+	@Override
 	public Map<Long, List<UserStream>> newStream(Map<Long, Double> lastIndexMap)
 			throws Exception {
+        Map<Long, List<UserStream>> hotMap = newHotDataStream(lastIndexMap);
+        Map<Long, List<UserStream>> coldMap = newColdDataStream(lastIndexMap);
 		Map<Long, List<UserStream>> res = Maps.newHashMap();
-		List<UserStreamParam> params = Lists.newArrayList();
-		for(Entry<Long, Double> entry : lastIndexMap.entrySet()){
-			long uid = entry.getKey();
-			double lastIndex = entry.getValue().doubleValue();
-			UserStreamParam param = new UserStreamParam(uid, lastIndex);
-			params.add(param);
-		}
-		userStreamDao.new_data(params);
-		for(UserStreamParam param : params) {
-			long uid = param.getUid();
-			double lastIndex = lastIndexMap.get(uid);
-			List<UserStream> list = param.getDataList();
-			if(null != list && list.size() >= AbstractChatInfo.pull_length){
-				List<UserDirectory> directories = userDirectoryDao.list_all(uid);
-				List<UserOneStreamParam> subParams = Lists.newArrayList();
-				for(UserDirectory directory : directories) {
-					UserOneStreamParam subParam = new UserOneStreamParam(uid,
-							directory.getType(), directory.getThirdId(), lastIndex);
-					subParams.add(subParam);
-				}
-				userStreamDao.one_new_data(subParams);
-				list.clear();
-				for(UserOneStreamParam subParam : subParams){
-					List<UserStream> subList = subParam.getDataList();
-					if(null != subList) list.addAll(subList);
-				}
-			}
-			res.put(uid, list);
-		}
+		for(Entry<Long, List<UserStream>> entry : hotMap.entrySet()) {
+		    long uid = entry.getKey();
+		    List<UserStream> hotList = entry.getValue();
+            Set<Long> mids = Sets.newHashSet();
+            List<UserStream> list = Lists.newArrayList();
+            for(UserStream one : hotList) {
+                mids.add(one.getMid());
+                list.add(one);
+            }
+            List<UserStream> coldList = coldMap.get(uid);
+            for(UserStream one : coldList) {
+                if(!mids.contains(one.getMid())) {
+                    list.add(one);
+                }
+            }
+            res.put(uid, list);
+        }
 		return res;
 	}
 
@@ -207,10 +291,10 @@ public class UserStreamServiceImpl implements UserStreamService {
 		item.setType(type);
 		item.setThirdId(thirdId);
 		item.setMid(mid);
-		item = userStreamDao.load(item);
-		if(null != item) {
-			res = userStreamDao.delete(item);
-		}
+//		item = userStreamDao.load(item);
+//		if(null != item) {
+        res = userStreamDao.delete(item);
+//		}
 		return res;
 	}
 
@@ -311,12 +395,27 @@ public class UserStreamServiceImpl implements UserStreamService {
 	 * creat_date: 2019/1/29
 	 * creat_time: 18:27
 	 **/
-	public int batchInsert(List<UserStream> streams) throws Exception {
-		userStreamDao.create_sort(streams); //创建排序字段
-		return userStreamDao.insert(streams);
+	@Override
+	public int batchInsertColdData(List<UserStream> streams) throws Exception {
+		return userStreamDao.insert_cold_data(streams);
 	}
 
-	/**
+    @Override
+    public int batchInsertHotData(List<UserStream> streams) throws Exception {
+        return userStreamDao.insert_hot_data(streams);
+    }
+
+    @Override
+    public void clearHotData(long uid, double sort) throws Exception {
+        userStreamDao.clear_hot_data_by_sort(uid, sort);
+    }
+
+    @Override
+    public void createSort(List<UserStream> streams) throws Exception {
+        userStreamDao.create_sort(streams);
+    }
+
+    /**
      * 封装信息流
 	 * method_name: transformBack
 	 * params: [list]

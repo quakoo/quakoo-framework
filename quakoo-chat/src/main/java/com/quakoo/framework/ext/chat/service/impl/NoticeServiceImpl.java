@@ -1,6 +1,7 @@
 package com.quakoo.framework.ext.chat.service.impl;
 
 import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.Resource;
 
@@ -33,7 +34,7 @@ public class NoticeServiceImpl implements NoticeService {
 		String content = JsonUtils.toJson(messageNotice);
 		Message message = new Message();
 		message.setAuthorId(authorId);
-		message.setClientId(String.valueOf(System.currentTimeMillis()));
+        message.setClientId(String.valueOf(System.currentTimeMillis()));
 		message.setType(Type.type_notice);
 		message.setContent(content);
 		message = messageDao.insert(message);

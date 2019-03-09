@@ -21,7 +21,7 @@ public abstract class BaseContextHandle implements InitializingBean {
 
 	 @Resource
 	 protected AbstractChatInfo chatInfo;
-	 
-	 protected ExecutorService executorService = Executors.newCachedThreadPool();
-	
+
+	 protected ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2 + 1);
+
 }

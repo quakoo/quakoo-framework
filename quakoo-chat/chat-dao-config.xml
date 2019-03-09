@@ -51,5 +51,8 @@
 	<bean id="userInfoDao" class="com.quakoo.framework.ext.chat.dao.impl.UserInfoDaoImpl" />
 	<bean id="userPromptDao" class="com.quakoo.framework.ext.chat.dao.impl.UserPromptDaoImpl" />
 	<bean id="userStreamDao" class="com.quakoo.framework.ext.chat.dao.impl.UserStreamDaoImpl" />
-	
+
+    <bean id="userStreamQueueDao" class="com.quakoo.framework.ext.chat.dao.impl.UserStreamQueueDaoImpl" />
+    <bean id="userInfoQueueDao" class="com.quakoo.framework.ext.chat.dao.impl.UserInfoQueueDaoImpl" />
+
 </beans>

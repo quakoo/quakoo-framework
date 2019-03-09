@@ -2,6 +2,7 @@ package com.quakoo.framework.ext.chat.job;
 
 import com.google.common.collect.Lists;
 import com.quakoo.framework.ext.chat.AbstractChatInfo;
+import com.quakoo.framework.ext.chat.distributed.DistributedConfig;
 import com.quakoo.framework.ext.chat.model.constant.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,13 +114,15 @@ public class CleanJob {
 //    }
 
     public void handle() {
-        long currentTime = System.currentTimeMillis();
+        if(DistributedConfig.canRunClean) {
+            long currentTime = System.currentTimeMillis();
 //        cleanSingleChatQueue(currentTime - step_day);
 //        cleanManyChatQueue(currentTime - step_day);
 //        cleanPushQueue(currentTime - step_day);
-        cleanUserStream(currentTime - step_day * 4);
-        cleanMessage(currentTime - step_day * 4);
+            cleanUserStream(currentTime - step_day * 4);
+            cleanMessage(currentTime - step_day * 4);
 //        cleanUserClientInfo(currentTime - step_day * 7);
+        }
     }
 
 }

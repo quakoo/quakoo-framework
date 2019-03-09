@@ -293,7 +293,7 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 
 		@Override
 		public void run() {
-		    int i = 1;
+            int i = 1;
 			while(true) {
 				Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
 				long currentTime = System.currentTimeMillis();
@@ -314,7 +314,6 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 					removeChannelHandlerContext(ctx);
 					ctx.close();
 				}
-
 				if(i++ >= 60) {
                     for(Entry<ChannelHandlerContext, NioUserLongConnection> entry : connection_context.entrySet()) {
                         NioUserLongConnection info = entry.getValue();

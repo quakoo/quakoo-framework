@@ -15,6 +15,8 @@ public interface UserInfoDao {
     public void cache_user_info(UserInfo userInfo) throws Exception;
 
 	public void replace(List<UserInfo> userInfos) throws DataAccessException;
+
+	public List<UserInfo> load_cache(List<Long> uids) throws DataAccessException;
 	
 	public UserInfo load(long uid) throws DataAccessException;
 	

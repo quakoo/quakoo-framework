@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import com.quakoo.framework.ext.chat.model.UserStreamQueue;
+import com.quakoo.framework.ext.chat.service.UserStreamQueueService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +49,10 @@ public class SingleChatSchedulerContextHandle extends BaseContextHandle {
 
     @Resource
     private UserStreamService userStreamService;
+
+    @Resource
+    private UserStreamQueueService userStreamQueueService;
+
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -125,14 +131,23 @@ public class SingleChatSchedulerContextHandle extends BaseContextHandle {
                                     userDirectoryService.batchInsert(Lists.newArrayList(directories)); //如果有新的聊天目录则批量添加
                             }
                             if (streams.size() > 0) {
-                                if (streams.size() <= batch_inset_size) {
-                                    userStreamService.batchInsert(streams); //批量添加用户消息流
-                                } else {
-                                    List<List<UserStream>> streamsList = Lists.partition(streams, batch_inset_size);
-                                    for (List<UserStream> one : streamsList) {
-                                        userStreamService.batchInsert(one); //批量添加用户消息流
-                                    }
+                                userStreamService.createSort(streams); //批量生成sort字段
+                                userStreamService.batchInsertHotData(streams); //批量插入热数据
+                                List<UserStreamQueue> streamQueues = Lists.newArrayList();
+                                for(UserStream one : streams) {
+                                    UserStreamQueue streamQueue = new UserStreamQueue(one);
+                                    streamQueues.add(streamQueue);
                                 }
+                                userStreamQueueService.insert(streamQueues); //插入待插入队列
+
+//                                if (streams.size() <= batch_inset_size) {
+//                                    userStreamService.batchInsert(streams); //批量添加用户消息流
+//                                } else {
+//                                    List<List<UserStream>> streamsList = Lists.partition(streams, batch_inset_size);
+//                                    for (List<UserStream> one : streamsList) {
+//                                        userStreamService.batchInsert(one); //批量添加用户消息流
+//                                    }
+//                                }
 //                                userStreamService.batchInsert(streams); //批量添加用户消息流
                             }
                             singleChatQueueService.delete(list);

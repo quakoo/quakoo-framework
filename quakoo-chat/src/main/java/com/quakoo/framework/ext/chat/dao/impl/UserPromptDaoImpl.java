@@ -33,8 +33,8 @@ public class UserPromptDaoImpl extends BaseDaoHandle implements UserPromptDao {
 	private Logger logger = LoggerFactory.getLogger(UserPromptDaoImpl.class);
 	
 	private String getTable(long uid){
-		int index = (int) uid % chatInfo.user_prompt_table_names.size();
-		return chatInfo.user_prompt_table_names.get(index);
+		long index = uid % chatInfo.user_prompt_table_names.size();
+		return chatInfo.user_prompt_table_names.get((int) index);
 	}
 	
 	public int insert(List<UserPrompt> userPrompts) throws DataAccessException {

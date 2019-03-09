@@ -15,22 +15,32 @@ public class NoticeAllQueueServiceImpl implements NoticeAllQueueService {
 	@Resource
 	private NoticeAllQueueDao noticeAllQueueDao;
 
-	public boolean unfinishedIsNull() throws Exception {
-		return noticeAllQueueDao.list_null(Status.unfinished);
-	}
+//	public boolean unfinishedIsNull() throws Exception {
+//		return noticeAllQueueDao.list_null(Status.unfinished);
+//	}
+//
+//	public List<NoticeAllQueue> unfinishedList(int size)
+//			throws Exception {
+//		return noticeAllQueueDao.all_list(Status.unfinished, size);
+//	}
+//
+//	public List<NoticeAllQueue> finishedList(long maxTime, int size) throws Exception {
+//		return noticeAllQueueDao.list_time(Status.finished, maxTime, size);
+//	}
+//
+//	public boolean updateStatus(NoticeAllQueue one, int newStatus)
+//			throws Exception {
+//		return noticeAllQueueDao.update(one, newStatus);
+//	}
 
-	public List<NoticeAllQueue> unfinishedList(int size)
-			throws Exception {
-		return noticeAllQueueDao.all_list(Status.unfinished, size);
-	}
 
-	public List<NoticeAllQueue> finishedList(long maxTime, int size) throws Exception {
-		return noticeAllQueueDao.list_time(Status.finished, maxTime, size);
-	}
+    @Override
+    public List<NoticeAllQueue> list(int size) throws Exception {
+        return noticeAllQueueDao.list(size);
+    }
 
-	public boolean updateStatus(NoticeAllQueue one, int newStatus)
-			throws Exception {
-		return noticeAllQueueDao.update(one, newStatus);
-	}
-
+    @Override
+    public void delete(NoticeAllQueue one) throws Exception {
+        noticeAllQueueDao.delete(one);
+    }
 }

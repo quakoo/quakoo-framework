@@ -3,7 +3,7 @@ package com.quakoo.framework.ext.chat;
 import java.util.List;
 
 import com.quakoo.baseFramework.redis.JedisBean;
-import com.quakoo.framework.ext.chat.bean.SegmentLock;
+//import com.quakoo.framework.ext.chat.bean.SegmentLock;
 import com.quakoo.framework.ext.chat.util.PropertyUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -30,6 +30,9 @@ public abstract class AbstractChatInfo implements InitializingBean {
 	public List<String> single_chat_queue_names = Lists.newArrayList();
     public List<String> many_chat_queue_names = Lists.newArrayList();
 
+    public List<String> user_stream_queue_names = Lists.newArrayList();
+    public List<String> user_info_queue_names = Lists.newArrayList();
+
 	public List<String> user_info_table_names = Lists.newArrayList();
 //	public List<String> single_chat_queue_table_names = Lists.newArrayList();
 //	public List<String> many_chat_queue_table_names = Lists.newArrayList();
@@ -52,7 +55,7 @@ public abstract class AbstractChatInfo implements InitializingBean {
 	public String user_stream_init_lock_key; //信息流锁key
 
 
-    public SegmentLock segmentLock; //分段锁 用于mysql限制insert的峰值(同一ms只能有3个insert操作)
+//    public SegmentLock segmentLock; //分段锁 用于mysql限制insert的峰值(同一ms只能有3个insert操作)
 
     public JedisPoolConfig queueConfig;
     public JedisBean queueInfo;
@@ -69,6 +72,9 @@ public abstract class AbstractChatInfo implements InitializingBean {
         String single_chat_queue_name = "single_chat_queue";
         String many_chat_queue_name = "many_chat_queue";
 
+        String user_stream_queue_name = "user_stream_queue";
+        String user_info_queue_name = "user_info_queue";
+
 		String user_info_table_name = "user_info";
 //		String single_chat_queue_table_name = "single_chat_queue";
 //		String many_chat_queue_table_name = "many_chat_queue";
@@ -83,6 +89,9 @@ public abstract class AbstractChatInfo implements InitializingBean {
                 single_chat_queue_names.add(single_chat_queue_name);
                 many_chat_queue_names.add(many_chat_queue_name);
 
+                user_stream_queue_names.add(user_stream_queue_name);
+                user_info_queue_names.add(user_info_queue_name);
+
 				user_info_table_names.add(user_info_table_name);
 //				single_chat_queue_table_names.add(single_chat_queue_table_name);
 //				many_chat_queue_table_names.add(many_chat_queue_table_name);
@@ -95,6 +104,9 @@ public abstract class AbstractChatInfo implements InitializingBean {
 			} else {
                 single_chat_queue_names.add(single_chat_queue_name + "_" + i);
                 many_chat_queue_names.add(many_chat_queue_name + "_" + i);
+
+                user_stream_queue_names.add(user_stream_queue_name + "_" + i);
+                user_info_queue_names.add(user_info_queue_name + "_" + i);
 
 				user_info_table_names.add(user_info_table_name + "_" + i);
 //				single_chat_queue_table_names.add(single_chat_queue_table_name + "_" + i);
@@ -110,7 +122,7 @@ public abstract class AbstractChatInfo implements InitializingBean {
 		redis_will_push_queue = projectName + "_will_push_queue";
 		user_stream_init_lock_key = projectName + "_user_stream_init_uid_%d_lock";
 
-        segmentLock = new SegmentLock(3, false); //3个分段锁
+//        segmentLock = new SegmentLock(3, false); //3个分段锁
 
         String queueRedisAddress = propertyUtil.getProperty("chat.queue.redis.address");
         String queueRedisPassword = propertyUtil.getProperty("chat.queue.redis.password");

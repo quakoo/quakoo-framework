@@ -8,9 +8,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import com.quakoo.baseFramework.redis.JedisX;
+import com.quakoo.framework.ext.chat.model.ManyChatQueue;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
@@ -39,9 +42,11 @@ import com.quakoo.framework.ext.chat.model.param.WillPushItem;
  * creat_date: 2019/1/29
  * creat_time: 17:00
  **/
-public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
+public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao, InitializingBean {
 
     private final static long MAX_LENGTH = AbstractChatInfo.pull_length; //跟AbstractChatInfo 的 pull_length的保持一致
+
+    private final static String hot_user_stream_key = "%s_hot_user_stream_uid_%d"; //热数据
 
     private final static String user_stream_key = "%s_user_stream_uid_%d";
 	private final static String user_stream_null_key = "%s_user_stream_uid_%d_null";
@@ -51,9 +56,16 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 
     private Logger logger = LoggerFactory.getLogger(UserStreamDaoImpl.class);
 
-	private String getTable(long uid){
-		int index = (int) uid % chatInfo.user_stream_table_names.size();
-		return chatInfo.user_stream_table_names.get(index);
+    private JedisX queueClient;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        queueClient = new JedisX(chatInfo.queueInfo, chatInfo.queueConfig, 5000);
+    }
+
+    private String getTable(long uid){
+		long index =  uid % chatInfo.user_stream_table_names.size();
+		return chatInfo.user_stream_table_names.get((int) index);
 	}
 
 	/**
@@ -106,7 +118,34 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 		} 
 	}
 
-	/**
+    @Override
+    public int insert_hot_data(List<UserStream> streams) throws DataAccessException {
+        Map<Long, List<UserStream>> streamsMap = Maps.newHashMap();
+        for (UserStream stream : streams) {
+            long uid = stream.getUid();
+            List<UserStream> list = streamsMap.get(uid);
+            if (null == list) {
+                list = Lists.newArrayList();
+                streamsMap.put(uid, list);
+            }
+            list.add(stream);
+        }
+        int res = 0;
+        for (Map.Entry<Long, List<UserStream>> entry : streamsMap.entrySet()) {
+            long uid = entry.getKey();
+            List<UserStream> list = entry.getValue();
+            String queue_key = String.format(hot_user_stream_key, chatInfo.projectName, uid);
+            Map<Object, Double> redisMap = Maps.newHashMap();
+            for (UserStream one : list) {
+                redisMap.put(one, one.getSort());
+            }
+            long ret = queueClient.zaddMultiObject(queue_key, redisMap);
+            res += (int) ret;
+        }
+        return res;
+    }
+
+    /**
      * 批量添加
 	 * method_name: insert
 	 * params: [streams]
@@ -115,8 +154,8 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 	 * creat_date: 2019/1/29
 	 * creat_time: 17:02
 	 **/
-	public int insert(List<UserStream> streams) throws DataAccessException {
-	    chatInfo.segmentLock.lock(streams);
+	public int insert_cold_data(List<UserStream> streams) throws DataAccessException {
+//	    chatInfo.segmentLock.lock(streams);
 		int res = 0;
 		try {
 			String sqlPrev = "insert ignore into %s (uid, `type`, thirdId, mid, authorId, sort) values ";
@@ -197,16 +236,16 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 					} else {
 						Map<String, Boolean> exists_map = cache.pipExists(Lists.newArrayList(sub_key_set));
                         Map<String, Boolean> exists_null_map = cache.pipExists(Lists.newArrayList(sub_null_key_set));
-                        List<RedisKeySortMemObj> list = Lists.newArrayList();
+						List<RedisKeySortMemObj> list = Lists.newArrayList();
 					    for(UserStream stream : sub_streams){
 					    	long uid = stream.getUid();
 					    	long type = stream.getType();
 							long thirdId = stream.getThirdId();
 							String key = String.format(user_stream_key, chatInfo.projectName, uid);
                             String null_key = String.format(user_stream_null_key, chatInfo.projectName, uid);
-                            String sub_key = String.format(user_stream_sub_key, chatInfo.projectName, uid, type, thirdId);
+							String sub_key = String.format(user_stream_sub_key, chatInfo.projectName, uid, type, thirdId);
                             String null_sub_key = String.format(user_stream_sub_null_key, chatInfo.projectName, uid, type, thirdId);
-                            if(exists_map.get(key).booleanValue() || exists_null_map.get(null_key).booleanValue()) {
+							if(exists_map.get(key).booleanValue() || exists_null_map.get(null_key).booleanValue()) {
 								RedisKeySortMemObj one = new RedisKeySortMemObj(key, stream, stream.getSort());
 					    		list.add(one);
 							}
@@ -247,7 +286,7 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 			}
 			return res;
 		} finally {
-		    chatInfo.segmentLock.unlock(streams);
+//		    chatInfo.segmentLock.unlock(streams);
 			try {
 				if(res > 0) {
 					long currentTime = System.currentTimeMillis();
@@ -371,41 +410,50 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 		}
 	}
 	
-	public UserStream load(UserStream one) throws DataAccessException {
-		long uid = one.getUid();
-		String tableName = getTable(uid);
-	    String sql = "select * from %s where uid = %d and type = %d and thirdId = %d and mid = %d";
-	    long startTime = System.currentTimeMillis();
-	    sql = String.format(sql, tableName, uid, one.getType(), one.getThirdId(), one.getMid());
-        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
-	    return this.jdbcTemplate.query(sql, new UserStreamResultSetExtractor());
-	}
+//	public UserStream load(UserStream one) throws DataAccessException {
+//		long uid = one.getUid();
+//		String tableName = getTable(uid);
+//	    String sql = "select * from %s where uid = %d and type = %d and thirdId = %d and mid = %d";
+//	    long startTime = System.currentTimeMillis();
+//	    sql = String.format(sql, tableName, uid, one.getType(), one.getThirdId(), one.getMid());
+//        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
+//	    return this.jdbcTemplate.query(sql, new UserStreamResultSetExtractor());
+//	}
 
-	public boolean delete(UserStream one) throws DataAccessException {
-		boolean res = false;
-		long uid = one.getUid();
-		int type = one.getType();
-		long thirdId = one.getThirdId();
-		long mid = one.getMid();
-		String tableName = getTable(uid);
-		String sql = "delete from %s where uid = ? and type = ? and thirdId = ? and mid = ?";
-		sql = String.format(sql, tableName);
-		long startTime = System.currentTimeMillis();
-		int ret = this.jdbcTemplate.update(sql, uid, type, thirdId, mid);
+    private void delete_hot_data(UserStream one) throws DataAccessException {
+        long uid = one.getUid();
+        String queue_key = String.format(hot_user_stream_key, chatInfo.projectName, uid);
+        queueClient.zremObject(queue_key, one);
+    }
+
+    private void delete_cold_data(UserStream one) throws DataAccessException {
+        long uid = one.getUid();
+        int type = one.getType();
+        long thirdId = one.getThirdId();
+        long mid = one.getMid();
+        String tableName = getTable(uid);
+        String sql = "delete from %s where uid = ? and type = ? and thirdId = ? and mid = ?";
+        sql = String.format(sql, tableName);
+        long startTime = System.currentTimeMillis();
+        int ret = this.jdbcTemplate.update(sql, uid, type, thirdId, mid);
         logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
-        res = ret > 0 ? true : false;
-		
-		if(res){
-			String key = String.format(user_stream_key, chatInfo.projectName, uid);
-			String sub_key = String.format(user_stream_sub_key, chatInfo.projectName, uid, type, thirdId);
-			if(cache.exists(key)){
-				cache.zremObject(key, one);
-			}
-			if(cache.exists(sub_key)){
-				cache.zremObject(sub_key, one);
-			}
-		}
-		return res;
+        if(ret > 0){
+            String key = String.format(user_stream_key, chatInfo.projectName, uid);
+            String sub_key = String.format(user_stream_sub_key, chatInfo.projectName, uid, type, thirdId);
+            if(cache.exists(key)){
+                cache.zremObject(key, one);
+            }
+            if(cache.exists(sub_key)){
+                cache.zremObject(sub_key, one);
+            }
+        }
+    }
+
+    @Override
+	public boolean delete(UserStream one) throws DataAccessException {
+        delete_hot_data(one);
+		delete_cold_data(one);
+		return true;
 	}
 
 	public List<UserStream> page_list(long uid, long type, long thirdId,
@@ -423,7 +471,39 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 		return res;
 	}
 
-	public void new_data(List<UserStreamParam> list) throws Exception {
+    @Override
+    public void new_hot_data(List<UserStreamParam> list) throws Exception {
+        List<RedisSortedSetParam> params = Lists.newArrayList();
+        for(UserStreamParam one : list){
+            long uid = one.getUid();
+            String key = String.format(hot_user_stream_key, chatInfo.projectName, uid);
+            RedisSortedSetParam param = new RedisSortedSetParam();
+            param.setKey(key);
+            param.setIsasc(false);
+            param.setAttach(one);
+            param.setOffset(0);
+            param.setCount(AbstractChatInfo.pull_length);
+            param.setMaxScore(Double.MAX_VALUE);
+            param.setMinScore(one.getIndex());
+            params.add(param);
+        }
+        Map<RedisSortedSetParam, Set<Object>> map = queueClient.pipZrangeByScoreObject(params);
+        for(Entry<RedisSortedSetParam, Set<Object>> entry : map.entrySet()){
+            RedisSortedSetParam param = entry.getKey();
+            Set<Object> set = entry.getValue();
+            if(set.size() > 0){
+                UserStreamParam stream = (UserStreamParam) param.getAttach();
+                List<UserStream> data = Lists.newArrayList();
+                for(Object obj : set){
+                    data.add((UserStream) obj);
+                }
+                stream.setDataList(data);
+            }
+        }
+    }
+
+    @Override
+	public void new_cold_data(List<UserStreamParam> list) throws Exception {
 		List<RedisSortedSetParam> params = Lists.newArrayList();
 		for(UserStreamParam one : list){
 			long uid = one.getUid();
@@ -453,7 +533,8 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 		}
 	}
 
-	public void one_new_data(List<UserOneStreamParam> list) throws Exception {
+	@Override
+	public void one_new_cold_data(List<UserOneStreamParam> list) throws Exception {
 //		List<String> sub_keys = Lists.newArrayList();
 		List<RedisSortedSetParam> params = Lists.newArrayList();
 		for(UserOneStreamParam one : list){
@@ -494,7 +575,13 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao {
 		}
 	}
 
-	class UserStreamRowMapper implements RowMapper<UserStream> {
+    @Override
+    public void clear_hot_data_by_sort(long uid, double sort) throws Exception {
+        String queue_key = String.format(hot_user_stream_key, chatInfo.projectName, uid);
+        queueClient.zremrangeByScore(queue_key, 0, sort);
+    }
+
+    class UserStreamRowMapper implements RowMapper<UserStream> {
 		@Override
 		public UserStream mapRow(ResultSet rs, int rowNum)
 				throws SQLException {

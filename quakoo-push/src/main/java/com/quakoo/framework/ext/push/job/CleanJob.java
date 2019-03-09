@@ -2,6 +2,7 @@ package com.quakoo.framework.ext.push.job;
 
 import com.google.common.collect.Lists;
 import com.quakoo.framework.ext.push.AbstractPushInfo;
+import com.quakoo.framework.ext.push.distributed.DistributedConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -47,8 +48,10 @@ public class CleanJob {
     }
 
     public void handle() {
-        long currentTime = System.currentTimeMillis();
-        cleanPushMsg(currentTime - step_day);
+        if(DistributedConfig.canRunClean) {
+            long currentTime = System.currentTimeMillis();
+            cleanPushMsg(currentTime - step_day);
+        }
     }
 
 }

@@ -25,6 +25,8 @@ import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
 import com.quakoo.framework.ext.chat.dao.UserInfoDao;
 import com.quakoo.framework.ext.chat.model.UserInfo;
 
+import javax.jws.soap.SOAPBinding;
+
 /**
  * 用户信息DAO
  * class_name: UserInfoDaoImpl
@@ -45,8 +47,8 @@ public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
 
 
     private String getTable(long uid){
-		int index = (int) uid % chatInfo.user_info_table_names.size();
-		return chatInfo.user_info_table_names.get(index);
+		long index = uid % chatInfo.user_info_table_names.size();
+		return chatInfo.user_info_table_names.get((int) index);
 	}
 
 	/**
@@ -184,7 +186,7 @@ public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
      **/
     @Override
     public void replace(List<UserInfo> userInfos) throws DataAccessException {
-        chatInfo.segmentLock.lock(userInfos);
+//        chatInfo.segmentLock.lock(userInfos);
         try {
             String sqlPrev = "replace into %s (uid, lastIndex, promptIndex, loginTime) values ";
             String sqlValueFormat = "(%d, %s, %s, %s)";
@@ -218,7 +220,7 @@ public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
             logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sqls : " + sqls.toString()
                     + " res : " + ArrayUtils.toString(resList));
         } finally {
-            chatInfo.segmentLock.unlock(userInfos);
+//            chatInfo.segmentLock.unlock(userInfos);
         }
     }
 
@@ -280,7 +282,24 @@ public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
 		}
 	}
 
-	/**
+    @Override
+    public List<UserInfo> load_cache(List<Long> uids) throws DataAccessException {
+        List<String> keys = Lists.newArrayList();
+        for(long uid : uids) {
+            String object_key = String.format(user_info_object_key, chatInfo.projectName, uid);
+            keys.add(object_key);
+        }
+        Map<String, Object> redis_map = cache.multiGetObject(keys, null);
+        List<UserInfo> res = Lists.newArrayList();
+        for(Object obj : redis_map.values()) {
+            if(obj != null) {
+                res.add((UserInfo) obj);
+            }
+        }
+        return res;
+    }
+
+    /**
      * 批量获取用户信息
 	 * method_name: loads
 	 * params: [uids]

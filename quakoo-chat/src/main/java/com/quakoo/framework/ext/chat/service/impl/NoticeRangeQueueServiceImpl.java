@@ -15,23 +15,37 @@ public class NoticeRangeQueueServiceImpl implements NoticeRangeQueueService {
 	@Resource
 	private NoticeRangeQueueDao noticeRangeQueueDao;
 
-	public boolean unfinishedIsNull() throws Exception {
-		return noticeRangeQueueDao.list_null(Status.unfinished);
-	}
+//	public boolean unfinishedIsNull() throws Exception {
+//		return noticeRangeQueueDao.list_null(Status.unfinished);
+//	}
+//
+//	public List<NoticeRangeQueue> unfinishedList(int size) throws Exception {
+//		return noticeRangeQueueDao.all_list(Status.unfinished, size);
+//	}
+//
+//	public List<NoticeRangeQueue> finishedList(long maxTime, int size)
+//			throws Exception {
+//		return noticeRangeQueueDao.list_time(Status.finished, maxTime, size);
+//	}
+//
+//	public boolean updateStatus(NoticeRangeQueue one, int newStatus)
+//			throws Exception {
+//		return noticeRangeQueueDao.update(one, newStatus);
+//	}
 
-	public List<NoticeRangeQueue> unfinishedList(int size) throws Exception {
-		return noticeRangeQueueDao.all_list(Status.unfinished, size);
-	}
 
-	public List<NoticeRangeQueue> finishedList(long maxTime, int size)
-			throws Exception {
-		return noticeRangeQueueDao.list_time(Status.finished, maxTime, size);
-	}
+    @Override
+    public List<NoticeRangeQueue> list(int size) throws Exception {
+        return noticeRangeQueueDao.list(size);
+    }
 
-	public boolean updateStatus(NoticeRangeQueue one, int newStatus)
-			throws Exception {
-		return noticeRangeQueueDao.update(one, newStatus);
-	}
+    @Override
+    public void delete(NoticeRangeQueue one) throws Exception {
+        noticeRangeQueueDao.delete(one);
+    }
 
-
+    @Override
+    public void delete(List<NoticeRangeQueue> queues) throws Exception {
+        noticeRangeQueueDao.delete(queues);
+    }
 }

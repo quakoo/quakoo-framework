@@ -153,6 +153,16 @@ public class PushDistributedSchedulerContextHandle extends PushBaseContextHandle
 				sign = ListUtils.isEqualList(DistributedConfig.canRunUserQueueTable, canRunUserQueueTable);
 				if(!sign)
 					DistributedConfig.canRunUserQueueTable = canRunUserQueueTable;
+
+
+                if (serverNum >= 3) {
+                    if (serverIndex == 1) DistributedConfig.canRunClean = true;
+                    else DistributedConfig.canRunClean = false;
+                } else {
+                    if (serverIndex == 0) DistributedConfig.canRunClean = true;
+                    else DistributedConfig.canRunClean = false;
+                }
+
 			}
 		}
 	}
