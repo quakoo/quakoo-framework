@@ -1,17 +1,14 @@
 package com.quakoo.framework.ext.chat.context.handle;
 
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.quakoo.framework.ext.chat.distributed.DistributedConfig;
 import com.quakoo.framework.ext.chat.model.UserInfo;
-import com.quakoo.framework.ext.chat.model.UserInfoQueue;
 import com.quakoo.framework.ext.chat.service.UserInfoQueueService;
 import com.quakoo.framework.ext.chat.service.UserInfoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Resource;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -39,7 +36,7 @@ public class UserInfoSchedulerContextHandle extends BaseContextHandle  {
             while (true) {
                 for (String queueName : chatInfo.user_info_queue_names) {
                     if (DistributedConfig.canRunUserInfoQueue.contains(queueName)) {
-                        Uninterruptibles.sleepUninterruptibly(5000, TimeUnit.MILLISECONDS);
+                        Uninterruptibles.sleepUninterruptibly(3000, TimeUnit.MILLISECONDS);
                         try {
                             List<Long> list = userInfoQueueService.list(queueName, handle_size);
                             if (null != list && list.size() > 0) {

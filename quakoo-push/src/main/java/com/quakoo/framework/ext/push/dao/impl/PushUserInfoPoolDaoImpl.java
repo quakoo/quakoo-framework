@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 
 import com.google.common.collect.Sets;
 //import com.quakoo.framework.ext.push.model.PushHandleQueue;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +93,9 @@ public class PushUserInfoPoolDaoImpl extends BaseDao implements PushUserInfoPool
      **/
     @Override
     public void insert(List<PushUserInfoPool> pools) throws DataAccessException {
-        String sql = "replace into %s (uid, platform, brand, sessionId, iosToken, huaWeiToken,  meiZuPushId, activeTime) values (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sqlPrev = "insert into %s (uid, platform, brand, sessionId, iosToken, huaWeiToken,  meiZuPushId, activeTime) values ";
+        String sqlValueFormat = "(%d, %d, %d, '%s', '%s', '%s', '%s', %d)";
+        String sqlSuffix = " on duplicate key update platform=values(platform), brand=values(brand), sessionId=values(sessionId), iosToken=values(iosToken), huaWeiToken=values(huaWeiToken), meiZuPushId=values(meiZuPushId), activeTime=values(activeTime)";
         Map<String, List<PushUserInfoPool>> maps = Maps.newHashMap();
         for (PushUserInfoPool pool : pools) {
             String tableName = getTable(pool.getUid());
@@ -103,33 +106,74 @@ public class PushUserInfoPoolDaoImpl extends BaseDao implements PushUserInfoPool
             }
             list.add(pool);
         }
+        List<String> sqls = Lists.newArrayList();
         for (Entry<String, List<PushUserInfoPool>> entry : maps.entrySet()) {
             String tableName = entry.getKey();
-            String subSql = String.format(sql, tableName);
-            final List<PushUserInfoPool> subList = entry.getValue();
-            long startTime = System.currentTimeMillis();
-            int[] resList = this.jdbcTemplate.batchUpdate(subSql, new BatchPreparedStatementSetter() {
-                @Override
-                public void setValues(PreparedStatement ps, int i) throws SQLException {
-                    PushUserInfoPool one =  subList.get(i);
-                    ps.setLong(1, one.getUid());
-                    ps.setInt(2, one.getPlatform());
-                    ps.setInt(3, one.getBrand());
-                    ps.setString(4, one.getSessionId());
-                    ps.setString(5, one.getIosToken());
-                    ps.setString(6, one.getHuaWeiToken());
-                    ps.setString(7, one.getMeiZuPushId());
-                    ps.setLong(8, System.currentTimeMillis());
-                }
-                @Override
-                public int getBatchSize() {
-                    return subList.size();
-                }
-            });
-            logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + subSql.toString()
-                    + "PushUserInfoPool : " + subList.toString());
+            List<PushUserInfoPool> list = entry.getValue();
+            List<String> sqlValueList = Lists.newArrayList();
+            for (PushUserInfoPool one : list) {
+                String sessionId = one.getSessionId();
+                if(StringUtils.isBlank(sessionId)) sessionId = "";
+                String iosToken = one.getIosToken();
+                if(StringUtils.isBlank(iosToken)) iosToken = "";
+                String huaWeiToken = one.getHuaWeiToken();
+                if(StringUtils.isBlank(huaWeiToken)) huaWeiToken = "";
+                String meiZuPushId = one.getMeiZuPushId();
+                if(StringUtils.isBlank(meiZuPushId)) meiZuPushId = "";
+                String sqlValue = String.format(sqlValueFormat, one.getUid(), one.getPlatform(), one.getBrand(), sessionId,
+                        iosToken, huaWeiToken, meiZuPushId, one.getActiveTime());
+                sqlValueList.add(sqlValue);
+            }
+            String sqlValues = StringUtils.join(sqlValueList.toArray(), ",");
+            String sql = sqlPrev + sqlValues + sqlSuffix;
+            sql = String.format(sql, tableName);
+            sqls.add(sql);
         }
+        long startTime = System.currentTimeMillis();
+        int[] resList = this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
+        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sqls : " + sqls.toString()
+                + " res : " + ArrayUtils.toString(resList));
     }
+    //    @Override
+//    public void insert(List<PushUserInfoPool> pools) throws DataAccessException {
+//        String sql = "replace into %s (uid, platform, brand, sessionId, iosToken, huaWeiToken,  meiZuPushId, activeTime) values (?, ?, ?, ?, ?, ?, ?, ?)";
+//        Map<String, List<PushUserInfoPool>> maps = Maps.newHashMap();
+//        for (PushUserInfoPool pool : pools) {
+//            String tableName = getTable(pool.getUid());
+//            List<PushUserInfoPool> list = maps.get(tableName);
+//            if (null == list) {
+//                list = Lists.newArrayList();
+//                maps.put(tableName, list);
+//            }
+//            list.add(pool);
+//        }
+//        for (Entry<String, List<PushUserInfoPool>> entry : maps.entrySet()) {
+//            String tableName = entry.getKey();
+//            String subSql = String.format(sql, tableName);
+//            final List<PushUserInfoPool> subList = entry.getValue();
+//            long startTime = System.currentTimeMillis();
+//            int[] resList = this.jdbcTemplate.batchUpdate(subSql, new BatchPreparedStatementSetter() {
+//                @Override
+//                public void setValues(PreparedStatement ps, int i) throws SQLException {
+//                    PushUserInfoPool one =  subList.get(i);
+//                    ps.setLong(1, one.getUid());
+//                    ps.setInt(2, one.getPlatform());
+//                    ps.setInt(3, one.getBrand());
+//                    ps.setString(4, one.getSessionId());
+//                    ps.setString(5, one.getIosToken());
+//                    ps.setString(6, one.getHuaWeiToken());
+//                    ps.setString(7, one.getMeiZuPushId());
+//                    ps.setLong(8, System.currentTimeMillis());
+//                }
+//                @Override
+//                public int getBatchSize() {
+//                    return subList.size();
+//                }
+//            });
+//            logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + subSql.toString()
+//                    + "PushUserInfoPool : " + subList.toString());
+//        }
+//    }
 
 //    @Override
 //	public boolean insert(PushUserInfoPool one) throws DataAccessException {

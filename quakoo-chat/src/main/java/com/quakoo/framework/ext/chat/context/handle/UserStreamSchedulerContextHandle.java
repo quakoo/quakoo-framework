@@ -20,7 +20,7 @@ public class UserStreamSchedulerContextHandle extends BaseContextHandle {
 
     Logger logger = LoggerFactory.getLogger(UserStreamSchedulerContextHandle.class);
 
-    private int handle_size = 10; //批量处理条数
+    private int handle_size = 15; //批量处理条数
 
     @Resource
     private UserStreamQueueService userStreamQueueService;

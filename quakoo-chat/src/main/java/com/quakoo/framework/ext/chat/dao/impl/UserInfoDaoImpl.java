@@ -186,43 +186,76 @@ public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
      **/
     @Override
     public void replace(List<UserInfo> userInfos) throws DataAccessException {
-//        chatInfo.segmentLock.lock(userInfos);
-        try {
-            String sqlPrev = "replace into %s (uid, lastIndex, promptIndex, loginTime) values ";
-            String sqlValueFormat = "(%d, %s, %s, %s)";
-            Map<String, List<UserInfo>> maps = Maps.newHashMap();
-            for(UserInfo userInfo : userInfos){
-                String tableName = getTable(userInfo.getUid());
-                List<UserInfo> list = maps.get(tableName);
-                if(null == list){
-                    list = Lists.newArrayList();
-                    maps.put(tableName, list);
-                }
-                list.add(userInfo);
+        String sqlPrev = "insert into %s (uid, lastIndex, promptIndex, loginTime) values ";
+        String sqlValueFormat = "(%d, %s, %s, %s)";
+        String sqlSuffix = " on duplicate key update lastIndex=values(lastIndex), promptIndex=values(promptIndex), loginTime=values(loginTime)";
+        Map<String, List<UserInfo>> maps = Maps.newHashMap();
+        for(UserInfo userInfo : userInfos){
+            String tableName = getTable(userInfo.getUid());
+            List<UserInfo> list = maps.get(tableName);
+            if (null == list) {
+                list = Lists.newArrayList();
+                maps.put(tableName, list);
             }
-            List<String> sqls = Lists.newArrayList();
-            for(Entry<String, List<UserInfo>> entry : maps.entrySet()){
-                String tableName = entry.getKey();
-                List<UserInfo> list = entry.getValue();
-                List<String> sqlValueList = Lists.newArrayList();
-                for(UserInfo userInfo : list){
-                    String sqlValue = String.format(sqlValueFormat, userInfo.getUid(), userInfo.getLastIndex(),
-                            userInfo.getPromptIndex(), userInfo.getLoginTime());
-                    sqlValueList.add(sqlValue);
-                }
-                String sqlValues = StringUtils.join(sqlValueList.toArray(), ",");
-                String sql = sqlPrev + sqlValues;
-                sql = String.format(sql, tableName);
-                sqls.add(sql);
-            }
-            long startTime = System.currentTimeMillis();
-            int[] resList = this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
-            logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sqls : " + sqls.toString()
-                    + " res : " + ArrayUtils.toString(resList));
-        } finally {
-//            chatInfo.segmentLock.unlock(userInfos);
+            list.add(userInfo);
         }
+        List<String> sqls = Lists.newArrayList();
+        for(Entry<String, List<UserInfo>> entry : maps.entrySet()){
+            String tableName = entry.getKey();
+            List<UserInfo> list = entry.getValue();
+            List<String> sqlValueList = Lists.newArrayList();
+            for (UserInfo userInfo : list) {
+                String sqlValue = String.format(sqlValueFormat, userInfo.getUid(), userInfo.getLastIndex(),
+                        userInfo.getPromptIndex(), userInfo.getLoginTime());
+                sqlValueList.add(sqlValue);
+            }
+            String sqlValues = StringUtils.join(sqlValueList.toArray(), ",");
+            String sql = sqlPrev + sqlValues + sqlSuffix;
+            sql = String.format(sql, tableName);
+            sqls.add(sql);
+        }
+        long startTime = System.currentTimeMillis();
+        int[] resList = this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
+        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sqls : " + sqls.toString()
+                + " res : " + ArrayUtils.toString(resList));
     }
+//    @Override
+//    public void replace(List<UserInfo> userInfos) throws DataAccessException {
+//        try {
+//            String sqlPrev = "replace into %s (uid, lastIndex, promptIndex, loginTime) values ";
+//            String sqlValueFormat = "(%d, %s, %s, %s)";
+//            Map<String, List<UserInfo>> maps = Maps.newHashMap();
+//            for(UserInfo userInfo : userInfos){
+//                String tableName = getTable(userInfo.getUid());
+//                List<UserInfo> list = maps.get(tableName);
+//                if(null == list){
+//                    list = Lists.newArrayList();
+//                    maps.put(tableName, list);
+//                }
+//                list.add(userInfo);
+//            }
+//            List<String> sqls = Lists.newArrayList();
+//            for(Entry<String, List<UserInfo>> entry : maps.entrySet()){
+//                String tableName = entry.getKey();
+//                List<UserInfo> list = entry.getValue();
+//                List<String> sqlValueList = Lists.newArrayList();
+//                for(UserInfo userInfo : list){
+//                    String sqlValue = String.format(sqlValueFormat, userInfo.getUid(), userInfo.getLastIndex(),
+//                            userInfo.getPromptIndex(), userInfo.getLoginTime());
+//                    sqlValueList.add(sqlValue);
+//                }
+//                String sqlValues = StringUtils.join(sqlValueList.toArray(), ",");
+//                String sql = sqlPrev + sqlValues;
+//                sql = String.format(sql, tableName);
+//                sqls.add(sql);
+//            }
+//            long startTime = System.currentTimeMillis();
+//            int[] resList = this.jdbcTemplate.batchUpdate(sqls.toArray(new String[]{}));
+//            logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sqls : " + sqls.toString()
+//                    + " res : " + ArrayUtils.toString(resList));
+//        } finally {
+//        }
+//    }
 
     public static void main(String[] args) {
         int[] a  = new int[2];
