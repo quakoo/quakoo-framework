@@ -552,10 +552,10 @@ public class UserStreamServiceImpl implements UserStreamService {
 							chatGroupName = "讨论组" + chatGroupUids.size() + "人";
 						}
 						streamBack.setThirdNick(chatGroupName);
+                        streamBack.setThirdIcon(chatGroup.getIcon());
 					} else{
 						streamBack.setThirdNick("讨论组");
 					}
-                    streamBack.setThirdIcon(chatGroup.getIcon());
 				}
 				res.add(streamBack);
 			}
