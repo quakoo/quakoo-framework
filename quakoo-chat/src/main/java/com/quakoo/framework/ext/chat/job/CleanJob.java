@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.quakoo.framework.ext.chat.AbstractChatInfo;
 import com.quakoo.framework.ext.chat.distributed.DistributedConfig;
 import com.quakoo.framework.ext.chat.model.constant.Status;
+import com.quakoo.framework.ext.chat.util.PropertyUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,6 +26,8 @@ public class CleanJob {
     private Logger logger = LoggerFactory.getLogger(CleanJob.class);
 
     private int step_day = 1000 * 60 * 60 * 24; //保留天数
+
+    private PropertyUtil propertyUtil = PropertyUtil.getInstance("chat.properties");
 
     @Resource
     private AbstractChatInfo chatInfo;
@@ -115,12 +119,17 @@ public class CleanJob {
 
     public void handle() {
         if(DistributedConfig.canRunClean) {
+            int dayNum = 4;
+            String cleanStepDay = propertyUtil.getProperty("chat.clean.step.day");
+            if(StringUtils.isNotBlank(cleanStepDay)) {
+                dayNum = Integer.parseInt(cleanStepDay);
+            }
             long currentTime = System.currentTimeMillis();
 //        cleanSingleChatQueue(currentTime - step_day);
 //        cleanManyChatQueue(currentTime - step_day);
 //        cleanPushQueue(currentTime - step_day);
-            cleanUserStream(currentTime - step_day * 4);
-            cleanMessage(currentTime - step_day * 4);
+            cleanUserStream(currentTime - step_day * dayNum);
+            cleanMessage(currentTime - step_day * dayNum);
 //        cleanUserClientInfo(currentTime - step_day * 7);
         }
     }
