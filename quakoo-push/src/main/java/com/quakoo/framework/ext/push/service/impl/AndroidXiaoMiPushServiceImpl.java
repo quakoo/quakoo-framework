@@ -67,6 +67,7 @@ public class AndroidXiaoMiPushServiceImpl extends BaseService implements Android
                     .description(pushMsg.getContent())
                     .restrictedPackageName(packageName)
                     .notifyType(1).notifyId(notifyId)
+                    .extra(Constants.EXTRA_PARAM_NOTIFY_EFFECT, Constants.NOTIFY_LAUNCHER_ACTIVITY)
                     .build();
             if(null != sender) sender.sendToAlias(message, String.valueOf(uid), 2);
         } catch (Exception e) {
@@ -104,6 +105,7 @@ public class AndroidXiaoMiPushServiceImpl extends BaseService implements Android
                     .description(pushMsg.getContent())
                     .restrictedPackageName(packageName)
                     .notifyType(1).notifyId(notifyId)
+                    .extra(Constants.EXTRA_PARAM_NOTIFY_EFFECT, Constants.NOTIFY_LAUNCHER_ACTIVITY)
                     .build();
             if(null != sender) sender.sendToAlias(message, alias, 2);
 //            logger.error("===========xiaomi uids : "+ uids.toString() + " pushMsg : " + pushMsg.getTitle());
