@@ -24,6 +24,7 @@ import com.quakoo.space.enums.cache.CacheMethodParamEnum;
 import com.quakoo.space.enums.cache.CacheSortOrder;
 import com.quakoo.space.mapper.HyperspaceAllIdRowMapper;
 import com.quakoo.space.model.FieldInfo;
+import com.quakoo.transaction.JedisXUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1104,7 +1105,7 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
             String key = id2cacheKeysMap.get(id);
             keys.add(key);
         }
-        Map<String, Object> cacheValues = cache.multiGetObject(keys, null);
+        Map<String, Object> cacheValues = JedisXUtils.multiGetObject(cache, keys, null);
         List<T> result = new ArrayList<T>();
 
         if (hyperspaceIds != null) {
@@ -1252,28 +1253,28 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
 		} catch (Exception e) {
 			throw new IllegalArgumentException("item is error");
 		}
-    	if(this.cache.exists(decidedCacheKey)){
+    	if(JedisXUtils.exists(cache, decidedCacheKey)){
     		if (order == CacheSortOrder.asc) {
-    			res = this.cache.zrankObject(decidedCacheKey, id);
+    			res = JedisXUtils.zrankObject(cache, decidedCacheKey, id);
     		} else {
-    			res = this.cache.zrevrankObject(decidedCacheKey, id);
+    			res = JedisXUtils.zrevrankObject(cache, decidedCacheKey, id);
     		}
     	} else {
-    		if(!this.cache.exists(decidedCacheKey) &&
-        			!cache.exists(decideIsNullListCacheKey(decidedCacheKey))){
+    		if(!JedisXUtils.exists(cache, decidedCacheKey) &&
+        			!JedisXUtils.exists(cache, decideIsNullListCacheKey(decidedCacheKey))){
         		ZkLock lock = null;
         		try {
         			lock = ZkLock.getAndLock(hyperspaceConfig.getZkAddress(), "hyperSpace", decidedCacheKey, true,
                             30000, 30000);
-        			if(!this.cache.exists(decidedCacheKey) &&
-        	    			!cache.exists(decideIsNullListCacheKey(decidedCacheKey))) {
+        			if(!JedisXUtils.exists(cache, decidedCacheKey) &&
+        	    			!JedisXUtils.exists(cache, decideIsNullListCacheKey(decidedCacheKey))) {
         				List<T> temp = super.jdbc_getList(shardingId, sql, sqlParams);
                         if (temp != null && temp.size() > 0) {
                             _addListCache(temp, decidedCacheKey);
                         } else {
                             logger.info(daoClassName + "@@@=====@@@setListNull on cache_getRank:"
                                         + decideIsNullListCacheKey(decidedCacheKey));
-                            cache.setString(decideIsNullListCacheKey(decidedCacheKey), DEFAULT_EXPIRED_TIME, "true");
+                            JedisXUtils.setString(cache, decideIsNullListCacheKey(decidedCacheKey), DEFAULT_EXPIRED_TIME, "true", false);
                         }
         			}
     			} catch (Exception e) {
@@ -1282,11 +1283,11 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
                     if (lock != null)
                         lock.release();
                 }
-        		if(this.cache.exists(decidedCacheKey)){
+        		if(JedisXUtils.exists(cache, decidedCacheKey)){
         			if (order == CacheSortOrder.asc) {
-            			res = this.cache.zrankObject(decidedCacheKey, id);
+            			res = JedisXUtils.zrankObject(cache, decidedCacheKey, id);
             		} else {
-            			res = this.cache.zrevrankObject(decidedCacheKey, id);
+            			res = JedisXUtils.zrevrankObject(cache, decidedCacheKey, id);
             		}
         		}
         	}
@@ -1300,9 +1301,9 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
         List<HyperspaceId> result = new ArrayList<HyperspaceId>();
         Set<Object> set = null;
         if (order == CacheSortOrder.asc) {
-            set = this.cache.zrangeByScoreObject(decidedCacheKey, 0, Double.MAX_VALUE, null);
+            set = JedisXUtils.zrangeByScoreObject(cache, decidedCacheKey, 0, Double.MAX_VALUE, null);
         } else {
-            set = this.cache.zrevrangeByScoreObject(decidedCacheKey, Double.MAX_VALUE, 0, null);
+            set = JedisXUtils.zrevrangeByScoreObject(cache, decidedCacheKey, Double.MAX_VALUE, 0, null);
         }
         if (set != null && set.size() > 0) {
             logger.info(daoClassName + "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@hit_cache:" + decidedCacheKey);
@@ -1310,7 +1311,7 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
                 result.add((HyperspaceId) one);
             }
         } else {
-            if (!cache.exists(decideIsNullListCacheKey(decidedCacheKey))) {
+            if (!JedisXUtils.exists(cache, decideIsNullListCacheKey(decidedCacheKey))) {
                 List<T> temp = super.jdbc_getList(shardingId, sql, sqlParams);
                 if (temp != null && temp.size() > 0) {
                     logger.info(daoClassName + "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@add_cache:" + decidedCacheKey);
@@ -1322,7 +1323,7 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
                 } else {
                     logger.info(daoClassName + "@@@=====@@@setListNull on cache_getAllList:"
                             + decideIsNullListCacheKey(decidedCacheKey));
-                    cache.setString(decideIsNullListCacheKey(decidedCacheKey), DEFAULT_EXPIRED_TIME, "true");
+                    JedisXUtils.setString(cache, decideIsNullListCacheKey(decidedCacheKey), DEFAULT_EXPIRED_TIME, "true", false);
                 }
             }
         }
@@ -1344,23 +1345,23 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
             // maxScore = Long.MAX_VALUE;
             minScore = cursor;
             maxScore = Double.MAX_VALUE;
-            set = this.cache.zrangeByScoreObject(decidedCacheKey, minScore, maxScore, 0, size, null);
+            set = JedisXUtils.zrangeByScoreObject(cache, decidedCacheKey, minScore, maxScore, 0, size, null);
         } else {
             // cursor = (cursor == 0) ? Long.MAX_VALUE : cursor;
             // maxScore = cursor - 0.1;
             maxScore = (cursor == 0) ? Double.MAX_VALUE : cursor;
-            set = this.cache.zrevrangeByScoreObject(decidedCacheKey, maxScore, minScore, 0, size, null);
+            set = JedisXUtils.zrevrangeByScoreObject(cache, decidedCacheKey, maxScore, minScore, 0, size, null);
         }
 
         // 初始化list
         if ((null == set || set.size() == 0) && !cache.exists(decidedCacheKey)) {
-            if (!cache.exists(decideIsNullListCacheKey(decidedCacheKey))) {
+            if (!JedisXUtils.exists(cache, decideIsNullListCacheKey(decidedCacheKey))) {
                 ZkLock lock = null;
                 try {
                     lock = ZkLock.getAndLock(hyperspaceConfig.getZkAddress(), "hyperSpace", decidedCacheKey, true,
                             30000, 30000);
                     // 如果此时 某人增加数据，有可能存入数据库成功，但是此项操作加载数据库时候没加载上来。
-                    if (!cache.exists(decidedCacheKey)) {
+                    if (!JedisXUtils.exists(cache, decidedCacheKey)) {
                         List<T> temp = super.jdbc_getList(shardingId, sql, sqlParams);
                         if (temp != null && temp.size() > 0) {
                             _addListCache(temp, decidedCacheKey);
@@ -1368,7 +1369,7 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
                             if (cursor == 0) {
                                 logger.info(daoClassName + "@@@=====@@@setListNull on cache_getPageList:"
                                         + decideIsNullListCacheKey(decidedCacheKey));
-                                cache.setString(decideIsNullListCacheKey(decidedCacheKey), DEFAULT_EXPIRED_TIME, "true");
+                                JedisXUtils.setString(cache, decideIsNullListCacheKey(decidedCacheKey), DEFAULT_EXPIRED_TIME, "true", false);
                             }
                         }
                     }
@@ -1380,9 +1381,9 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
                 }
 
                 if (order == CacheSortOrder.asc) {
-                    set = this.cache.zrangeByScoreObject(decidedCacheKey, minScore, maxScore, 0, size, null);
+                    set = JedisXUtils.zrangeByScoreObject(cache, decidedCacheKey, minScore, maxScore, 0, size, null);
                 } else {
-                    set = this.cache.zrevrangeByScoreObject(decidedCacheKey, maxScore, minScore, 0, size, null);
+                    set = JedisXUtils.zrevrangeByScoreObject(cache, decidedCacheKey, maxScore, minScore, 0, size, null);
                 }
             }
         }
@@ -1395,7 +1396,7 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
         } else {
             // 如果 存在list(可以查询)
             // 如果不存在null标识(可以查询)。
-            if (!cache.exists(decideIsNullListCacheKey(decidedCacheKey)) || cache.exists(decidedCacheKey)) {
+            if (!JedisXUtils.exists(cache, decideIsNullListCacheKey(decidedCacheKey)) || JedisXUtils.exists(cache, decidedCacheKey)) {
                 List<HyperspaceAllId> list = this.__getPageList(shardingId, pageSql, pageParams);
                 if (list != null && list.size() > 0) {
                     for (HyperspaceAllId allId : list) {
@@ -1420,9 +1421,9 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
 
         Set<Object> set = null;
         if (order == CacheSortOrder.asc) {
-            set = cache.zunionstoreRangeByScoreObject(cacheKeys, Double.MIN_VALUE, Double.MAX_VALUE, 0, size, null);
+            set = JedisXUtils.zunionstoreRangeByScoreObject(cache, cacheKeys, Double.MIN_VALUE, Double.MAX_VALUE, 0, size, null);
         } else {
-            set = cache.zunionstoreRevrangeByScoreObject(cacheKeys, Double.MAX_VALUE, Double.MIN_VALUE, 0, size, null);
+            set = JedisXUtils.zunionstoreRevrangeByScoreObject(cache, cacheKeys, Double.MAX_VALUE, Double.MIN_VALUE, 0, size, null);
         }
 
         List<HyperspaceId> hyperspaceIds = new ArrayList<HyperspaceId>();
@@ -1445,26 +1446,26 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
         }
         Set<Object> set = null;
         if (order == CacheSortOrder.asc) {
-            set = this.cache.zrangeObject(decidedCacheKey, 0, end, null);
+            set = JedisXUtils.zrangeObject(cache, decidedCacheKey, 0, end, null);
         } else {
-            set = this.cache.zrevrangeObject(decidedCacheKey, 0, end, null);
+            set = JedisXUtils.zrevrangeObject(cache, decidedCacheKey, 0, end, null);
         }
         // 初始化list
         if ((null == set || set.size() == 0) && !cache.exists(decidedCacheKey)) {
-            if (!cache.exists(decideIsNullListCacheKey(decidedCacheKey))) {
+            if (!JedisXUtils.exists(cache, decideIsNullListCacheKey(decidedCacheKey))) {
                 ZkLock lock = null;
                 try {
                     lock = ZkLock.getAndLock(hyperspaceConfig.getZkAddress(), "hyperSpace", decidedCacheKey, true,
                             30000, 30000);
 
                     // 如果此时 某人增加数据，有可能存入数据库成功，但是此项操作加载数据库时候没加载上来。
-                    if (!cache.exists(decidedCacheKey)) {
+                    if (!JedisXUtils.exists(cache, decidedCacheKey)) {
                         args[args.length - 1] = DEFAULT_INIT_LIST_SIZE;
                         List<T> temp = super.jdbc_getList(shardingId, sql, args);
                         if (temp != null && temp.size() > 0) {
                             _addListCache(temp, decidedCacheKey);
                         } else {
-                            cache.setString(decideIsNullListCacheKey(decidedCacheKey), DEFAULT_EXPIRED_TIME, "true");
+                            JedisXUtils.setString(cache, decideIsNullListCacheKey(decidedCacheKey), DEFAULT_EXPIRED_TIME, "true", false);
                         }
                     }
                 } catch (Exception e) {
@@ -1474,9 +1475,9 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
                         lock.release();
                 }
                 if (order == CacheSortOrder.asc) {
-                    set = this.cache.zrangeObject(decidedCacheKey, 0, end, null);
+                    set = JedisXUtils.zrangeObject(cache, decidedCacheKey, 0, end, null);
                 } else {
-                    set = this.cache.zrevrangeObject(decidedCacheKey, 0, end, null);
+                    set = JedisXUtils.zrevrangeObject(cache, decidedCacheKey, 0, end, null);
                 }
             }
         }
@@ -1556,8 +1557,8 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
 //                    members.put(cache_sort, hyperspaceId);
 //                }
             }
-            this.cache.zaddMultiObject(decidedCacheKey, members);
-            this.cache.expire(decidedCacheKey, expireSeconds);
+            JedisXUtils.zaddMultiObject(cache, decidedCacheKey, members, false);
+            JedisXUtils.expire(cache, decidedCacheKey, expireSeconds, false);
         }
         return result;
     }
@@ -1565,7 +1566,7 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
     public int cache_getCount(String decidedCacheKey, long shardingId, String sql, Object[] args)
             throws DataAccessException {
         int count = 0;
-        String obj = this.cache.getString(decidedCacheKey);
+        String obj = JedisXUtils.getString(cache, decidedCacheKey);
         if (obj != null) {
             logger.info(daoClassName + "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@hit_cache:" + decidedCacheKey);
 
@@ -1574,7 +1575,7 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
             count = this.jdbc_getCount(shardingId, sql, args);
             logger.info(daoClassName + "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@add_cache:" + decidedCacheKey);
 
-            this.cache.setString(decidedCacheKey, this.expireSeconds, String.valueOf(count));
+            JedisXUtils.setString(cache, decidedCacheKey, this.expireSeconds, String.valueOf(count), false);
         }
         return count;
     }
@@ -1626,7 +1627,7 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
      * @return
      */
     protected T hit_object_cache(String decidedCacheKey) {
-        T model = (T) cache.getObject(decidedCacheKey, null);
+        T model = (T) JedisXUtils.getObject(cache, decidedCacheKey, null);
         // if (model != null) {
         // logger.info(daoClassName + "cache hitting :" + model);
         // }
@@ -1699,16 +1700,16 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
         String cacheKey = null;
         if (primaryFieldInfo != null) {
             cacheKey = this.get_identity_object_cacheKey(model);
-            if (this.cache.exists(cacheKey)) {
+            if (JedisXUtils.exists(cache, cacheKey)) {
                 logger.info(daoClassName + "delete identity cache :" + model);
-                this.cache.delete(cacheKey);
+                JedisXUtils.delete(cache, cacheKey);
             }
         }
         if (combinationFieldInfos.size() > 0) {
             cacheKey = this.get_combination_object_cacheKey(model);
-            if (this.cache.exists(cacheKey)) {
+            if (JedisXUtils.exists(cache, cacheKey)) {
                 logger.info(daoClassName + "delete combination cache :" + model);
-                this.cache.delete(cacheKey);
+                JedisXUtils.delete(cache, cacheKey);
             }
         }
     }
@@ -1722,16 +1723,16 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
         String cacheKey = null;
         if (primaryFieldInfo != null) {
             cacheKey = this.get_identity_object_cacheKey(model);
-            if (!this.cache.exists(cacheKey)) {
+            if (!JedisXUtils.exists(cache, cacheKey)) {
                 logger.info(daoClassName + "add identity key:{}, cache :{}", cacheKey, model);
-                this.cache.setObject(cacheKey, expireSeconds, model);
+                JedisXUtils.setObject(cache, cacheKey, expireSeconds, model);
             }
         }
         if (combinationFieldInfos.size() > 0) {
             cacheKey = this.get_combination_object_cacheKey(model);
-            if (!this.cache.exists(cacheKey)) {
+            if (!JedisXUtils.exists(cache, cacheKey)) {
                 logger.info(daoClassName + "add combination key:{}, cache :{}", cacheKey, model);
-                this.cache.setObject(cacheKey, expireSeconds, model);
+                JedisXUtils.setObject(cache, cacheKey, expireSeconds, model);
             }
         }
     }
@@ -1753,15 +1754,15 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
         try {
             lock = ZkLock.getAndLock(hyperspaceConfig.getZkAddress(), "hyperSpace", lockKey, true, 30000, 30000);
 
-            if (this.cache.exists(countCacheKey)) {
+            if (JedisXUtils.exists(cache, countCacheKey)) {
                 if (step > 0) {
                     logger.info(daoClassName + "count incy cache :{},step:{}", new Object[] { countCacheKey, step });
-                    this.cache.incrBy(countCacheKey, step);
+                    JedisXUtils.incrBy(cache, countCacheKey, step);
                 } else {
                     logger.info(daoClassName + "count decy cache :{},step:{}", new Object[] { countCacheKey, step });
-                    this.cache.decrBy(countCacheKey, Math.abs(step));
+                    JedisXUtils.decrBy(cache, countCacheKey, Math.abs(step));
                 }
-                this.cache.expire(countCacheKey, this.expireSeconds);
+                JedisXUtils.expire(cache, countCacheKey, this.expireSeconds, true);
             }
         } catch (Exception e) {
             this.logger.info(daoClassName + e.getMessage());
@@ -1876,12 +1877,12 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
 
     public Void cache_addOne(String listCacheKey, String countCacheKey, T model) {
         try {
-            if (listCacheKey != null && this.cache.exists(listCacheKey)) {
+            if (listCacheKey != null && JedisXUtils.exists(cache, listCacheKey)) {
                 double cacheSort = Double.valueOf(sortFieldInfo.getReadMethod().invoke(model).toString());
                 logger.info(daoClassName + "cache_addOne cache :{},:{},model:{}", new Object[] { listCacheKey, cache,
                         model });
-                this.cache.zaddObject(listCacheKey, cacheSort, getHyperspaceIdByEntity(model));
-                long count = this.cache.zcard(listCacheKey);
+                JedisXUtils.zaddObject(cache, listCacheKey, cacheSort, getHyperspaceIdByEntity(model));
+                long count = JedisXUtils.zcard(cache, listCacheKey);
                 if (count > DEFAULT_MAX_LIST_SIZE) {
                     if (onlyHasDescList) {
                         // 这种移除方法，只适合倒序的list
@@ -1889,14 +1890,14 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
                         // 倒序list: 1096,1097,1098,1099,1100 ,取的时候是倒序取的
                         // 正序list: 1,2,3,4,5 ,取的时候是正序取的
                         int num = (int) count - (DEFAULT_MAX_LIST_SIZE) - 1;
-                        this.cache.zremrangeByRank(listCacheKey, 0, num);
+                        JedisXUtils.zremrangeByRank(cache, listCacheKey, 0, num);
                     } else {
-                        cache.delete(listCacheKey);
+                        JedisXUtils.delete(cache, listCacheKey);
                     }
 
                 }
             } else {
-                cache.delete(decideIsNullListCacheKey(listCacheKey));
+                JedisXUtils.delete(cache, decideIsNullListCacheKey(listCacheKey));
             }
             if (countCacheKey != null) {
                 this.cache_incrCount(countCacheKey);
@@ -1909,9 +1910,9 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
 
     public Void cache_deleteOne(String listCacheKey, String countCacheKey, T model) {
         try {
-            if (listCacheKey != null && this.cache.exists(listCacheKey)) {
+            if (listCacheKey != null && JedisXUtils.exists(cache, listCacheKey)) {
                 logger.info(daoClassName + "cache_deleteOne cache :{},model:{}", listCacheKey, model);
-                this.cache.zremObject(listCacheKey, getHyperspaceIdByEntity(model));
+                JedisXUtils.zremObject(cache, listCacheKey, getHyperspaceIdByEntity(model));
             }
             if (countCacheKey != null) {
                 this.cache_decrCount(countCacheKey);

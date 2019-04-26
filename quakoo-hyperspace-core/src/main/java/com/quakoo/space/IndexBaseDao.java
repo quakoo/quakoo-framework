@@ -15,6 +15,7 @@ import com.quakoo.space.enums.cache.CacheSortOrder;
 import com.quakoo.space.enums.index.IndexMethodEnum;
 import com.quakoo.space.enums.index.IndexMethodParamEnum;
 import com.quakoo.space.model.FieldInfo;
+import com.quakoo.transaction.JedisXUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -215,7 +216,7 @@ public class IndexBaseDao<T> extends JdbcBaseDao<T> implements InitializingBean 
         if (combinationFieldInfos.size() > 0) {
             cacheKey = this.get_combination_object_cacheKey(model);
         }
-        if(StringUtils.isNotBlank(cacheKey)) this.cache.setObject(cacheKey, DEFAULT_EXPIRED_TIME, model);
+        if(StringUtils.isNotBlank(cacheKey)) JedisXUtils.setObject(cache, cacheKey, DEFAULT_EXPIRED_TIME, model);
     }
 
     private String get_combination_object_cacheKey(T param) {
@@ -271,8 +272,8 @@ public class IndexBaseDao<T> extends JdbcBaseDao<T> implements InitializingBean 
 
     public Void cache_deleteOne(String cacheKey, T model) {
         try {
-            if (cacheKey != null && this.cache.exists(cacheKey)) {
-                this.cache.zremObject(cacheKey, model);
+            if (cacheKey != null && JedisXUtils.exists(cache, cacheKey)) {
+                JedisXUtils.zremObject(cache, cacheKey, model);
             }
         } catch (Exception e) {
             throw new RuntimeException("", e);
@@ -284,17 +285,17 @@ public class IndexBaseDao<T> extends JdbcBaseDao<T> implements InitializingBean 
     public Void cache_addOne(String sortName, String cacheKey, T model) {
         try {
             FieldInfo indexInfo = indexSortFieldInfos.get(sortName);
-            if (cacheKey != null && this.cache.exists(cacheKey)) {
+            if (cacheKey != null && JedisXUtils.exists(cache, cacheKey)) {
                 double cacheSort = Double.valueOf(indexInfo.getReadMethod().invoke(model).toString());
-                this.cache.zaddObject(cacheKey, cacheSort, model);
+                JedisXUtils.zaddObject(cache, cacheKey, cacheSort, model);
 
-                long count = this.cache.zcard(cacheKey);
+                long count = JedisXUtils.zcard(cache, cacheKey);
                 if(count > DEFAULT_MAX_LIST_SIZE) {
                     int num = (int) count - (DEFAULT_MAX_LIST_SIZE) - 1;
-                    this.cache.zremrangeByRank(cacheKey, 0, num);
+                    JedisXUtils.zremrangeByRank(cache, cacheKey, 0, num);
                 }
             } else {
-                cache.delete(decideIsNullListCacheKey(cacheKey));
+                JedisXUtils.delete(cache, decideIsNullListCacheKey(cacheKey));
             }
         } catch (Exception e) {
             throw new RuntimeException("", e);
@@ -400,11 +401,11 @@ public class IndexBaseDao<T> extends JdbcBaseDao<T> implements InitializingBean 
         String cacheKey = null;
         if (primaryFieldInfo != null) {
             cacheKey = this.get_identity_object_cacheKey(model);
-            this.cache.delete(cacheKey);
+            JedisXUtils.delete(cache, cacheKey);
         }
         if (combinationFieldInfos.size() > 0) {
             cacheKey = this.get_combination_object_cacheKey(model);
-            this.cache.delete(cacheKey);
+            JedisXUtils.delete(cache, cacheKey);
         }
     }
 
@@ -472,8 +473,8 @@ public class IndexBaseDao<T> extends JdbcBaseDao<T> implements InitializingBean 
     }
 
     protected T hit_object_cache(String cacheKey) {
-        T model = (T) cache.getObject(cacheKey, null);
-        if(null != model) this.cache.expire(cacheKey, DEFAULT_EXPIRED_TIME);
+        T model = (T) JedisXUtils.getObject(cache, cacheKey, null);
+//        if(null != model) this.cache.expire(cacheKey, DEFAULT_EXPIRED_TIME);
         return model;
     }
 
@@ -522,15 +523,15 @@ public class IndexBaseDao<T> extends JdbcBaseDao<T> implements InitializingBean 
                              String sql, double cursor, int size, Object[] sqlParams) throws DataAccessException {
         List<T> result = Lists.newArrayList();
         double minScore = 0, maxScore = 0;
-        if(!cache.exists(decideIsNullListCacheKey(cacheKey))) {
+        if(!JedisXUtils.exists(cache, decideIsNullListCacheKey(cacheKey))) {
             Set<Object> set = null;
             if (order == CacheSortOrder.asc) {
                 minScore = cursor;
                 maxScore = Double.MAX_VALUE;
-                set = this.cache.zrangeByScoreObject(cacheKey, minScore, maxScore, 0, size, null);
+                set = JedisXUtils.zrangeByScoreObject(cache, cacheKey, minScore, maxScore, 0, size, null);
             } else {
                 maxScore = (cursor == 0) ? Double.MAX_VALUE : cursor;
-                set = this.cache.zrevrangeByScoreObject(cacheKey, maxScore, minScore, 0, size, null);
+                set = JedisXUtils.zrevrangeByScoreObject(cache, cacheKey, maxScore, minScore, 0, size, null);
             }
             if(null == set || set.size() == 0) {
                 List<T> list = super.jdbc_getList(0, sql, sqlParams);
@@ -541,15 +542,15 @@ public class IndexBaseDao<T> extends JdbcBaseDao<T> implements InitializingBean 
                         throw new PermissionDeniedDataAccessException("", e);
                     }
                     if (order == CacheSortOrder.asc) {
-                        set = this.cache.zrangeByScoreObject(cacheKey, minScore, maxScore, 0, size, null);
+                        set = JedisXUtils.zrangeByScoreObject(cache, cacheKey, minScore, maxScore, 0, size, null);
                     } else {
-                        set = this.cache.zrevrangeByScoreObject(cacheKey, maxScore, minScore, 0, size, null);
+                        set = JedisXUtils.zrevrangeByScoreObject(cache, cacheKey, maxScore, minScore, 0, size, null);
                     }
                     for(Object one : set) {
                         result.add((T) one);
                     }
                 } else {
-                    cache.setString(decideIsNullListCacheKey(cacheKey), DEFAULT_EXPIRED_TIME, "true");
+                    JedisXUtils.setString(cache, decideIsNullListCacheKey(cacheKey), DEFAULT_EXPIRED_TIME, "true", false);
                 }
             } else {
                 for(Object one : set) {
@@ -603,8 +604,8 @@ public class IndexBaseDao<T> extends JdbcBaseDao<T> implements InitializingBean 
                 }
                 members.put(one, cache_sort);
             }
-            this.cache.zaddMultiObject(cacheKey, members);
-            this.cache.expire(cacheKey, DEFAULT_EXPIRED_TIME);
+            JedisXUtils.zaddMultiObject(cache, cacheKey, members, false);
+            JedisXUtils.expire(cache, cacheKey, DEFAULT_EXPIRED_TIME, false);
         }
     }
 
