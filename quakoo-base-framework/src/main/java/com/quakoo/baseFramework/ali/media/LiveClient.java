@@ -123,12 +123,12 @@ public class LiveClient {
         return result.replace("%21", "!").replace("%40", "@").replace("%24", "$").replace("%7E", "~").replace("%2C", ",").replace("%27", "'").replace("%28", "(").replace("%29", ")").replace("+", "%20");
     }
 
-    public String getPushRtmp(long id, long startTime, String pushServerDomain, String domain, String appName, String authKey) throws Exception {
-        String pushRtmpFormat = "rtmp://%s/%s/%d?vhost=%s&auth_key=%d-0-0-%s";
+    public String getPushRtmp(long id, long startTime, String pushServerDomain, String appName, String authKey) throws Exception {
+        String pushRtmpFormat = "rtmp://%s/%s/%d?auth_key=%d-0-0-%s";
         startTime = startTime/1000;
         String url=String.format("/%s/%d-%d-0-0-%s", appName, id, startTime, authKey);
         String authValue= MD5Utils.md5ReStr(url.getBytes());
-        String pushRtmp = String.format(pushRtmpFormat,pushServerDomain, appName, id, domain, startTime, authValue);
+        String pushRtmp = String.format(pushRtmpFormat,pushServerDomain, appName, id, startTime, authValue);
         return pushRtmp;
     }
 
