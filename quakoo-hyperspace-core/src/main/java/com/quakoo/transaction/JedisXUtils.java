@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * redis处理(当开启事务时，写操作在commit操作的时候滞后处理，读操作不做特殊处理)
  * class_name: JedisXUtils
- * package: com.s7.space.model.transaction
+ * package: com.quakoo.space.model.transaction
  * creat_user: lihao
  * creat_date: 2019/4/25
  * creat_time: 11:22

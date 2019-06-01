@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import com.quakoo.baseFramework.redis.JedisX;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -29,9 +30,13 @@ public class PushUserQueueInfoDaoImpl extends BaseDao implements PushUserQueueIn
 
 	private String object_key;
 
+
+    private JedisX cache;
+
     @Override
     public void afterPropertiesSet() throws Exception {
         object_key = pushInfo.projectName + "_push_user_queue_%s";
+        cache = new JedisX(pushInfo.redisInfo, pushInfo.redisConfig, 2000);
     }
 
     /**

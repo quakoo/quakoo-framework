@@ -8,11 +8,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.framework.ext.chat.model.UserStream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
@@ -35,7 +37,7 @@ import javax.jws.soap.SOAPBinding;
  * creat_date: 2019/1/29
  * creat_time: 16:58
  **/
-public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
+public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao, InitializingBean {
 
 	private final static String user_info_object_key = "%s_user_info_object_%d";
 	private final static String user_info_queue_key = "%s_user_info_%s_queue";
@@ -45,6 +47,13 @@ public class UserInfoDaoImpl extends BaseDaoHandle implements UserInfoDao {
 
     private Logger logger = LoggerFactory.getLogger(UserInfoDaoImpl.class);
 
+
+    private JedisX cache;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        cache = new JedisX(chatInfo.redisInfo, chatInfo.redisConfig, 2000);
+    }
 
     private String getTable(long uid){
 		long index = uid % chatInfo.user_info_table_names.size();

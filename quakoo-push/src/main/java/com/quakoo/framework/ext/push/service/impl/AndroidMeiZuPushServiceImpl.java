@@ -63,7 +63,7 @@ public class AndroidMeiZuPushServiceImpl extends BaseService implements AndroidM
             for(PushUserInfoPool userInfo : userInfos) {
                 pushIds.add(userInfo.getMeiZuPushId());
             }
-            if(null != push) push.pushMessage(message, pushIds);
+            if(null != push) push.pushMessage(message, pushIds, 2);
 //            logger.error("===========meizu pushids : "+ pushIds.toString() + " pushMsg : " + pushMsg.getTitle());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -71,14 +71,14 @@ public class AndroidMeiZuPushServiceImpl extends BaseService implements AndroidM
     }
 
     public static void main(String[] args) throws Exception {
-        IFlymePush push  = new IFlymePush("7d7503f647b446b580bbcaa0e947716c");
-        VarnishedMessage.Builder messageBuilder = new VarnishedMessage.Builder().appId(117204l)
+        IFlymePush push  = new IFlymePush("807d3bb8a8704e42aa532394204f25e2");
+        VarnishedMessage.Builder messageBuilder = new VarnishedMessage.Builder().appId(117895l)
                 .title("2").content("222");
 //        for(Map.Entry<String, String> entry : payload.getExtra().entrySet()) {
 //            messageBuilder.extra(entry.getKey(), entry.getValue());
 //        }
         VarnishedMessage message = messageBuilder.build();
-        List<String> pushIds = Lists.newArrayList("Z9K487e027e007d7d637754416543005d09417f047a0d");
+        List<String> pushIds = Lists.newArrayList("EIM73070366420d78727b636d557a4f47097a06036240");
         ResultPack<PushResult> res = push.pushMessage(message, pushIds,2);
         System.out.println(res.toString());
     }

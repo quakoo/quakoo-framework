@@ -10,9 +10,9 @@ import com.quakoo.framework.ext.push.AbstractPushInfo;
 
 public class BaseService {
 
-	@Autowired(required = true)
-    @Qualifier("cachePool")
-    protected JedisX cache;
+//	@Autowired(required = true)
+//    @Qualifier("cachePool")
+//    protected JedisX cache;
     
     @Resource
     protected AbstractPushInfo pushInfo;

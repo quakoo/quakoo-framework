@@ -38,7 +38,6 @@ public class NoticeAllQueueDaoImpl extends BaseDaoHandle implements NoticeAllQue
         queueClient = new JedisX(chatInfo.queueInfo, chatInfo.queueConfig, 5000);
     }
 
-
     @Override
     public boolean insert(NoticeAllQueue one) throws DataAccessException {
         String queue_key = String.format(notice_all_queue_key, chatInfo.projectName);

@@ -59,6 +59,9 @@ public abstract class AbstractChatInfo implements InitializingBean {
 
     public JedisPoolConfig queueConfig;
     public JedisBean queueInfo;
+
+    public JedisPoolConfig redisConfig;
+    public JedisBean redisInfo;
 	
 	protected void init(int tableNum) {
 		this.projectName = propertyUtil.getProperty("chat.project.name");
@@ -130,6 +133,13 @@ public abstract class AbstractChatInfo implements InitializingBean {
             throw new IllegalStateException("队列配置不能为空");
         }
 
+        String redisAddress = propertyUtil.getProperty("chat.redis.address");
+        String redisPassword = propertyUtil.getProperty("chat.redis.password");
+        if (StringUtils.isBlank(redisAddress) || StringUtils.isBlank(redisPassword)) {
+            throw new IllegalStateException("缓存配置不能为空");
+        }
+
+
         queueConfig = new JedisPoolConfig();
         queueConfig.setMaxTotal(50);
         queueConfig.setMaxIdle(25);
@@ -141,6 +151,18 @@ public abstract class AbstractChatInfo implements InitializingBean {
         queueInfo = new JedisBean();
         queueInfo.setMasterAddress(queueRedisAddress);
         queueInfo.setPassword(queueRedisPassword);
+
+
+        redisConfig = new JedisPoolConfig();
+        redisConfig.setMaxTotal(300);
+        redisConfig.setMaxIdle(200);
+        redisConfig.setMinIdle(20);
+        redisConfig.setMaxWaitMillis(1000);
+        redisConfig.setTestOnBorrow(false);
+
+        redisInfo = new JedisBean();
+        redisInfo.setMasterAddress(redisAddress);
+        redisInfo.setPassword(redisPassword);
     }
 	
 }

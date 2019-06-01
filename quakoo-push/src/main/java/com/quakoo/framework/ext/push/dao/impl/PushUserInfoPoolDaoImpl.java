@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 
 import com.google.common.collect.Sets;
 //import com.quakoo.framework.ext.push.model.PushHandleQueue;
+import com.quakoo.baseFramework.redis.JedisX;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -42,10 +43,13 @@ public class PushUserInfoPoolDaoImpl extends BaseDao implements PushUserInfoPool
 	private String push_user_info_pool_key;
 	private String push_user_info_pool_null_key;
 
+    private JedisX cache;
+
     @Override
     public void afterPropertiesSet() throws Exception {
         push_user_info_pool_key = pushInfo.projectName + "_push_user_info_pool_%d";
         push_user_info_pool_null_key = pushInfo.projectName + "_push_user_info_pool_%d_null";
+        cache = new JedisX(pushInfo.redisInfo, pushInfo.redisConfig, 2000);
     }
 
     /**

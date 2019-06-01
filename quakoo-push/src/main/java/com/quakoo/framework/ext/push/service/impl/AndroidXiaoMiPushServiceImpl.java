@@ -2,12 +2,14 @@ package com.quakoo.framework.ext.push.service.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.framework.ext.push.model.PushMsg;
 import com.quakoo.framework.ext.push.model.PushUserInfoPool;
 import com.quakoo.framework.ext.push.service.AndroidXiaoMiPushService;
 import com.quakoo.framework.ext.push.service.BaseService;
 import com.xiaomi.xmpush.server.Constants;
 import com.xiaomi.xmpush.server.Message;
+import com.xiaomi.xmpush.server.Result;
 import com.xiaomi.xmpush.server.Sender;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -35,6 +37,8 @@ public class AndroidXiaoMiPushServiceImpl extends BaseService implements Android
 
     private String notifyIdKey;
 
+    private JedisX cache;
+
     @Override
     public void afterPropertiesSet() throws Exception {
         Constants.useOfficial();
@@ -42,6 +46,20 @@ public class AndroidXiaoMiPushServiceImpl extends BaseService implements Android
             sender = new Sender(pushInfo.androidXiaomiPushSecretkey);
         packageName = pushInfo.androidXiaomiPushPackagename;
         notifyIdKey = pushInfo.projectName + "_android_xiaomi_notifyId";
+        cache = new JedisX(pushInfo.redisInfo, pushInfo.redisConfig, 2000);
+    }
+
+    public static void main(String[] args) throws Exception {
+        Sender sender = new Sender("+Edq7deisCtsC28dv/dMxg==");
+        Message message = new Message.Builder()
+                .title("33333").passThrough(0)
+                .description("3333")
+                .restrictedPackageName("com.queke.minglian")
+                .notifyType(1).notifyId(1)
+                .extra(Constants.EXTRA_PARAM_NOTIFY_EFFECT, Constants.NOTIFY_LAUNCHER_ACTIVITY)
+                .build();
+        Result result = sender.sendToAlias(message, String.valueOf(6666752), 2);
+        System.out.println(result.toString());
     }
 
     /**

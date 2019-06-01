@@ -155,4 +155,11 @@ public class LiveClient {
         return res;
     }
 
+    public static void main(String[] args) throws Exception {
+        String coverUrlFormat = "http://%s/%s/%d.jpg";
+        String res = String.format(coverUrlFormat, "gmatlive.oss-cn-beijing.aliyuncs.com", "main", 1);
+        System.out.println(res);
+
+    }
+
 }

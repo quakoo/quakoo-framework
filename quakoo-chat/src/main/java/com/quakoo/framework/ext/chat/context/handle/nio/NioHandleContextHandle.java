@@ -166,10 +166,13 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 		}
 		
 		private void send(ChannelHandlerContext ctx, ConnectResponse connectResponse, long activeTime) {
-			if (!ctx.channel().isActive())
+
+		    if (!ctx.channel().isActive())
 				return;
 			if (System.currentTimeMillis() - activeTime >= time_out)
 				return;
+
+
 			ChannelUtils.write(ctx, connectResponse, false);
 		}
 
@@ -205,7 +208,7 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 							}
 						}
 					}
-
+//                    logger.info("=========== user_index_map : " + user_index_map.toString());
 					long startTime = System.currentTimeMillis();
 					Map<Long, List<UserStream>> streamMap = userStreamService.newStream(user_index_map);
 					List<ChannelHandlerContext> removeList = Lists.newArrayList();
@@ -218,9 +221,11 @@ public abstract class NioHandleContextHandle extends BaseContextHandle {
 						long activeTime = nioUserLongConnection.getActiveTime();
 						List<UserStream> streams = streamMap.get(uid);
 						if(null != streams) {
+//                            logger.info("=========== send : " + streams.toString());
 							List<UserStream> sendList = filter(index, streams);
 							List<StreamBack> sendStreams = userStreamService.transformBack(sendList);
 							ConnectBack connectBack = connectService.transformBack(sendStreams, null);
+
 							if(connectBack.isSend()) {
 								send(ctx, new ConnectResponse(connectBack), activeTime);
                                 sendConns.add(nioUserLongConnection);

@@ -13,6 +13,7 @@ import com.quakoo.framework.ext.chat.service.ext.ChatPushService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -36,13 +37,13 @@ import com.quakoo.framework.ext.chat.service.WillPushQueueService;
  * creat_date: 2019/1/29
  * creat_time: 18:28
  **/
-public class WillPushQueueServiceImpl implements WillPushQueueService {
+public class WillPushQueueServiceImpl implements WillPushQueueService, InitializingBean {
 
     Logger logger = LoggerFactory.getLogger(WillPushQueueServiceImpl.class);
 
-	@Autowired(required = true)
-    @Qualifier("cachePool")
-    private JedisX cache;
+//	@Autowired(required = true)
+//    @Qualifier("cachePool")
+//    private JedisX cache;
 	
 	@Resource
 	private AbstractChatInfo chatInfo;
@@ -56,6 +57,14 @@ public class WillPushQueueServiceImpl implements WillPushQueueService {
     @Autowired(required = false)
     @Qualifier("chatPushService")
     private ChatPushService chatPushService;
+
+    private JedisX cache;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        cache = new JedisX(chatInfo.redisInfo, chatInfo.redisConfig, 2000);
+    }
+
 
     public void handle(long historyTime) {
         Set<Object> list = cache.zrangeByScoreObject(chatInfo.redis_will_push_queue,

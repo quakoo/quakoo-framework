@@ -14,9 +14,9 @@ public class BaseDao {
 	@Resource
 	protected JdbcTemplate jdbcTemplate;
     
-    @Autowired(required = true)
-    @Qualifier("cachePool")
-    protected JedisX cache;
+//    @Autowired(required = true)
+//    @Qualifier("cachePool")
+//    protected JedisX cache;
     
     @Resource
     protected AbstractPushInfo pushInfo;

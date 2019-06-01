@@ -14,9 +14,9 @@ public class BaseDaoHandle {
 	@Resource
 	protected JdbcTemplate jdbcTemplate;
     
-    @Autowired(required = true)
-    @Qualifier("cachePool")
-    protected JedisX cache;
+//    @Autowired(required = true)
+//    @Qualifier("cachePool")
+//    protected JedisX cache;
     
     @Resource
     protected AbstractChatInfo chatInfo;

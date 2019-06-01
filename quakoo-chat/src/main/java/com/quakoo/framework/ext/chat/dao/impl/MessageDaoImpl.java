@@ -10,9 +10,11 @@ import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 
+import com.quakoo.baseFramework.redis.JedisX;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -34,7 +36,7 @@ import com.quakoo.framework.ext.chat.model.Message;
  * creat_date: 2019/1/29
  * creat_time: 16:54
  **/
-public class MessageDaoImpl extends BaseDaoHandle implements MessageDao {
+public class MessageDaoImpl extends BaseDaoHandle implements MessageDao, InitializingBean {
 
 	private static final String object_key = "%s_message_object_%d";
 
@@ -44,6 +46,13 @@ public class MessageDaoImpl extends BaseDaoHandle implements MessageDao {
 	
     @Resource
     private DataFieldMaxValueIncrementer messageMaxValueIncrementer;
+
+    private JedisX cache;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        cache = new JedisX(chatInfo.redisInfo, chatInfo.redisConfig, 2000);
+    }
 
     /**
      * 获取表名(根据ID获取表名)

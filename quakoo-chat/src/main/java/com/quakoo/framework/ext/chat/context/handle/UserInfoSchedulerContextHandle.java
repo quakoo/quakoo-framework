@@ -36,7 +36,7 @@ public class UserInfoSchedulerContextHandle extends BaseContextHandle  {
             while (true) {
                 for (String queueName : chatInfo.user_info_queue_names) {
                     if (DistributedConfig.canRunUserInfoQueue.contains(queueName)) {
-                        Uninterruptibles.sleepUninterruptibly(3000, TimeUnit.MILLISECONDS);
+                        Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
                         try {
                             List<Long> list = userInfoQueueService.list(queueName, handle_size);
                             if (null != list && list.size() > 0) {

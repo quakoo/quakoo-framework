@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.baseFramework.redis.util.HessianSerializeUtil;
 import com.quakoo.framework.ext.chat.model.UserInfo;
 import com.quakoo.framework.ext.chat.model.UserStream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
@@ -35,13 +37,20 @@ import com.quakoo.framework.ext.chat.model.UserDirectory;
  * creat_date: 2019/1/29
  * creat_time: 16:57
  **/
-public class UserDirectoryDaoImpl extends BaseDaoHandle implements UserDirectoryDao {
+public class UserDirectoryDaoImpl extends BaseDaoHandle implements UserDirectoryDao, InitializingBean {
 
     private final static String user_directory_object_key = "%s_user_directory_object_uid_%d_type_%d_thirdId_%d";
 	private static final String user_directory_list_key = "%s_user_directory_list_uid_%d";
 	private static final String user_directory_list_null_key = "%s_user_directory_list_uid_%d_null";
 
     private Logger logger = LoggerFactory.getLogger(UserDirectoryDaoImpl.class);
+
+    private JedisX cache;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        cache = new JedisX(chatInfo.redisInfo, chatInfo.redisConfig, 2000);
+    }
 
     /**
      * 获取表名(根据UID获取表名)

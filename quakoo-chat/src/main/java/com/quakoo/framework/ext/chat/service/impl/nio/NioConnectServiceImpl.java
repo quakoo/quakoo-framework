@@ -9,6 +9,7 @@ import com.quakoo.framework.ext.chat.service.ext.ChatCheckService;
 import com.quakoo.framework.ext.chat.service.ext.OtherChatPrevService;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.annotation.Resource;
@@ -80,6 +81,10 @@ public class NioConnectServiceImpl implements NioConnectService, InitializingBea
 			}).start();
 		}
 	}
+
+    public static void main(String[] args) {
+        String ext = "{\"ext\":\"{\"type\":\"7\",\"extra\":\"\"}\"}";
+    }
 
 	/**
      * 接收到消息放入到队列

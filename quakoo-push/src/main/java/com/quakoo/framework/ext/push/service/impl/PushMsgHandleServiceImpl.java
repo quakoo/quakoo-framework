@@ -2,6 +2,7 @@ package com.quakoo.framework.ext.push.service.impl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.framework.ext.push.dao.PushMsgHandleAllQueueDao;
 import com.quakoo.framework.ext.push.dao.PushUserQueueDao;
 import com.quakoo.framework.ext.push.dao.PushUserQueueInfoDao;
@@ -55,9 +56,12 @@ public class PushMsgHandleServiceImpl extends BaseService implements PushMsgHand
         return pushInfo.push_msg_queue_names.get((int) index);
     }
 
+    private JedisX cache;
+
     @Override
     public void afterPropertiesSet() throws Exception {
         push_msg_queue_key = pushInfo.projectName + "_%s";
+        cache = new JedisX(pushInfo.redisInfo, pushInfo.redisConfig, 2000);
     }
 
     /**

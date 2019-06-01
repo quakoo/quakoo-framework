@@ -34,7 +34,6 @@ public class HuaWeiSender {
     private String activityName;
 
     private String scheme;
-
     private String tokenUrl = "https://login.cloud.huawei.com/oauth2/v2/token"; //获取认证Token的URL
     private String apiUrl = "https://api.push.hicloud.com/pushsend.do"; //应用级消息下发API
     private String accessToken;//下发通知消息的认证Token
@@ -103,10 +102,12 @@ public class HuaWeiSender {
 
 
     public static void main(String[] args) throws  Exception{
-        HuaWeiSender huaWaiSender = new HuaWeiSender("4c8077f22886696dbe84b4d46f3c0ade","100412763", "com.queke.im", "com.queke.im.MainActivity"
+        HuaWeiSender huaWaiSender = new HuaWeiSender("65b358ecc93ac90a140770856b962b1a",
+                "100543099", "com.queke.minglian",
+                "com.queke.minglian.MainActivity"
         ,"customscheme");
-        List<String> tokens = Lists.newArrayList("0869247035761904300002410000CN01");
-        huaWaiSender.send(tokens, "2", "2", HuaWeiSender.type_notice, null);
+        List<String> tokens = Lists.newArrayList("AFF2RSBCeM3GlNCZFPbdJ0hKZ8B4Z70elXOXburRjsV_FaT-g1pKe0O8HHa3rCpZdi4pnRtXXk5a3XteQDO2g_GwC_A8pBvUcHd_v86d-xXQIpw8AWda5t-MuNLB8qtFjg");
+        huaWaiSender.send(tokens, "111", "111", HuaWeiSender.type_notice, null);
 
     }
 

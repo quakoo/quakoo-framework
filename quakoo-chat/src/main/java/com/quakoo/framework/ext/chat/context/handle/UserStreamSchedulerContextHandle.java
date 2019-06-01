@@ -20,7 +20,7 @@ public class UserStreamSchedulerContextHandle extends BaseContextHandle {
 
     Logger logger = LoggerFactory.getLogger(UserStreamSchedulerContextHandle.class);
 
-    private int handle_size = 15; //批量处理条数
+    private int handle_size = 20; //批量处理条数
 
     @Resource
     private UserStreamQueueService userStreamQueueService;
@@ -41,7 +41,7 @@ public class UserStreamSchedulerContextHandle extends BaseContextHandle {
             while (true) {
                 for (String queueName : chatInfo.user_stream_queue_names) {
                     if (DistributedConfig.canRunUserStreamQueue.contains(queueName)) {
-                        Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
+                        Uninterruptibles.sleepUninterruptibly(75, TimeUnit.MILLISECONDS);
                         try {
                             List<UserStreamQueue> list = userStreamQueueService.list(queueName, handle_size);
                             if (null != list && list.size() > 0) {

@@ -39,6 +39,8 @@ public class ManyChatQueueDaoImpl extends BaseDaoHandle implements ManyChatQueue
 
     private JedisX queueClient;
 
+    private JedisX cache;
+
     private final static String many_chat_queue_key = "%s_many_chat_queue_%s";
 //	private final static String many_chat_queue_status_key = "%s_many_chat_queue_%s_status_%d";
 //	private final static String many_chat_queue_status_null_key = "%s_many_chat_queue_%s_status_%d_null";
@@ -49,6 +51,7 @@ public class ManyChatQueueDaoImpl extends BaseDaoHandle implements ManyChatQueue
     @Override
     public void afterPropertiesSet() throws Exception {
         queueClient = new JedisX(chatInfo.queueInfo, chatInfo.queueConfig, 5000);
+        cache = new JedisX(chatInfo.redisInfo, chatInfo.redisConfig, 2000);
     }
 
     /**

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.notnoop.apns.ApnsNotification;
+import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.framework.ext.push.model.PushMsg;
 import com.quakoo.framework.ext.push.model.PushUserInfoPool;
 import org.apache.commons.lang3.StringUtils;
@@ -45,6 +46,8 @@ public class IosPushServiceImpl extends BaseService implements IosPushService,
 	
 	private int poolSize = Runtime.getRuntime().availableProcessors() * 2 + 1;
 
+    private JedisX cache;
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
         badgeKeyFormat = pushInfo.projectName + "_ios_badge_%d";
@@ -62,7 +65,7 @@ public class IosPushServiceImpl extends BaseService implements IosPushService,
                     .withProductionDestination().asQueued().asPool(poolSize).
                             withNoErrorDetection().build();
         }
-
+        cache = new JedisX(pushInfo.redisInfo, pushInfo.redisConfig, 2000);
 	}
 
 	@Override

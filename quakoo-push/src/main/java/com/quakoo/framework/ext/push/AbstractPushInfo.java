@@ -2,10 +2,13 @@ package com.quakoo.framework.ext.push;
 
 import java.util.List;
 
+import com.quakoo.baseFramework.redis.JedisBean;
 import com.quakoo.framework.ext.push.util.PropertyUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 
 import com.google.common.collect.Lists;
+import redis.clients.jedis.JedisPoolConfig;
 
 /**
  * 推送用到的表和信息
@@ -55,7 +58,10 @@ public abstract class AbstractPushInfo implements InitializingBean {
 	public int redis_overtime_short = 5;
     public int lock_timeout = 60000;
 	public int session_timout = 5000;
-	
+
+    public JedisPoolConfig redisConfig;
+    public JedisBean redisInfo;
+
 	protected void init(int tableNum) {
 	    this.projectName = propertyUtil.getProperty("project.name");
 	    this.persistence = propertyUtil.getProperty("persistence").trim();
@@ -87,6 +93,23 @@ public abstract class AbstractPushInfo implements InitializingBean {
 		String push_user_queue_table_name = "push_user_queue";
 
 		String push_msg_queue_name = "push_msg_queue";
+
+        String redisAddress = propertyUtil.getProperty("push.redis.address");
+        String redisPassword = propertyUtil.getProperty("push.redis.password");
+        if (StringUtils.isBlank(redisAddress) || StringUtils.isBlank(redisPassword)) {
+            throw new IllegalStateException("缓存配置不能为空");
+        }
+
+        redisConfig = new JedisPoolConfig();
+        redisConfig.setMaxTotal(300);
+        redisConfig.setMaxIdle(200);
+        redisConfig.setMinIdle(20);
+        redisConfig.setMaxWaitMillis(1000);
+        redisConfig.setTestOnBorrow(false);
+
+        redisInfo = new JedisBean();
+        redisInfo.setMasterAddress(redisAddress);
+        redisInfo.setPassword(redisPassword);
 
 		for(int i = 0; i < tableNum; i++) {
 			if(i == 0) {

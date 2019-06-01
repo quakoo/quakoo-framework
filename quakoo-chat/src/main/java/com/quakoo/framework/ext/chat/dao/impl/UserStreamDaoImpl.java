@@ -57,10 +57,12 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao, I
     private Logger logger = LoggerFactory.getLogger(UserStreamDaoImpl.class);
 
     private JedisX queueClient;
+    private JedisX cache;
 
     @Override
     public void afterPropertiesSet() throws Exception {
         queueClient = new JedisX(chatInfo.queueInfo, chatInfo.queueConfig, 5000);
+        cache = new JedisX(chatInfo.redisInfo, chatInfo.redisConfig, 2000);
     }
 
     private String getTable(long uid){

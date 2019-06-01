@@ -8,9 +8,11 @@ import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 
+import com.quakoo.baseFramework.redis.JedisX;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
@@ -31,7 +33,7 @@ import com.quakoo.framework.ext.chat.model.ChatGroup;
  * creat_date: 2019/1/29
  * creat_time: 16:50
  **/
-public class ChatGroupDaoImpl extends BaseDaoHandle implements ChatGroupDao {
+public class ChatGroupDaoImpl extends BaseDaoHandle implements ChatGroupDao, InitializingBean {
 
     private Logger logger = LoggerFactory.getLogger(ChatGroupDaoImpl.class);
 
@@ -39,6 +41,13 @@ public class ChatGroupDaoImpl extends BaseDaoHandle implements ChatGroupDao {
     
     @Resource
     private DataFieldMaxValueIncrementer chatGroupMaxValueIncrementer;
+
+    private JedisX cache;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        cache = new JedisX(chatInfo.redisInfo, chatInfo.redisConfig, 2000);
+    }
 
     /**
      * 获取表名(根据群组id获取表名)

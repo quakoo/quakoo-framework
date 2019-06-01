@@ -1,5 +1,7 @@
 package com.quakoo.framework.ext.chat.job;
 
+import com.aliyun.oss.OSSClient;
+import com.aliyun.oss.model.*;
 import com.google.common.collect.Lists;
 import com.quakoo.framework.ext.chat.AbstractChatInfo;
 import com.quakoo.framework.ext.chat.distributed.DistributedConfig;
@@ -11,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.annotation.Resource;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 /**
@@ -25,9 +28,9 @@ public class CleanJob {
 
     private Logger logger = LoggerFactory.getLogger(CleanJob.class);
 
-    private int step_day = 1000 * 60 * 60 * 24; //保留天数
-
     private PropertyUtil propertyUtil = PropertyUtil.getInstance("chat.properties");
+
+    private int step_day = 1000 * 60 * 60 * 24; //保留天数
 
     @Resource
     private AbstractChatInfo chatInfo;
@@ -117,6 +120,50 @@ public class CleanJob {
 //        }
 //    }
 
+    private void _getAllOSS(OSSClient ossClient, String bucketName, String nextMarker, int maxKeys, List<OSSObjectSummary> list) {
+        ListObjectsRequest request = new ListObjectsRequest(bucketName).withMaxKeys(maxKeys);
+        if(StringUtils.isNotBlank(nextMarker)) {
+            request.setMarker(nextMarker);
+        }
+        ObjectListing objectListing = ossClient.listObjects(request);
+        nextMarker = objectListing.getNextMarker();
+        List<OSSObjectSummary> subList = objectListing.getObjectSummaries();
+        list.addAll(subList);
+        if(subList.size() == maxKeys) {
+            _getAllOSS(ossClient, bucketName, nextMarker, maxKeys, list);
+        }
+    }
+
+    private List<OSSObjectSummary> getAllOss(OSSClient ossClient, String bucketName) {
+        List<OSSObjectSummary> res = Lists.newArrayList();
+        final int maxKeys = 1000;
+        _getAllOSS(ossClient, bucketName, null, maxKeys, res);
+        return res;
+    }
+
+    private void delOss(OSSClient ossClient, String bucketName, List<OSSObjectSummary> list, long minTime) {
+        List<String> allDelKeys = Lists.newArrayList();
+        for(OSSObjectSummary one : list) {
+            if(one.getLastModified().getTime() < minTime) allDelKeys.add(one.getKey());
+        }
+        List<List<String>> delKeysList = Lists.partition(allDelKeys, 1000);
+        for(List<String> delKeys : delKeysList) {
+            DeleteObjectsResult deleteObjectsResult = ossClient.deleteObjects(new DeleteObjectsRequest(bucketName).withKeys(delKeys));
+            List<String> deletedObjects = deleteObjectsResult.getDeletedObjects();
+        }
+    }
+
+    private void cleanOss(String endpoint, String accessKeyId, String accessKeySecret, String bucketName, long minTime) {
+        OSSClient ossClient = null;
+        try {
+            ossClient = new OSSClient(endpoint, accessKeyId, accessKeySecret);
+            List<OSSObjectSummary> list = getAllOss(ossClient, bucketName);
+            delOss(ossClient, bucketName, list, minTime);
+        } finally {
+            if(ossClient != null) ossClient.shutdown();
+        }
+    }
+
     public void handle() {
         if(DistributedConfig.canRunClean) {
             int dayNum = 4;
@@ -131,6 +178,7 @@ public class CleanJob {
             cleanUserStream(currentTime - step_day * dayNum);
             cleanMessage(currentTime - step_day * dayNum);
 //        cleanUserClientInfo(currentTime - step_day * 7);
+
         }
     }
 

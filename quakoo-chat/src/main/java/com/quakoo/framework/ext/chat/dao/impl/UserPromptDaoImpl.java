@@ -7,9 +7,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import com.quakoo.baseFramework.redis.JedisX;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -23,7 +25,7 @@ import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
 import com.quakoo.framework.ext.chat.dao.UserPromptDao;
 import com.quakoo.framework.ext.chat.model.UserPrompt;
 
-public class UserPromptDaoImpl extends BaseDaoHandle implements UserPromptDao {
+public class UserPromptDaoImpl extends BaseDaoHandle implements UserPromptDao,InitializingBean {
 
     private final static String user_prompt_queue_key = "%s_user_prompt_uid_%d_queue";
 	private final static String user_prompt_queue_null_key = "%s_user_prompt_uid_%d_queue_null";
@@ -31,7 +33,14 @@ public class UserPromptDaoImpl extends BaseDaoHandle implements UserPromptDao {
 	private final static int max_queue_num = 100;
 
 	private Logger logger = LoggerFactory.getLogger(UserPromptDaoImpl.class);
-	
+
+    private JedisX cache;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        cache = new JedisX(chatInfo.redisInfo, chatInfo.redisConfig, 2000);
+    }
+
 	private String getTable(long uid){
 		long index = uid % chatInfo.user_prompt_table_names.size();
 		return chatInfo.user_prompt_table_names.get((int) index);

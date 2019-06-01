@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.quakoo.baseFramework.jackson.JsonUtils;
 import com.quakoo.baseFramework.lock.ZkLock;
+import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.framework.ext.push.dao.BaseDao;
 import com.quakoo.framework.ext.push.dao.PushMsgHandleAllQueueDao;
 import com.quakoo.framework.ext.push.model.PushMsgHandleAllQueue;
@@ -40,10 +41,14 @@ public class PushMsgHandleAllQueueDaoImpl extends BaseDao implements PushMsgHand
     private String push_msg_handle_all_queue_key;
     private String push_msg_handle_all_queue_null_key;
 
+    private JedisX cache;
+
+
     @Override
     public void afterPropertiesSet() throws Exception {
         push_msg_handle_all_queue_key = pushInfo.projectName + "_push_msg_handle_all_queue";
         push_msg_handle_all_queue_null_key = pushInfo.projectName  + "_push_msg_handle_all_queue_null";
+        cache = new JedisX(pushInfo.redisInfo, pushInfo.redisConfig, 2000);
     }
 
     /**

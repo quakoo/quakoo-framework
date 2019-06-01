@@ -1,9 +1,15 @@
 package com.quakoo.framework.ext.push.model;
 
+import com.google.common.collect.Lists;
+import com.quakoo.baseFramework.redis.JedisBean;
+import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.framework.ext.push.model.constant.Brand;
 import com.quakoo.framework.ext.push.model.constant.Platform;
+import redis.clients.jedis.JedisPoolConfig;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 推送用户信息
@@ -109,5 +115,32 @@ public class PushUserInfoPool implements Serializable {
                 ", meiZuPushId='" + meiZuPushId + '\'' +
                 ", activeTime=" + activeTime +
                 '}';
+    }
+
+    public static void main(String[] args) {
+        JedisPoolConfig queueConfig = new JedisPoolConfig();
+        queueConfig.setMaxTotal(50);
+        queueConfig.setMaxIdle(25);
+        queueConfig.setMinIdle(10);
+        queueConfig.setMaxWaitMillis(1000);
+        queueConfig.setTestOnBorrow(true);
+        queueConfig.setTestWhileIdle(true);
+        JedisBean queueInfo = new JedisBean();
+        queueInfo.setMasterAddress("47.107.155.86:6384");
+        queueInfo.setPassword("Queke123!!!");
+
+        JedisX cache = new JedisX(queueInfo, queueConfig, 5000);
+
+        List<PushUserInfoPool> res = Lists.newArrayList();
+        Set<Object> set = cache.smemberObject("minglian_push_user_info_pool_6782833", null);
+        if(null != set && set.size() > 0){
+            for(Object one : set){
+                res.add((PushUserInfoPool) one);
+            }
+        }
+
+        for(PushUserInfoPool one : res) {
+            System.out.println(one.toString());
+        }
     }
 }

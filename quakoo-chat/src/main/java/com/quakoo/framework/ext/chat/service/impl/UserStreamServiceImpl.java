@@ -415,6 +415,11 @@ public class UserStreamServiceImpl implements UserStreamService {
         userStreamDao.create_sort(streams);
     }
 
+    public static void main(String[] args) {
+        String tmp = "[消息" + 111 + "格式不兼容]";
+        System.out.println((String.format("{\"word\":\"%s\",\"ext\":\"\"}", tmp)));
+    }
+
     /**
      * 封装信息流
 	 * method_name: transformBack
@@ -468,6 +473,12 @@ public class UserStreamServiceImpl implements UserStreamService {
 					if(i == 0) maxIndex = one.getSort();
 					Message message = message_map.get(one.getMid());
 					if(message != null) {
+					    //TODO ext消息临时处理
+                        if(message.getContent().equals("{\"ext\":\"{\\\"type\\\":\\\"7\\\",\\\"extra\\\":\\\"\\\"}\"}")) {
+                            String tmp = "[消息" + message.getId() + "格式不兼容]";
+                            message.setContent(String.format("{\"word\":\"%s\",\"ext\":\"\"}", tmp));
+                        }
+
                         int type = one.getType();
                         long thirdId = one.getThirdId();
                         long authorId = one.getAuthorId();
