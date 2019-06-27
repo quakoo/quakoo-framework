@@ -137,6 +137,7 @@ public class UserInfoServiceImpl implements UserInfoService, InitializingBean {
             return userInfo;
         }
         double loginTime = userInfoDao.create_login_time(uid);
+        if(lastIndex > loginTime) lastIndex = loginTime;
         if(userInfo == null) {
             userInfo = new UserInfo();
             userInfo.setLastIndex(lastIndex);
