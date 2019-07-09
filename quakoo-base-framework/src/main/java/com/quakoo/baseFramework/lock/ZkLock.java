@@ -93,7 +93,7 @@ public class ZkLock {
             //delete if no Children
             client.delete().forPath(myPath);
         } catch (Exception e) {
-            logger.warn("error in release lock", e);
+//            logger.warn("error in release lock", e);
         }
     }
     
