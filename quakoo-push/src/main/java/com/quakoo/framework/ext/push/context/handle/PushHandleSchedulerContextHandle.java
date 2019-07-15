@@ -30,7 +30,7 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
 
 	Logger logger = LoggerFactory.getLogger(PushHandleSchedulerContextHandle.class);
 
-	private int handle_size = 50;
+	private int handle_size = 100;
 	
 	@Resource
 	private PushMsgHandleService pushMsgHandleService;
@@ -55,7 +55,7 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
 		public void run() {
 			while(true) {
 				if(DistributedConfig.canRunPushMsgQueue.contains(queueName)) {
-					SleepUtils.sleep(200, 50);
+					SleepUtils.sleep(10, 1);
 					try {
 						List<PushMsg> list = pushMsgHandleService.getHandlePushMsgs(queueName, handle_size); //获取要推送的通知
 						for(PushMsg pushMsg : list) {
