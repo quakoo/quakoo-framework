@@ -7,8 +7,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.quakoo.baseFramework.jackson.JsonUtils;
 import com.quakoo.framework.ext.push.model.PushMsg;
 import com.quakoo.framework.ext.push.model.constant.Platform;
 import com.quakoo.framework.ext.push.service.PushMsgHandleService;
@@ -48,6 +50,16 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
             Thread thread = new Thread(new Processer(queueName));
             thread.start();
         }
+    }
+
+    public static void main(String[] args) {
+        Map<String, String> map = Maps.newHashMap();
+        String str = "%d_%d_%s_%s";
+        String a = String.format(str, 1,1,"a", JsonUtils.toJson(map));
+        System.out.println(a.split("_")[0]);
+        System.out.println(a.split("_")[1]);
+        System.out.println(a.split("_")[2]);
+        System.out.println(a.split("_")[3]);
     }
 
     class Processer implements Runnable {
@@ -106,14 +118,16 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                     send(Lists.newArrayList(entry.getValue()), pushMsg);
                                 }
                             } else {
-                                String uid_key_format = "%d_%d_%s"; //uid_platform_title
+                                String uid_key_format = "%d_%d_%s_%s"; //uid_platform_title_ext
                                 Map<String, List<PushMsg>> map = Maps.newHashMap();
                                 for(PushMsg pushMsg : list) {
                                     int platform = pushMsg.getPlatform();
                                     String title = pushMsg.getTitle();
+                                    Map<String, String> extra = pushMsg.getExtra();
+                                    String extraStr = JsonUtils.toJson(extra);
                                     if(pushMsg.getType() == PushMsg.type_single) {
                                         long uid = pushMsg.getUid();
-                                        String key = String.format(uid_key_format, uid, platform, title);
+                                        String key = String.format(uid_key_format, uid, platform, title, extraStr);
                                         List<PushMsg> pushMsgs = map.get(key);
                                         if(pushMsgs == null) {
                                             pushMsgs = Lists.newArrayList();
@@ -127,7 +141,7 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                         List<Long> uids = ListTransformUtils.
                                                 transformedList(strList, new ListTransformerStringToLong());
                                         for(long uid : uids) {
-                                            String key = String.format(uid_key_format, uid, platform, title);
+                                            String key = String.format(uid_key_format, uid, platform, title, extraStr);
                                             List<PushMsg> pushMsgs = map.get(key);
                                             if(pushMsgs == null) {
                                                 pushMsgs = Lists.newArrayList();
@@ -137,7 +151,7 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                         }
                                     }
                                 }
-                                String num_key_format = "%d_%d_%s"; //num_platform_title
+                                String num_key_format = "%d_%d_%s_%s"; //num_platform_title_ext
                                 Map<String, Set<Long>> map2 = Maps.newHashMap(); // UIDS
                                 Map<Long, Set<Long>> pmidUidsMap = Maps.newHashMap();
                                 Map<Long, PushMsg> pushMsgMap = Maps.newHashMap();
@@ -146,10 +160,11 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                     long uid = Long.parseLong(str.split("_")[0]);
                                     int platform = Integer.parseInt(str.split("_")[1]);
                                     String title = str.split("_")[2];
+                                    String extraStr = str.split("_")[3];
                                     List<PushMsg> pushMsgs = entry.getValue();
                                     int num = pushMsgs.size();
                                     if(num > 1) {
-                                        String key = String.format(num_key_format, num, platform, title);
+                                        String key = String.format(num_key_format, num, platform, title, extraStr);
                                         Set<Long> uids = map2.get(key);
                                         if(uids == null) {
                                             uids = Sets.newHashSet();
@@ -175,19 +190,22 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                         int num = Integer.parseInt(key.split("_")[0]);
                                         int platform = Integer.parseInt(key.split("_")[1]);
                                         String title = key.split("_")[2];
+                                        String extraStr = key.split("_")[3];
+                                        Map<String, String> extra = JsonUtils.fromJson(extraStr, new TypeReference<Map<String, String>>() {});
                                         PushMsg pushMsg = new PushMsg();
                                         pushMsg.setTitle(title);
                                         pushMsg.setContent("您收到了" + num + "条新消息");
+                                        pushMsg.setExtra(extra);
                                         pushMsg.setPlatform(platform);
 
-//                                    logger.info(" ========= " + pushMsg.toString() + " uids : " + uids.toString());
+//                                        logger.info(" ========= " + pushMsg.toString() + " uids : " + uids.toString());
 
                                         send(Lists.newArrayList(uids), pushMsg);
                                     }
                                 }
 
                                 if(pmidUidsMap.size() > 0) {
-                                    String key_format = "%d_%s_%s"; //platform_title_content
+                                    String key_format = "%d_%s_%s_%s"; //platform_title_content_ext
                                     Map<String, Set<Long>> map3 = Maps.newHashMap(); //UIDS
                                     for(Map.Entry<Long, Set<Long>> entry : pmidUidsMap.entrySet()) {
                                         long pmid = entry.getKey();
@@ -196,7 +214,9 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                             int platform = pushMsg.getPlatform();
                                             String title = pushMsg.getTitle();
                                             String content = pushMsg.getContent();
-                                            String key = String.format(key_format, platform, title, content);
+                                            Map<String, String> extra = pushMsg.getExtra();
+                                            String extraStr = JsonUtils.toJson(extra);
+                                            String key = String.format(key_format, platform, title, content, extraStr);
                                             Set<Long> uids = map3.get(key);
                                             if(uids == null) {
                                                 uids = Sets.newHashSet();
@@ -210,18 +230,34 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                         int platform = Integer.parseInt(key.split("_")[0]);
                                         String title = key.split("_")[1];
                                         String content = key.split("_")[2];
+                                        String extraStr = key.split("_")[3];
+                                        Map<String, String> extra = JsonUtils.fromJson(extraStr, new TypeReference<Map<String, String>>() {});
                                         PushMsg pushMsg = new PushMsg();
                                         pushMsg.setTitle(title);
                                         pushMsg.setContent(content);
                                         pushMsg.setPlatform(platform);
+                                        pushMsg.setExtra(extra);
 
-//                                    logger.info(" ========= " + pushMsg.toString() + " uids : " + entry.getValue().toString());
+//                                        logger.info(" ========= " + pushMsg.toString() + " uids : " + entry.getValue().toString());
 
                                         send(Lists.newArrayList(entry.getValue()), pushMsg);
                                     }
 
                                 }
 
+//                            for(PushMsg pushMsg : list) {
+//                                if(pushMsg.getType() == PushMsg.type_single) {
+//                                    long uid = pushMsg.getUid();
+//                                    handleSingle(uid, pushMsg); //单个用户通知推送
+//                                } else {
+//                                    String uidStr = pushMsg.getUids();
+//                                    List<String> strList = Lists.
+//                                            newArrayList(StringUtils.split(uidStr, ","));
+//                                    List<Long> uids = ListTransformUtils.
+//                                            transformedList(strList, new ListTransformerStringToLong());
+//                                    handleBatch(uids, pushMsg); //多个用户通知推送
+//                                }
+//                            }
                             }
                             pushMsgHandleService.finishHandlePushMsgs(queueName, list); //推送完成更新
                         }
