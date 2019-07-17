@@ -1,5 +1,7 @@
 package com.quakoo.baseFramework.reflect;
 
+import org.springframework.asm.*;
+
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -18,14 +20,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.*;
-import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.ClassReader;
-import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.ClassVisitor;
-import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.ClassWriter;
-import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Label;
-import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.MethodVisitor;
-import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes;
-import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Type;
+//import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.*;
+//import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.ClassReader;
+//import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.ClassVisitor;
+//import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.ClassWriter;
+//import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Label;
+//import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.MethodVisitor;
+//import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Opcodes;
+//import com.quakoo.baseFramework.aop.asm.org.objectweb.asm.Type;
 
 /**
  * 反射帮助类
@@ -73,8 +75,6 @@ public class ReflectUtil {
 	/**
 	 * 把map转成对象
 	 * 
-	 * @param obj
-	 * @param filters
 	 *            过滤字段
 	 * @return
 	 * @throws Exception
@@ -181,7 +181,7 @@ public class ReflectUtil {
 			try {
 				InputStream in = Thread.currentThread().getContextClassLoader()
 						.getResourceAsStream(n.replace('.', '/') + ".class");
-				cr = new ClassReader(in, true);
+				cr = new ClassReader(in);
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
