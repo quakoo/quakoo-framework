@@ -19,7 +19,7 @@ import com.quakoo.space.annotation.jdbc.JdbcDaoMethod;
 import com.quakoo.space.enums.cache.CacheMethodEnum;
 import com.quakoo.space.enums.cache.CacheSortOrder;
 import com.quakoo.space.enums.jdbc.JdbcMethodEnum;
-import net.sf.cglib.proxy.MethodProxy;
+//import net.sf.cglib.proxy.MethodProxy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +35,7 @@ import com.quakoo.space.aop.jdbc.JdbcCommonMethodInterceptor;
 import com.quakoo.space.enums.cache.CacheMethodEnum;
 import com.quakoo.space.enums.cache.CacheSortOrder;
 import com.quakoo.space.enums.jdbc.JdbcMethodEnum;
+import org.springframework.cglib.proxy.MethodProxy;
 
 public class CacheCommonMethodInterceptor extends JdbcCommonMethodInterceptor {
 

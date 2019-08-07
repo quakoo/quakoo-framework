@@ -6,9 +6,10 @@ import java.lang.reflect.Modifier;
 import com.quakoo.space.aop.cache.CacheCommonMethodInterceptor;
 import com.quakoo.space.aop.index.IndexCommonMethodInterceptor;
 import com.quakoo.space.aop.timeline.TimelineCommonMethodInterceptor;
-import net.sf.cglib.proxy.Enhancer;
+//import net.sf.cglib.proxy.Enhancer;
 
 import com.quakoo.space.aop.jdbc.JdbcCommonMethodInterceptor;
+import org.springframework.cglib.proxy.Enhancer;
 
 public class HyperspaceProxy {
 	public void copy(Object target, Object source) throws Exception {

@@ -7,11 +7,16 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mongodb.client.ListIndexesIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.result.UpdateResult;
 import com.quakoo.space.model.FieldInfo;
 import com.quakoo.space.model.lbs.Coordinate;
 import com.quakoo.space.model.lbs.Place;
 import org.apache.commons.lang.IllegalClassException;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.Document;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,19 +28,13 @@ import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.GeoNearOperation;
-import org.springframework.data.mongodb.core.aggregation.MatchOperation;
-import org.springframework.data.mongodb.core.aggregation.SortOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
 import com.quakoo.baseFramework.reflect.ReflectUtil;
 
 public class LbsMongodbBaseDao<T extends Place> implements InitializingBean {
@@ -56,7 +55,7 @@ public class LbsMongodbBaseDao<T extends Place> implements InitializingBean {
     
     protected List<FieldInfo> fields = new ArrayList<FieldInfo>(); // 所有的列信息
     
-    protected DBCollection collection;
+    protected MongoCollection<Document> collection;
     
 
 	@Override
@@ -78,8 +77,8 @@ public class LbsMongodbBaseDao<T extends Place> implements InitializingBean {
 	}
 	
 	protected boolean update_field(Query query,Update update) {
-		WriteResult res = this.mongoTemplate.updateFirst(query, update,entityClass);
-		return res.isUpdateOfExisting();
+		UpdateResult res = this.mongoTemplate.updateFirst(query, update,entityClass);
+		return res.wasAcknowledged();
 	}
 	
 	public boolean update(T model) throws Exception {
@@ -216,19 +215,33 @@ public class LbsMongodbBaseDao<T extends Place> implements InitializingBean {
 	
 	private void init_lbs_index(){
 		boolean hasIndex = false;
-		List<DBObject> objs = collection.getIndexInfo();
-		for(DBObject obj : objs){
-			String indexName = obj.get("name") != null ? (String) obj.get("name") : "";
-			if (StringUtils.isNotEmpty(indexName) && indexName.equals(INDEX_INFO_NAME+"_2dsphere")) {
+        ListIndexesIterable<Document> currentIndexes = collection.listIndexes();
+        MongoCursor<Document> cursor = currentIndexes.iterator();
+        while (cursor.hasNext()) {
+            Object next = cursor.next();
+            String indexName = ((Document) next).get("name").toString();
+            if (StringUtils.isNotEmpty(indexName) && indexName.equals(INDEX_INFO_NAME+"_2dsphere")) {
                 hasIndex = true;
                 break;
             }
-		}
-		if (!hasIndex) {
-            DBObject keys = new BasicDBObject();
-            keys.put(INDEX_INFO_NAME, "2dsphere");
-            collection.createIndex(keys);
         }
+        if (!hasIndex) {
+            collection.createIndex(new BasicDBObject(INDEX_INFO_NAME, "2dsphere"));
+        }
+
+//		List<DBObject> objs = collection.listIndexes().getIndexInfo();
+//		for(DBObject obj : objs){
+//			String indexName = obj.get("name") != null ? (String) obj.get("name") : "";
+//			if (StringUtils.isNotEmpty(indexName) && indexName.equals(INDEX_INFO_NAME+"_2dsphere")) {
+//                hasIndex = true;
+//                break;
+//            }
+//		}
+//		if (!hasIndex) {
+//            DBObject keys = new BasicDBObject();
+//            keys.put(INDEX_INFO_NAME, "2dsphere");
+//            collection.createIndex(keys);
+//        }
 	}
 	
 }

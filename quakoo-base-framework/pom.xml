@@ -286,7 +286,7 @@
         <dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-mongodb</artifactId>
-			<version>1.8.4.RELEASE</version><!-- 1.7.2.RELEASE -->
+			<version>2.1.9.RELEASE</version><!-- 1.7.2.RELEASE -->
 		</dependency>
 		<dependency>
 			<groupId>org.apache.curator</groupId>

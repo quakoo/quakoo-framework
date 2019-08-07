@@ -8,14 +8,16 @@ import com.quakoo.space.annotation.jdbc.JdbcMethodParam;
 import com.quakoo.space.annotation.jdbc.JdbcSqlMethod;
 import com.quakoo.space.enums.jdbc.JdbcMethodEnum;
 import com.quakoo.space.enums.jdbc.JdbcMethodParamEnum;
-import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
+//import net.sf.cglib.proxy.MethodInterceptor;
+//import net.sf.cglib.proxy.MethodProxy;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.quakoo.space.JdbcBaseDao;
+import org.springframework.cglib.proxy.MethodInterceptor;
+import org.springframework.cglib.proxy.MethodProxy;
 
 public class JdbcCommonMethodInterceptor implements MethodInterceptor {
 

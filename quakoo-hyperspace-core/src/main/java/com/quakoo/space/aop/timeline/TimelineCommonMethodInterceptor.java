@@ -9,11 +9,13 @@ import com.quakoo.space.annotation.timeline.TimelineMethod;
 import com.quakoo.space.enums.timeline.TimelineMethodEnum;
 import com.quakoo.space.model.timeline.TimelineSession;
 import com.quakoo.space.timeline.AbstractTimelineService;
-import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
+//import net.sf.cglib.proxy.MethodInterceptor;
+//import net.sf.cglib.proxy.MethodProxy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cglib.proxy.MethodInterceptor;
+import org.springframework.cglib.proxy.MethodProxy;
 
 
 public class TimelineCommonMethodInterceptor implements MethodInterceptor {
