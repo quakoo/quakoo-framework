@@ -64,9 +64,11 @@ public class RowMapperHelp<T> implements RowMapper<T> {
 
     @Override
     public T mapRow(ResultSet rs, int num) throws SQLException {
+        FieldInfo fieldInfo = null;
         try {
             Object o = entityClass.newInstance();
             for (FieldInfo info : fields) {
+                fieldInfo = info;
                 String c = info.getDbName();
                 if (c.startsWith("`") && c.endsWith("`")) {
                     c = c.substring(1, c.length() - 1);
@@ -81,7 +83,7 @@ public class RowMapperHelp<T> implements RowMapper<T> {
             }
             return (T) o;
         } catch (Exception e) {
-            throw new SQLException(e);
+            throw new SQLException(fieldInfo.toString(), e);
         }
     }
 
