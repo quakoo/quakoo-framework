@@ -83,7 +83,9 @@ public class RowMapperHelp<T> implements RowMapper<T> {
             }
             return (T) o;
         } catch (Exception e) {
-            throw new SQLException(fieldInfo.toString(), e);
+            String msg = "";
+            if(fieldInfo != null) msg = fieldInfo.toString();
+            throw new SQLException(msg, e);
         }
     }
 
