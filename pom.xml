@@ -43,7 +43,7 @@
         <freemarker.version>2.3.20</freemarker.version>
         <hessian.version>3.1.3</hessian.version>
         <junit.version>4.11</junit.version>
-        <servlet-api.version>3.1.0</servlet-api.version>
+        <servlet-api.version>4.0.1</servlet-api.version>
         <spring-ibatis.version>2.0.8</spring-ibatis.version>
         <mysql-connector.version>5.1.34</mysql-connector.version>
         <kafka_2.9.2.version>0.8.1.1</kafka_2.9.2.version>
@@ -226,7 +226,6 @@
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>${servlet-api.version}</version>
-                <scope>provided</scope>
             </dependency>
             <!-- provided end -->
             <!-- struts相关包 -->
