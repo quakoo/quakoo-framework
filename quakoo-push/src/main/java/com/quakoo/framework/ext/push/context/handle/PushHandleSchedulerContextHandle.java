@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.quakoo.baseFramework.jackson.JsonUtils;
+import com.quakoo.baseFramework.util.StringUtil;
 import com.quakoo.framework.ext.push.model.PushMsg;
 import com.quakoo.framework.ext.push.model.constant.Platform;
 import com.quakoo.framework.ext.push.service.PushMsgHandleService;
@@ -124,7 +125,8 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                     int platform = pushMsg.getPlatform();
                                     String title = pushMsg.getTitle();
                                     Map<String, String> extra = pushMsg.getExtra();
-                                    String extraStr = JsonUtils.toJson(extra);
+                                    String extraStr = "";
+                                    if(extra.size() > 0) extraStr = JsonUtils.toJson(extra);
                                     if(pushMsg.getType() == PushMsg.type_single) {
                                         long uid = pushMsg.getUid();
                                         String key = String.format(uid_key_format, uid, platform, title, extraStr);
@@ -191,7 +193,9 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                         int platform = Integer.parseInt(key.split("_")[1]);
                                         String title = key.split("_")[2];
                                         String extraStr = key.split("_")[3];
-                                        Map<String, String> extra = JsonUtils.fromJson(extraStr, new TypeReference<Map<String, String>>() {});
+                                        Map<String, String> extra = Maps.newHashMap();
+                                        if(StringUtils.isNotBlank(extraStr))
+                                            extra = JsonUtils.fromJson(extraStr, new TypeReference<Map<String, String>>() {});
                                         PushMsg pushMsg = new PushMsg();
                                         pushMsg.setTitle(title);
                                         pushMsg.setContent("您收到了" + num + "条新消息");
@@ -215,7 +219,8 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                             String title = pushMsg.getTitle();
                                             String content = pushMsg.getContent();
                                             Map<String, String> extra = pushMsg.getExtra();
-                                            String extraStr = JsonUtils.toJson(extra);
+                                            String extraStr = "";
+                                            if(extra.size() > 0) extraStr = JsonUtils.toJson(extra);
                                             String key = String.format(key_format, platform, title, content, extraStr);
                                             Set<Long> uids = map3.get(key);
                                             if(uids == null) {
@@ -231,7 +236,9 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                         String title = key.split("_")[1];
                                         String content = key.split("_")[2];
                                         String extraStr = key.split("_")[3];
-                                        Map<String, String> extra = JsonUtils.fromJson(extraStr, new TypeReference<Map<String, String>>() {});
+                                        Map<String, String> extra = Maps.newHashMap();
+                                        if(StringUtils.isNotBlank(extraStr))
+                                            extra = JsonUtils.fromJson(extraStr, new TypeReference<Map<String, String>>() {});
                                         PushMsg pushMsg = new PushMsg();
                                         pushMsg.setTitle(title);
                                         pushMsg.setContent(content);
