@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.quakoo.baseFramework.jackson.JsonUtils;
+import com.quakoo.baseFramework.secure.Base64Util;
 import com.quakoo.baseFramework.util.StringUtil;
 import com.quakoo.framework.ext.push.model.PushMsg;
 import com.quakoo.framework.ext.push.model.constant.Platform;
@@ -54,13 +55,19 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
     }
 
     public static void main(String[] args) {
-        Map<String, String> map = Maps.newHashMap();
-        String str = "%d_%d_%s_%s";
-        String a = String.format(str, 1,1,"a", JsonUtils.toJson(map));
-        System.out.println(a.split("_")[0]);
-        System.out.println(a.split("_")[1]);
-        System.out.println(a.split("_")[2]);
-        System.out.println(a.split("_")[3]);
+
+        String title = "我是";
+        String extraStr = "{\"type\":\"5\",\"extra\":\"{\\\"type\\\":\\\"group_video\\\",\\\"friendNick\\\":\\\"小打小闹  一块麻将娱乐群\\\",\\\"friendicon\\\":\\\"http:\\\\/\\\\/store.jimaoxinkeji.com\\\\/storage\\\\/600*600*afe75d49b321f56dbaacfb527474646a.png\\\",\\\"joinChannel\\\":\\\"1568854442124\\\",\\\"userList\\\":\\\"[{\\\\\\\"id\\\\\\\":\\\\\\\"178491\\\\\\\",\\\\\\\"icon\\\\\\\":\\\\\\\"http:\\\\\\\\\\\\/\\\\\\\\\\\\/store.jimaoxinkeji.com\\\\\\\\\\\\/storage\\\\\\\\\\\\/540*540*d0302eba283368177c22a2908186d818.jpg\\\\\\\"}, {\\\\\\\"id\\\\\\\":\\\\\\\"283386\\\\\\\",\\\\\\\"icon\\\\\\\":\\\\\\\"http:\\\\\\\\\\\\/\\\\\\\\\\\\/store.jimaoxinkeji.com\\\\\\\\\\\\/storage\\\\\\\\\\\\/259*259*ec0b7a5a168019701f534f30827174c7.jpg\\\\\\\"}]\\\"}\"}";
+        title = Base64Util.encode(title.getBytes());
+        extraStr = Base64Util.encode(extraStr.getBytes());
+
+        String key = title + "_" + extraStr;
+        title = key.split("_")[0];
+        extraStr = key.split("_")[1];
+        extraStr = new String( Base64Util.decode(extraStr));
+        Map<String, String> extra = JsonUtils.fromJson(extraStr, new TypeReference<Map<String, String>>() {});
+        System.out.println(extra.toString());
+
     }
 
     class Processer implements Runnable {
@@ -124,9 +131,13 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                 for(PushMsg pushMsg : list) {
                                     int platform = pushMsg.getPlatform();
                                     String title = pushMsg.getTitle();
+                                    title = Base64Util.encode(title.getBytes());
                                     Map<String, String> extra = pushMsg.getExtra();
                                     String extraStr = "";
-                                    if(extra.size() > 0) extraStr = JsonUtils.toJson(extra);
+                                    if(extra.size() > 0) {
+                                        extraStr = JsonUtils.toJson(extra);
+                                        extraStr = Base64Util.encode(extraStr.getBytes());
+                                    }
                                     if(pushMsg.getType() == PushMsg.type_single) {
                                         long uid = pushMsg.getUid();
                                         String key = String.format(uid_key_format, uid, platform, title, extraStr);
@@ -192,10 +203,17 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                         int num = Integer.parseInt(key.split("_")[0]);
                                         int platform = Integer.parseInt(key.split("_")[1]);
                                         String title = key.split("_")[2];
+                                        title = new String(Base64Util.decode(title));
                                         String extraStr = key.split("_")[3];
                                         Map<String, String> extra = Maps.newHashMap();
-                                        if(StringUtils.isNotBlank(extraStr))
-                                            extra = JsonUtils.fromJson(extraStr, new TypeReference<Map<String, String>>() {});
+                                        if(StringUtils.isNotBlank(extraStr)) {
+                                            try {
+                                                extraStr = new String(Base64Util.decode(extraStr));
+                                                extra = JsonUtils.fromJson(extraStr, new TypeReference<Map<String, String>>() {});
+                                            } catch (Exception e) {
+                                                logger.error(key, e);
+                                            }
+                                        }
                                         PushMsg pushMsg = new PushMsg();
                                         pushMsg.setTitle(title);
                                         pushMsg.setContent("您收到了" + num + "条新消息");
@@ -217,10 +235,15 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                         if(pushMsg != null) {
                                             int platform = pushMsg.getPlatform();
                                             String title = pushMsg.getTitle();
+                                            title = Base64Util.encode(title.getBytes());
                                             String content = pushMsg.getContent();
+                                            content = Base64Util.encode(content.getBytes());
                                             Map<String, String> extra = pushMsg.getExtra();
                                             String extraStr = "";
-                                            if(extra.size() > 0) extraStr = JsonUtils.toJson(extra);
+                                            if(extra.size() > 0) {
+                                                extraStr = JsonUtils.toJson(extra);
+                                                extraStr = Base64Util.encode(extraStr.getBytes());
+                                            }
                                             String key = String.format(key_format, platform, title, content, extraStr);
                                             Set<Long> uids = map3.get(key);
                                             if(uids == null) {
@@ -234,37 +257,30 @@ public class PushHandleSchedulerContextHandle extends PushBasePushHandleContextH
                                         String key = entry.getKey();
                                         int platform = Integer.parseInt(key.split("_")[0]);
                                         String title = key.split("_")[1];
+                                        title = new String(Base64Util.decode(title));
                                         String content = key.split("_")[2];
+                                        content = new String(Base64Util.decode(content));
                                         String extraStr = key.split("_")[3];
                                         Map<String, String> extra = Maps.newHashMap();
-                                        if(StringUtils.isNotBlank(extraStr))
-                                            extra = JsonUtils.fromJson(extraStr, new TypeReference<Map<String, String>>() {});
+                                        if(StringUtils.isNotBlank(extraStr)) {
+                                            try {
+                                                extraStr = new String(Base64Util.decode(extraStr));
+                                                extra = JsonUtils.fromJson(extraStr, new TypeReference<Map<String, String>>() {});
+                                            } catch (Exception e) {
+                                                logger.error(key, e);
+                                            }
+                                        }
                                         PushMsg pushMsg = new PushMsg();
                                         pushMsg.setTitle(title);
                                         pushMsg.setContent(content);
                                         pushMsg.setPlatform(platform);
                                         pushMsg.setExtra(extra);
-
 //                                        logger.info(" ========= " + pushMsg.toString() + " uids : " + entry.getValue().toString());
-
                                         send(Lists.newArrayList(entry.getValue()), pushMsg);
                                     }
 
                                 }
 
-//                            for(PushMsg pushMsg : list) {
-//                                if(pushMsg.getType() == PushMsg.type_single) {
-//                                    long uid = pushMsg.getUid();
-//                                    handleSingle(uid, pushMsg); //单个用户通知推送
-//                                } else {
-//                                    String uidStr = pushMsg.getUids();
-//                                    List<String> strList = Lists.
-//                                            newArrayList(StringUtils.split(uidStr, ","));
-//                                    List<Long> uids = ListTransformUtils.
-//                                            transformedList(strList, new ListTransformerStringToLong());
-//                                    handleBatch(uids, pushMsg); //多个用户通知推送
-//                                }
-//                            }
                             }
                             pushMsgHandleService.finishHandlePushMsgs(queueName, list); //推送完成更新
                         }
