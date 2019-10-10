@@ -17,14 +17,14 @@
 		<constructor-arg ref="dataSource" />
 	</bean>
     
-    <bean id="payloadMaxValueIncrementer" class="com.quakoo.db.StepMaxValueIncrementer">
-		<property name="tableName" value="payload_seq" />
+    <bean id="pushMsgMaxValueIncrementer" class="com.quakoo.db.StepMaxValueIncrementer">
+		<property name="tableName" value="push_msg_seq" />
 		<property name="columnName" value="id" />
 		<property name="step" value="50" />
 		<property name="dataSource" ref="sequenceDataSource" />
 	</bean>
-	
-	
+
+
 	<!--<bean id="payloadDao" class="com.quakoo.framework.ext.push.dao.impl.PayloadDaoImpl" />-->
 	<!--<bean id="pushHandleQueueDao" class="com.quakoo.framework.ext.push.dao.impl.PushHandleQueueDaoImpl" />-->
     <bean id="pushMsgDao" class="com.quakoo.framework.ext.push.dao.impl.PushMsgDaoImpl" />
