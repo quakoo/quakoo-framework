@@ -25,9 +25,7 @@ import com.quakoo.baseFramework.exception.ServerBusyException;
 import com.quakoo.baseFramework.util.RequestUtils;
 
 /**
- * 
  * @author liyongbiao
- * 
  */
 public class BaseController {
 
@@ -48,7 +46,7 @@ public class BaseController {
 
     /**
      * 返回页面
-     * 
+     *
      * @param viewName
      * @param request
      * @param response
@@ -56,21 +54,21 @@ public class BaseController {
      * @return
      */
     protected ModelAndView viewNegotiating(String viewName, final HttpServletRequest request,
-            final HttpServletResponse response, final Model model) {
+                                           final HttpServletResponse response, final Model model) {
         ModelAndView modelAndView = new ModelAndView(viewName, model.asMap());
         return modelAndView;
     }
 
     /**
      * 直接返回json
-     * 
+     *
      * @param request
      * @param response
      * @return
      * @throws Exception
      */
     protected ModelAndView viewNegotiating(final HttpServletRequest request, final HttpServletResponse response,
-            Object result) throws Exception {
+                                           Object result) throws Exception {
 
         logger.info("@@@@@@@@@URI:" + request.getRequestURI() + ",method:" + request.getMethod());
 
@@ -88,17 +86,17 @@ public class BaseController {
         return modelAndView;
     }
 
-	protected ModelAndView jsonView(final HttpServletRequest request, final HttpServletResponse response,
-			Object result) {
-		ModelAndView modelAndView = null;
-		AbstractView view = new MappingResponseJsonView();
-		Map<String, Object> model = new HashMap<>();
-		if (result != null) {
-			model.put(MappingResponseJsonView.resultKey, result);
-		}
-		modelAndView = new ModelAndView(view, model);
-		return modelAndView;
-	}
+    protected ModelAndView jsonView(final HttpServletRequest request, final HttpServletResponse response,
+                                    Object result) {
+        ModelAndView modelAndView = null;
+        AbstractView view = new MappingResponseJsonView();
+        Map<String, Object> model = new HashMap<>();
+        if (result != null) {
+            model.put(MappingResponseJsonView.resultKey, result);
+        }
+        modelAndView = new ModelAndView(view, model);
+        return modelAndView;
+    }
 
     protected void printAsJavaScript(HttpServletResponse response, String message) throws IOException {
         response.setHeader("Cache-Control", "no-cache");
@@ -136,10 +134,22 @@ public class BaseController {
                         + ",message:" + ex.getMessage());
             }
         } else {
-            logger.error("[response code=]" + httpCode + ",[request=]" + completeUrl, ex);
+            String exClassName = ex.getClass().getName();
+            if (exClassName.contains("QuakooSystemException")) {
+                String msg = ex.getMessage();
+                QuakooSystemExceptionResult result = new QuakooSystemExceptionResult(msg);
+                return jsonView(request, response, result);
+            } else {
+                logger.error("[response code=]" + httpCode + ",[request=]" + completeUrl, ex);
+            }
         }
         response.setStatus(httpCode);
         return null;
+    }
+
+    public static void main(String[] args) {
+        Exception e = new BaseBusinessException();
+        System.out.println(e.getClass().getName());
     }
 
 }
