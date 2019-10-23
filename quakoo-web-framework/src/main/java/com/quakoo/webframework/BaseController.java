@@ -147,9 +147,4 @@ public class BaseController {
         return null;
     }
 
-    public static void main(String[] args) {
-        Exception e = new BaseBusinessException();
-        System.out.println(e.getClass().getName());
-    }
-
 }
