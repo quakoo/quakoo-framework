@@ -22,4 +22,27 @@ public interface HDao<T> extends Serializable {
 	public Map<String, List<String>> getCacheMap();
 	
 	public T increment(T model,String filedName,int incrementValue) throws Exception;
+
+
+
+	/**
+	 * 修改,带ZK锁
+	 * 避免修改并发问题
+	 *
+	 * @param id 需要加载的主键，参考load方法
+	 * @param filedKV 对应要修改的属性-值
+	 * @return
+	 * @throws DataAccessException
+	 */
+	public boolean zkLockAndUpdate(Object id,Map<String,Object> filedKV) throws DataAccessException;
+
+	/**
+	 * 修改,带ZK锁，
+	 * 避免修改并发问题
+	 * @return
+	 * @throws DataAccessException
+	 */
+	public T zkLockAndIncrement(T model,String filedName,int incrementValue) throws Exception;
+
+
 }

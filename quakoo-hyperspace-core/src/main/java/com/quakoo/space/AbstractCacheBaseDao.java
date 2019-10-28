@@ -59,15 +59,6 @@ import com.quakoo.space.model.FieldInfo;
  *
  * @author yongbiaoli haoli junju
  *
- * @param <T>
- *
- *            1、需要定义新的CacheMethodEnum类型，用于获取过滤某些类型的数据，如SQL：status != 1。 2013.9.5
- *            junju 2.在增加了timeline的截取之后 ，发现很多方法有共同之处，可以提取出来，包括后来的service层的拦截也可以用
- *            2013.9.10 yongbiaoli
- *            3.在service层增加拦截，自动处理各个主表结构和对应的不同的关联关系。劲量做到关联关系依靠配置就能自动解决。
- *            2013.9.10 yongbiaoli 4.在现有的dao系统给出缓存自动清理，重建的接口。 2013.9.10
- *            yongbiaoli 4.每个list挂一个小list 用来做merger用 2013.12.04 yongbiaoli
- *
  */
 public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
     Logger logger = LoggerFactory.getLogger(AbstractCacheBaseDao.class);
@@ -887,6 +878,40 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
     }
 
     /**
+     * 修改,带ZK锁
+     *
+     *
+     * @param id 需要加载的主键，参考load方法
+     * @param filedKV
+     * @return
+     * @throws DataAccessException
+     */
+    public boolean zkLockAndUpdate(Object id,Map<String,Object> filedKV) throws DataAccessException{
+        ZkLock lock = null;
+        try {
+            HyperspaceId hyperspaceId=getHyperspaceIdByObj(id);
+            String zkKey=(entityClass.getName()+"_"+hyperspaceId.toString()).replaceAll(" ","");
+            lock = ZkLock.getAndLock(hyperspaceConfig.getZkAddress(), "hyperSpace", zkKey, true,
+                    30000, 30000);
+            T obj=load(id);
+            for(String key:filedKV.keySet()){
+                FieldInfo fieldInfo = getFieldInfoByName(key);
+                if(fieldInfo==null){
+                    throw  new RuntimeException("类"+entityClass.getName()+",没有这个属性:"+key);
+                }
+                fieldInfo.getWriteMethod().invoke(obj,filedKV.get(key));
+            }
+            return update(obj);
+
+        } catch (Exception e) {
+            throw new PermissionDeniedDataAccessException("", e);
+        } finally {
+            if (lock != null)
+                lock.release();
+        }
+    }
+
+    /**
      * 根据组合键进行更新操作
      *
      * @param model
@@ -983,6 +1008,31 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
             return increment_combination(model, filedName, incrementValue);
         }
         return model;
+    }
+
+
+    /**
+     * 自增
+     *
+     * @param model
+     * @return
+     * @throws DataAccessException
+     */
+    public T zkLockAndIncrement(T model, String filedName, int incrementValue) throws DataAccessException {
+        ZkLock lock = null;
+        try {
+            HyperspaceId hyperspaceId=getHyperspaceIdByObj(model);
+            String zkKey=(entityClass.getName()+"_"+hyperspaceId.toString()).replaceAll(" ","");
+            lock = ZkLock.getAndLock(hyperspaceConfig.getZkAddress(), "hyperSpace", zkKey, true,
+                    30000, 30000);
+            return increment(model,filedName,incrementValue);
+
+        } catch (Exception e) {
+            throw new PermissionDeniedDataAccessException("", e);
+        } finally {
+            if (lock != null)
+                lock.release();
+        }
     }
 
     /**
