@@ -311,7 +311,9 @@ public class HyperspaceBeanPropertyRowMapper<T> implements RowMapper<T> {
 					try {
 						Type jsonType=this.jsonFields.get(field);
 						if(jsonType!=null){
-							bw.setPropertyValue(pd.getName(), JsonUtils.parse(value.toString(),jsonType));
+							if(org.apache.commons.lang.StringUtils.isNotBlank(value.toString())){
+								bw.setPropertyValue(pd.getName(), JsonUtils.parse(value.toString(),jsonType));
+							}
 						}else {
 							bw.setPropertyValue(pd.getName(), value);
 						}
