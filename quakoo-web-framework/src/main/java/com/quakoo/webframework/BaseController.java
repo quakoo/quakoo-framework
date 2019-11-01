@@ -71,7 +71,6 @@ public class BaseController {
                                            Object result) throws Exception {
 
         logger.info("@@@@@@@@@URI:" + request.getRequestURI() + ",method:" + request.getMethod());
-
         ModelAndView modelAndView = null;
         String f = request.getParameter(DATA_FORMAT);
 
@@ -88,6 +87,9 @@ public class BaseController {
 
     protected ModelAndView jsonView(final HttpServletRequest request, final HttpServletResponse response,
                                     Object result) {
+        response.setHeader("Access-Control-Allow-Methods", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS, PATCH");
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         ModelAndView modelAndView = null;
         AbstractView view = new MappingResponseJsonView();
         Map<String, Object> model = new HashMap<>();
