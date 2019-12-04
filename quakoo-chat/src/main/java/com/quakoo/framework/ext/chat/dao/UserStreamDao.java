@@ -20,7 +20,7 @@ public interface UserStreamDao {
 	
 	public void create_sort(List<UserStream> streams) throws Exception;
 	
-//	public UserStream load(UserStream one) throws DataAccessException;
+	public UserStream load(UserStream one) throws DataAccessException;
 	
 	public boolean delete(UserStream one) throws DataAccessException;
 	

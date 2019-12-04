@@ -291,10 +291,10 @@ public class UserStreamServiceImpl implements UserStreamService {
 		item.setType(type);
 		item.setThirdId(thirdId);
 		item.setMid(mid);
-//		item = userStreamDao.load(item);
-//		if(null != item) {
-        res = userStreamDao.delete(item);
-//		}
+		item = userStreamDao.load(item);
+		if(null != item) {
+		    res = userStreamDao.delete(item);
+		}
 		return res;
 	}
 
