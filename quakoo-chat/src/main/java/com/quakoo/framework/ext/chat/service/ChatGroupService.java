@@ -10,14 +10,16 @@ public interface ChatGroupService {
 	
 	public ChatGroup create(String name, List<Long> uids, String icon) throws Exception;
 	
-	public boolean join(long cgid, long uid, String icon) throws Exception;
+	public boolean join(long cgid, List<Long> uids, int maxNum) throws Exception;
 	
-	public boolean exit(long cgid, long uid, String icon) throws Exception;
+	public boolean exit(long cgid, List<Long> uids) throws Exception;
 
 	public boolean updateCheck(long cgid, int check) throws Exception;
 
 	public boolean updateNotice(long cgid, String notice) throws Exception;
-	
+
+	public boolean updateIcon(long cgid, String icon) throws Exception;
+
 	public List<Long> userIds(long cgid) throws Exception;
 	
 }

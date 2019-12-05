@@ -11,6 +11,10 @@ public interface UserChatGroupPoolDao {
 
     public int delete(List<UserChatGroupPool> pools) throws DataAccessException;
 
+    public int update(UserChatGroupPool pool) throws DataAccessException;
+
+    public List<UserChatGroupPool> load(List<UserChatGroupPool> pools) throws DataAccessException;
+
     public List<UserChatGroupPool> list(long uid) throws Exception;
 
 }
