@@ -7,6 +7,8 @@ import com.quakoo.framework.ext.chat.model.ChatGroup;
 public interface ChatGroupService {
 	
 	public ChatGroup load(long cgid) throws Exception;
+
+	public List<ChatGroup> load(List<Long> cgids) throws Exception;
 	
 	public ChatGroup create(String name, List<Long> uids, String icon) throws Exception;
 	

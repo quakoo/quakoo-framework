@@ -36,7 +36,12 @@ public class ChatGroupServiceImpl implements ChatGroupService {
 		return chatGroupDao.load(cgid);
 	}
 
-	/**
+    @Override
+    public List<ChatGroup> load(List<Long> cgids) throws Exception {
+        return chatGroupDao.load(cgids);
+    }
+
+    /**
      * 创建一个群组
 	 * method_name: create
 	 * params: [name, uids, icon]
