@@ -16,6 +16,8 @@ public interface ChatGroupService {
 	
 	public boolean exit(long cgid, List<Long> uids) throws Exception;
 
+	public boolean updateName(long cgid, String name) throws Exception;
+
 	public boolean updateCheck(long cgid, int check) throws Exception;
 
 	public boolean updateNotice(long cgid, String notice) throws Exception;

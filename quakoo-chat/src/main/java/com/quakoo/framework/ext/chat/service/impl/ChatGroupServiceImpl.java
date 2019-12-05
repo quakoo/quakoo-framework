@@ -134,6 +134,25 @@ public class ChatGroupServiceImpl implements ChatGroupService {
         }
     }
 
+    @Override
+    public boolean updateName(long cgid, String name) throws Exception {
+        ZkLock lock = null;
+        try {
+            lock = ZkLock.getAndLock(chatInfo.lockZkAddress,
+                    chatInfo.projectName, "chat_group_id_" + cgid + AbstractChatInfo.lock_suffix,
+                    true, AbstractChatInfo.session_timout, AbstractChatInfo.lock_timeout);
+            boolean res = false;
+            ChatGroup chatGroup = chatGroupDao.load(cgid);
+            if(null != chatGroup) {
+                chatGroup.setName(name);
+                res = chatGroupDao.update(chatGroup);
+            }
+            return res;
+        } finally {
+            if (lock != null) lock.release();
+        }
+    }
+
     /**
      * 添加用户到群组
      * method_name: join
