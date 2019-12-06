@@ -13,6 +13,8 @@ public interface UserChatGroupPoolDao {
 
     public int update(UserChatGroupPool pool) throws DataAccessException;
 
+    public UserChatGroupPool load(UserChatGroupPool pool) throws DataAccessException;
+
     public List<UserChatGroupPool> load(List<UserChatGroupPool> pools) throws DataAccessException;
 
     public List<UserChatGroupPool> list(long uid) throws Exception;

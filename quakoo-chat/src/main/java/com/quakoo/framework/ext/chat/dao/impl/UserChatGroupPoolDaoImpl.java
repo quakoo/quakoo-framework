@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import com.quakoo.baseFramework.redis.RedisSortData.RedisKeySortMemObj;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -40,6 +41,23 @@ public class UserChatGroupPoolDaoImpl extends BaseDaoHandle implements UserChatG
 
     private String getTable() {
         return "user_chat_group_pool";
+    }
+
+    @Override
+    public UserChatGroupPool load(UserChatGroupPool pool) throws DataAccessException {
+        String key = String.format(user_chat_group_pool_object_key, chatInfo.projectName, pool.getUid(), pool.getCgid());
+        Object obj = cache.getObject(key, null);
+        if(obj != null) {
+            return (UserChatGroupPool) obj;
+        } else {
+            String sql = "select * from %s where uid = %d and cgid = %d";
+            sql = String.format(sql, getTable(), pool.getUid(), pool.getCgid());
+            UserChatGroupPool res = this.jdbcTemplate.query(sql, new UserChatGroupPoolResultSetExtractor());
+            if(res != null) {
+                cache.setObject(key, AbstractChatInfo.redis_overtime_long, res);
+            }
+            return res;
+        }
     }
 
     @Override
@@ -264,6 +282,21 @@ public class UserChatGroupPoolDaoImpl extends BaseDaoHandle implements UserChatG
             }
         }
         return res;
+    }
+
+    class UserChatGroupPoolResultSetExtractor implements ResultSetExtractor<UserChatGroupPool> {
+        @Override
+        public UserChatGroupPool extractData(ResultSet rs) throws SQLException, DataAccessException {
+            UserChatGroupPool res = new UserChatGroupPool();
+            res.setUid(rs.getLong("uid"));
+            res.setCgid(rs.getLong("cgid"));
+            res.setType(rs.getInt("type"));
+            res.setStatus(rs.getInt("status"));
+            res.setInviteUid(rs.getLong("inviteUid"));
+            res.setCtime(rs.getLong("ctime"));
+            res.setUtime(rs.getLong("utime"));
+            return res;
+        }
     }
 
     class UserChatGroupPoolRowMapper implements RowMapper<UserChatGroupPool> {
