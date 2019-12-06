@@ -102,11 +102,11 @@ public class UserChatGroupPoolDaoImpl extends BaseDaoHandle implements UserChatG
             }
             list.add(pool);
         }
-        String sqlPrev = "insert ignore into %s (uid, cgid, `type`, `status`, ctime, utime) values ";
-        String sqlValueFormat = "(%d, %d, %d, %d, %d, %d)";
+        String sqlPrev = "insert ignore into %s (uid, cgid, `type`, `status`, inviteUid, ctime, utime) values ";
+        String sqlValueFormat = "(%d, %d, %d, %d, %d, %d, %d)";
         List<String> sqlValueList = Lists.newArrayList();
         for (UserChatGroupPool pool : pools) {
-            String sqlValue = String.format(sqlValueFormat, pool.getUid(), pool.getCgid(), pool.getType(), pool.getStatus(), pool.getCtime(), pool.getUtime());
+            String sqlValue = String.format(sqlValueFormat, pool.getUid(), pool.getCgid(), pool.getType(), pool.getStatus(), pool.getInviteUid(), pool.getCtime(), pool.getUtime());
             sqlValueList.add(sqlValue);
         }
         String sqlValues = StringUtils.join(sqlValueList.toArray(), ",");
@@ -209,8 +209,8 @@ public class UserChatGroupPoolDaoImpl extends BaseDaoHandle implements UserChatG
 
     @Override
     public int update(UserChatGroupPool pool) throws DataAccessException {
-        String sql = "update %s set `type` = %d, `status` = %s, utime = %d where uid = %d and cgid = %d";
-        sql = String.format(sql, getTable(), pool.getType(), pool.getStatus(), System.currentTimeMillis(), pool.getUid(), pool.getCgid());
+        String sql = "update %s set `type` = %d, `status` = %d, inviteUid = %d, utime = %d where uid = %d and cgid = %d";
+        sql = String.format(sql, getTable(), pool.getType(), pool.getStatus(), pool.getInviteUid(), System.currentTimeMillis(), pool.getUid(), pool.getCgid());
         long startTime = System.currentTimeMillis();
 		int ret = this.jdbcTemplate.update(sql);
         logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
@@ -275,6 +275,7 @@ public class UserChatGroupPoolDaoImpl extends BaseDaoHandle implements UserChatG
             res.setCgid(rs.getLong("cgid"));
             res.setType(rs.getInt("type"));
             res.setStatus(rs.getInt("status"));
+            res.setInviteUid(rs.getLong("inviteUid"));
             res.setCtime(rs.getLong("ctime"));
             res.setUtime(rs.getLong("utime"));
             return res;

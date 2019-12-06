@@ -17,6 +17,8 @@ public class UserChatGroupPool implements Serializable {
 
     private int status;
 
+    private long inviteUid;
+
     private String ext;
 
     private long ctime;
@@ -30,6 +32,7 @@ public class UserChatGroupPool implements Serializable {
                 ", cgid=" + cgid +
                 ", type=" + type +
                 ", status=" + status +
+                ", inviteUid=" + inviteUid +
                 ", ext='" + ext + '\'' +
                 ", ctime=" + ctime +
                 ", utime=" + utime +
@@ -90,5 +93,13 @@ public class UserChatGroupPool implements Serializable {
 
     public void setUtime(long utime) {
         this.utime = utime;
+    }
+
+    public long getInviteUid() {
+        return inviteUid;
+    }
+
+    public void setInviteUid(long inviteUid) {
+        this.inviteUid = inviteUid;
     }
 }
