@@ -292,6 +292,12 @@
 			<groupId>org.apache.curator</groupId>
 			<artifactId>curator-recipes</artifactId>
 			<version>4.0.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+            </exclusions>
 		</dependency>
 
 
@@ -301,8 +307,11 @@
 			<version>4.0.1</version>
 		</dependency>
 
-		<!-- zookeeper <dependency> <groupId>org.apache.zookeeper</groupId> <artifactId>zookeeper</artifactId> 
-			<version>3.4.6</version> </dependency> -->
+<!--        <dependency>-->
+<!--            <groupId>org.apache.zookeeper</groupId>-->
+<!--            <artifactId>zookeeper</artifactId>-->
+<!--            <version>3.4.7</version>-->
+<!--        </dependency>-->
 
 
 		<!-- 7-zip -->
