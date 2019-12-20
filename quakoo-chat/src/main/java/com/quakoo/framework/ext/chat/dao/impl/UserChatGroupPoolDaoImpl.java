@@ -8,6 +8,7 @@ import com.quakoo.framework.ext.chat.AbstractChatInfo;
 import com.quakoo.framework.ext.chat.bean.UserChatGroup;
 import com.quakoo.framework.ext.chat.dao.BaseDaoHandle;
 import com.quakoo.framework.ext.chat.dao.UserChatGroupPoolDao;
+import com.quakoo.framework.ext.chat.model.ChatGroup;
 import com.quakoo.framework.ext.chat.model.UserChatGroupPool;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -287,15 +288,18 @@ public class UserChatGroupPoolDaoImpl extends BaseDaoHandle implements UserChatG
     class UserChatGroupPoolResultSetExtractor implements ResultSetExtractor<UserChatGroupPool> {
         @Override
         public UserChatGroupPool extractData(ResultSet rs) throws SQLException, DataAccessException {
-            UserChatGroupPool res = new UserChatGroupPool();
-            res.setUid(rs.getLong("uid"));
-            res.setCgid(rs.getLong("cgid"));
-            res.setType(rs.getInt("type"));
-            res.setStatus(rs.getInt("status"));
-            res.setInviteUid(rs.getLong("inviteUid"));
-            res.setCtime(rs.getLong("ctime"));
-            res.setUtime(rs.getLong("utime"));
-            return res;
+            if(rs.next()){
+                UserChatGroupPool res = new UserChatGroupPool();
+                res.setUid(rs.getLong("uid"));
+                res.setCgid(rs.getLong("cgid"));
+                res.setType(rs.getInt("type"));
+                res.setStatus(rs.getInt("status"));
+                res.setInviteUid(rs.getLong("inviteUid"));
+                res.setCtime(rs.getLong("ctime"));
+                res.setUtime(rs.getLong("utime"));
+                return res;
+            } else
+                return null;
         }
     }
 
