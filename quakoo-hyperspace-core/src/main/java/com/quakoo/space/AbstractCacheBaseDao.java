@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.quakoo.space.annotation.HyperspaceAllId;
@@ -1136,6 +1137,7 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
      * @throws DataAccessException
      */
     public List<T> load(List objs) throws Exception {
+        if(objs.size() == 0) return Lists.newArrayList();
         List<HyperspaceId> hyperspaceIds = new ArrayList<HyperspaceId>();
         for (Object obj : objs) {
             hyperspaceIds.add(getHyperspaceIdByObj(obj));
