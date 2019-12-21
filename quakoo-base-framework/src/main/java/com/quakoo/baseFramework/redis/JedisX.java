@@ -1000,7 +1000,7 @@ public class JedisX {
             }
             return ret;
         } finally {
-            log.info("getObject keys:{},time:{}", new Object[]{keys.size(), System.currentTimeMillis() - start});
+            log.info("getObject keys'size:{},keys:{},time:{}", new Object[]{keys.size(), keys.toString(), System.currentTimeMillis() - start});
         }
     }
 
