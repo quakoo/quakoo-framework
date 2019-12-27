@@ -7481,6 +7481,45 @@ public class JedisX {
 		}
 		return Lists.newArrayList();
 	}
+
+
+    public boolean setbit(String key, int bitIndex, boolean value) {
+        ShardedJedis shardJedis = null;
+        Jedis jedis = null;
+        try {
+            shardJedis = shardedJedisPool.getResource();
+            jedis = shardJedis.getShard(key);
+            if (jedis != null) {
+                boolean ret = jedis.setbit(SafeEncoder.encode(key), bitIndex, value);
+                return ret;
+            }
+        } catch (Exception e) {
+            onException(shardJedis, jedis, e);
+            shardJedis = null;
+        } finally {
+            onFinally(shardJedis);
+        }
+        return false;
+    }
+
+    public boolean getbit(String key, int bitIndex) {
+        ShardedJedis shardJedis = null;
+        Jedis jedis = null;
+        try {
+            shardJedis = shardedJedisPool.getResource();
+            jedis = shardJedis.getShard(key);
+            if (jedis != null) {
+                boolean ret = jedis.getbit(SafeEncoder.encode(key), bitIndex);
+                return ret;
+            }
+        } catch (Exception e) {
+            onException(shardJedis, jedis, e);
+            shardJedis = null;
+        } finally {
+            onFinally(shardJedis);
+        }
+        return false;
+    }
 	
 	
     public JedisPoolConfig getJedisPoolConfig() {
