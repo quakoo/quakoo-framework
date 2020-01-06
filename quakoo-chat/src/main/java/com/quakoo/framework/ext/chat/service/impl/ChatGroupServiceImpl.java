@@ -36,7 +36,12 @@ public class ChatGroupServiceImpl implements ChatGroupService {
 		return chatGroupDao.load(cgid);
 	}
 
-	/**
+    @Override
+    public List<ChatGroup> load(List<Long> cgids) throws Exception {
+        return chatGroupDao.load(cgids);
+    }
+
+    /**
      * 创建一个群组
 	 * method_name: create
 	 * params: [name, uids, icon]
@@ -68,12 +73,31 @@ public class ChatGroupServiceImpl implements ChatGroupService {
         ZkLock lock = null;
 	    try {
             lock = ZkLock.getAndLock(chatInfo.lockZkAddress,
-                    chatInfo.projectName, "chat_group" + AbstractChatInfo.lock_suffix,
+                    chatInfo.projectName, "chat_group_id_" + cgid + AbstractChatInfo.lock_suffix,
                     true, AbstractChatInfo.session_timout, AbstractChatInfo.lock_timeout);
             boolean res = false;
             ChatGroup chatGroup = chatGroupDao.load(cgid);
             if(null != chatGroup) {
                 chatGroup.setNotice(notice);
+                res = chatGroupDao.update(chatGroup);
+            }
+            return res;
+        } finally {
+            if (lock != null) lock.release();
+        }
+    }
+
+    @Override
+    public boolean updateIcon(long cgid, String icon) throws Exception {
+        ZkLock lock = null;
+        try {
+            lock = ZkLock.getAndLock(chatInfo.lockZkAddress,
+                    chatInfo.projectName, "chat_group_id_" + cgid + AbstractChatInfo.lock_suffix,
+                    true, AbstractChatInfo.session_timout, AbstractChatInfo.lock_timeout);
+            boolean res = false;
+            ChatGroup chatGroup = chatGroupDao.load(cgid);
+            if(null != chatGroup) {
+                chatGroup.setIcon(icon);
                 res = chatGroupDao.update(chatGroup);
             }
             return res;
@@ -96,12 +120,31 @@ public class ChatGroupServiceImpl implements ChatGroupService {
         ZkLock lock = null;
 	    try {
             lock = ZkLock.getAndLock(chatInfo.lockZkAddress,
-                    chatInfo.projectName, "chat_group" + AbstractChatInfo.lock_suffix,
+                    chatInfo.projectName, "chat_group_id_" + cgid + AbstractChatInfo.lock_suffix,
                     true, AbstractChatInfo.session_timout, AbstractChatInfo.lock_timeout);
             boolean res = false;
             ChatGroup chatGroup = chatGroupDao.load(cgid);
             if(null != chatGroup) {
                 chatGroup.setCheck(check);
+                res = chatGroupDao.update(chatGroup);
+            }
+            return res;
+        } finally {
+            if (lock != null) lock.release();
+        }
+    }
+
+    @Override
+    public boolean updateName(long cgid, String name) throws Exception {
+        ZkLock lock = null;
+        try {
+            lock = ZkLock.getAndLock(chatInfo.lockZkAddress,
+                    chatInfo.projectName, "chat_group_id_" + cgid + AbstractChatInfo.lock_suffix,
+                    true, AbstractChatInfo.session_timout, AbstractChatInfo.lock_timeout);
+            boolean res = false;
+            ChatGroup chatGroup = chatGroupDao.load(cgid);
+            if(null != chatGroup) {
+                chatGroup.setName(name);
                 res = chatGroupDao.update(chatGroup);
             }
             return res;
@@ -119,22 +162,23 @@ public class ChatGroupServiceImpl implements ChatGroupService {
      * creat_date: 2019/1/29
      * creat_time: 17:19
      **/
-    public boolean join(long cgid, long uid, String icon) throws Exception {
+    public boolean join(long cgid, List<Long> uids, int maxNum) throws Exception {
         ZkLock lock = null;
         try {
             lock = ZkLock.getAndLock(chatInfo.lockZkAddress,
-                    chatInfo.projectName, "chat_group" + AbstractChatInfo.lock_suffix,
+                    chatInfo.projectName, "chat_group_id_" + cgid + AbstractChatInfo.lock_suffix,
                     true, AbstractChatInfo.session_timout, AbstractChatInfo.lock_timeout);
             boolean res = false;
             ChatGroup chatGroup = chatGroupDao.load(cgid);
             if(null != chatGroup) {
-                LinkedHashSet<Long> uids = JsonUtils.fromJson(chatGroup.getUids(),
+                LinkedHashSet<Long> allUids = JsonUtils.fromJson(chatGroup.getUids(),
                         new TypeReference<LinkedHashSet<Long>>() {});
-                uids.add(uid);
-                String uidStr = JsonUtils.toJson(uids);
-                chatGroup.setUids(uidStr);
-                chatGroup.setIcon(icon);
-                res = chatGroupDao.update(chatGroup);
+                allUids.addAll(uids);
+                if(allUids.size() <= maxNum) {
+                    String uidStr = JsonUtils.toJson(allUids);
+                    chatGroup.setUids(uidStr);
+                    res = chatGroupDao.update(chatGroup);
+                }
             }
             return res;
         } finally {
@@ -151,23 +195,20 @@ public class ChatGroupServiceImpl implements ChatGroupService {
 	 * creat_date: 2019/1/29
 	 * creat_time: 17:19
 	 **/
-	public boolean exit(long cgid, long uid, String icon) throws Exception {
+    public boolean exit(long cgid, List<Long> uids) throws Exception {
         ZkLock lock = null;
 	    try {
             lock = ZkLock.getAndLock(chatInfo.lockZkAddress,
-                    chatInfo.projectName, "chat_group" + AbstractChatInfo.lock_suffix,
+                    chatInfo.projectName, "chat_group_id_" + cgid + AbstractChatInfo.lock_suffix,
                     true, AbstractChatInfo.session_timout, AbstractChatInfo.lock_timeout);
             boolean res = false;
             ChatGroup chatGroup = chatGroupDao.load(cgid);
             if(null != chatGroup) {
-                LinkedHashSet<Long> uids = JsonUtils.fromJson(chatGroup.getUids(),
+                LinkedHashSet<Long> allUids = JsonUtils.fromJson(chatGroup.getUids(),
                         new TypeReference<LinkedHashSet<Long>>() {});
-                for(Iterator<Long> it = uids.iterator(); it.hasNext();){
-                    if(it.next().longValue() == uid) it.remove();
-                }
-                String uidStr = JsonUtils.toJson(uids);
+                allUids.removeAll(uids);
+                String uidStr = JsonUtils.toJson(allUids);
                 chatGroup.setUids(uidStr);
-                chatGroup.setIcon(icon);
                 res = chatGroupDao.update(chatGroup);
             }
             return res;

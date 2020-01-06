@@ -18,6 +18,7 @@
 
         <module>quakoo-push</module>
         <module>quakoo-chat</module>
+        <module>quakoo-recommend</module>
     </modules>
 
 

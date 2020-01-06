@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import com.quakoo.baseFramework.redis.JedisX;
-import com.quakoo.framework.ext.chat.model.ManyChatQueue;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -412,15 +411,15 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao, I
 		}
 	}
 	
-//	public UserStream load(UserStream one) throws DataAccessException {
-//		long uid = one.getUid();
-//		String tableName = getTable(uid);
-//	    String sql = "select * from %s where uid = %d and type = %d and thirdId = %d and mid = %d";
-//	    long startTime = System.currentTimeMillis();
-//	    sql = String.format(sql, tableName, uid, one.getType(), one.getThirdId(), one.getMid());
-//        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
-//	    return this.jdbcTemplate.query(sql, new UserStreamResultSetExtractor());
-//	}
+	public UserStream load(UserStream one) throws DataAccessException {
+		long uid = one.getUid();
+		String tableName = getTable(uid);
+	    String sql = "select * from %s where uid = %d and type = %d and thirdId = %d and mid = %d";
+	    long startTime = System.currentTimeMillis();
+	    sql = String.format(sql, tableName, uid, one.getType(), one.getThirdId(), one.getMid());
+        logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
+	    return this.jdbcTemplate.query(sql, new UserStreamResultSetExtractor());
+	}
 
     private void delete_hot_data(UserStream one) throws DataAccessException {
         long uid = one.getUid();
