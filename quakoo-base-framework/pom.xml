@@ -455,6 +455,13 @@
             <artifactId>com.springsource.org.objectweb.asm</artifactId>
             <version>3.2.0</version>
         </dependency>
+
+
+		<dependency>
+			<groupId>com.googlecode.juniversalchardet</groupId>
+			<artifactId>juniversalchardet</artifactId>
+			<version>1.0.3</version>
+		</dependency>
 	</dependencies>
 
 	<build>

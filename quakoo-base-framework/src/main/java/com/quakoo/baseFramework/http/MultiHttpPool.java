@@ -34,6 +34,7 @@ import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.*;
 import org.apache.http.util.ByteArrayBuffer;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -418,7 +419,27 @@ public class MultiHttpPool {
             }else {
                 byte[] bodys = toByteArray(response.getEntity());
                 result.setBody(bodys);
+
+                ContentType reContentType =ContentType.get(entity);
+                Charset charset = null;
+                if (reContentType != null) {
+                    charset = reContentType.getCharset();
+                    if (charset == null) {
+                        final ContentType defaultContentType = ContentType.getByMimeType(reContentType.getMimeType());
+                        charset = defaultContentType != null ? defaultContentType.getCharset() : null;
+                    }
+                }
+                if(charset==null){
+                    result.setCharset(CharsetDetector.guessEncoding(bodys));
+                }else{
+                    result.setCharset(charset.name());
+                }
+
             }
+
+
+
+
             String resultString =""+statusCode+","+result.getResult();
             if (resultString!=null&&resultString.length() > 200) {
                 resultString = resultString.trim().substring(0, 200);
@@ -542,13 +563,24 @@ public class MultiHttpPool {
 
     public static void main(String[] fwe) throws Exception {
     		
-    		String base64=Base64Util.encode("sdfljwelkfjwe".getBytes());
-    		HttpPoolParam httpParam=new HttpPoolParam(10000, 10000, 3);
-    		MultiHttpPool pool=MultiHttpPool.getMultiHttpPool(httpParam);
-    		Map<String, Object> postMap=new HashMap<>();
-    		postMap.put("file",base64);
-    		postMap.put("suffix", "txt");
-    		HttpResult httpResult=pool.httpQuery("http://store.quakoo.com/storage/guagua/handle64", postMap, "get", null, null, null, false, false, true);
-    		System.out.println(httpResult.getResult());
+//    		String base64=Base64Util.encode("sdfljwelkfjwe".getBytes());
+//    		HttpPoolParam httpParam=new HttpPoolParam(10000, 10000, 3);
+//    		MultiHttpPool pool=MultiHttpPool.getMultiHttpPool(httpParam);
+//    		Map<String, Object> postMap=new HashMap<>();
+//    		postMap.put("file",base64);
+//    		postMap.put("suffix", "txt");
+//    		HttpResult httpResult=pool.httpQuery("http://store.quakoo.com/storage/guagua/handle64", postMap, "get", null, null, null, false, false, true);
+//    		System.out.println(httpResult.getResult());
+
+
+        HttpPoolParam httpPoolParam = new HttpPoolParam(5000, 5000, 1);
+        httpPoolParam.setFollowRedirects(false);
+        MultiHttpPool httpPool = MultiHttpPool.getMultiHttpPool(httpPoolParam);
+        HttpResult httpResult = httpPool.httpQuery("http://jtt.ln.gov.cn/zc/yjaq/201308/t20130819_2515599.html", null, "get", null, null, null, false, true, false);
+        System.out.println(httpResult.getCharset());
+        httpResult = httpPool.httpQuery("http://www.baidu.com", null, "get", null, null, null, false, true, false);
+        System.out.println(httpResult.getCharset());
+        httpResult = httpPool.httpQuery("http://www.haixiangjiaoyu.com/", null, "get", null, null, null, false, true, false);
+        System.out.println(httpResult.getCharset());
     }
 }
