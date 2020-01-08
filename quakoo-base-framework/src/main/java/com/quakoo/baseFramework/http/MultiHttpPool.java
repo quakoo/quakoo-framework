@@ -439,13 +439,12 @@ public class MultiHttpPool {
 
 
 
-
-            String resultString =""+statusCode+","+result.getResult();
-            if (resultString!=null&&resultString.length() > 200) {
-                resultString = resultString.trim().substring(0, 200);
-            }
             if (log) {
                 if(logResult) {
+                    String resultString =""+statusCode+","+result.getResult();
+                    if (resultString!=null&&resultString.trim().length() > 200) {
+                        resultString = resultString.trim().substring(0, 200);
+                    }
                     logger.info("http return time:{},uid:{},result{}", new Object[]{System.currentTimeMillis() - ctime,
                             uid, resultString});
                 }else{
