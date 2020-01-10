@@ -196,8 +196,11 @@ public class MultiHttpPool {
                 // 设置是否支持cookie
                 httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
             }
+
             if(!param.isFollowRedirects()){
                 httpClient.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
+            }else{
+                httpClient.getParams().setParameter(ClientPNames.MAX_REDIRECTS, 3);
             }
 
             // http代理

@@ -66,6 +66,9 @@ public class HttpPoolParam {
     private int reTryTimes = 3;
 
 
+    /**
+     * 处理重定向
+     */
     private boolean followRedirects=true;
 
     public String getProxyAddress() {
