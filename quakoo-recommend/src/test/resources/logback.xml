@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false" scanPeriod="60 seconds" debug="false">
+
+    <property name="log_dir" value="/data/logs/recommend/"/>
+    <property name="log_long_history" value="5"/><!-- 5 days -->
+    <property name="log_short_history" value="5"/><!-- 3 days -->
+    <property name="log_pattern"
+              value="%d{MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n%ex"/>
+
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoder的默认实现类是ch.qos.logback.classic.encoder.PatternLayoutEncoder -->
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!--重要日志 -->
+    <appender name="important"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ALL</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <file>/data/logs/important.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>/data/logs/important.log.%d{yyyy-MM-dd}
+            </fileNamePattern>
+            <maxHistory>7200</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log_pattern}</pattern>
+        </encoder>
+    </appender>
+
+
+    <logger name="important" level="ALL" additivity="false">
+        <appender-ref ref="important"/>
+    </logger>
+    <!-- 业务日志 -->
+    <appender name="info"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ALL</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>ACCEPT</onMismatch>
+        </filter>
+        <file>${log_dir}info.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log_dir}info.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>${log_long_history}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log_pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 警告日志 -->
+    <appender name="warn"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <file>${log_dir}warn.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log_dir}warn.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>${log_long_history}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log_pattern}</pattern>
+            <immediateFlush>false</immediateFlush>
+        </encoder>
+    </appender>
+
+    <!-- 错误日志 -->
+    <appender name="error"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <file>${log_dir}error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log_dir}error.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>${log_long_history}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log_pattern}</pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- monitor -->
+    <appender name="monitor"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log_dir}monitor.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log_dir}monitor.log.%d{yyyy-MM-dd}
+            </fileNamePattern>
+            <maxHistory>${log_short_history}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log_pattern}</pattern>
+        </encoder>
+    </appender>
+    <!-- task -->
+    <appender name="task"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log_dir}task.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log_dir}task.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>${log_short_history}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log_pattern}</pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- "redis" -->
+    <appender name="redis"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log_dir}redis.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log_dir}redis.log.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>${log_short_history}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log_pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 统计日志 -->
+    <appender name="statistic"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log_dir}statistics.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log_dir}statistics.log.%d{yyyy-MM-dd}
+            </fileNamePattern>
+            <maxHistory>${log_short_history}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log_pattern}</pattern>
+        </encoder>
+    </appender>
+
+
+    <appender name="async-info" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <appender-ref ref="info"/>
+    </appender>
+
+    <appender name="async-statistics" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <appender-ref ref="statistic"/>
+    </appender>
+
+
+    <logger name="monitor" level="INFO" additivity="false">
+        <appender-ref ref="monitor"/>
+    </logger>
+    <logger name="task" level="info" additivity="false">
+        <appender-ref ref="task"/>
+    </logger>
+    <logger name="statistic" level="info" additivity="false">
+        <appender-ref ref="statistic"/>
+
+    </logger>
+    <logger name="org.springframework" level="info"/>
+    <logger name="org.apache.http" level="info"/>
+
+    <logger name="com.quakoo.baseFramework.redis" level="info"
+            additivity="false">
+        <appender-ref ref="redis"/>
+    </logger>
+
+    <root level="info">
+        <appender-ref ref="async-info"/>
+        <appender-ref ref="warn"/>
+        <appender-ref ref="error"/>
+        <appender-ref ref="STDOUT"/>
+
+    </root>
+
+</configuration>

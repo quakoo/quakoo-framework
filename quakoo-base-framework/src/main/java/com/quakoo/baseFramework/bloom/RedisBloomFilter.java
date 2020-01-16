@@ -1,9 +1,13 @@
 package com.quakoo.baseFramework.bloom;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.quakoo.baseFramework.redis.JedisX;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * redis bit版本 布隆过滤
@@ -20,7 +24,6 @@ public class RedisBloomFilter<E> implements Serializable {
     private int bitSetSize;
     private double bitsPerElement;
     private int expectedNumberOfFilterElements; // expected (maximum) number of elements to be added
-    private int numberOfAddedElements; // number of elements actually added to the Bloom filter
     private int k; // number of hash functions
 
 
@@ -39,7 +42,6 @@ public class RedisBloomFilter<E> implements Serializable {
         this.k = k;
         this.bitsPerElement = c;
         this.bitSetSize = (int) Math.ceil(c * n);
-        numberOfAddedElements = 0;
     }
 
 
@@ -134,17 +136,6 @@ public class RedisBloomFilter<E> implements Serializable {
     }
 
     /**
-     * Get the current probability of a false positive. The probability is calculated from
-     * the size of the Bloom filter and the current number of elements added to it.
-     *
-     * @return probability of false positives.
-     */
-    public double getFalsePositiveProbability() {
-        return getFalsePositiveProbability(numberOfAddedElements);
-    }
-
-
-    /**
      * Returns the value chosen for K.
      *
      * K is the optimal number of hash functions based on the size
@@ -161,7 +152,6 @@ public class RedisBloomFilter<E> implements Serializable {
      */
     public void clear(String key) {
         cache.delete(key);
-        numberOfAddedElements = 0;
     }
 
     /**
@@ -186,10 +176,14 @@ public class RedisBloomFilter<E> implements Serializable {
 
     private void add(String key, byte[] bytes) {
         int[] hashes = MessageDigestUtils.createHashes(bytes, k);
-        for (int hash : hashes) {
-            cache.setbit(key, Math.abs(hash % bitSetSize), true);
+        int[] redisIndexes = new int[hashes.length];
+        for(int i = 0; i < hashes.length; i++) {
+            redisIndexes[i] = Math.abs(hashes[i] % bitSetSize);
         }
-        numberOfAddedElements++;
+        cache.pipSetBit(key, redisIndexes, true);
+//        for (int hash : hashes) {
+//            cache.setBit(key, Math.abs(hash % bitSetSize), true);
+//        }
     }
 
     /**
@@ -197,9 +191,23 @@ public class RedisBloomFilter<E> implements Serializable {
      *
      * @param c Collection of elements.
      */
+//    public void addAll(String key, int timeout, Collection<? extends E> c) {
+//        for (E element : c)
+//            add(key, timeout, element);
+//        if(timeout > 0) cache.expire(key, timeout);
+//    }
     public void addAll(String key, int timeout, Collection<? extends E> c) {
-        for (E element : c)
-            add(key, timeout, element);
+        List<int[]> redisIndexesList = Lists.newArrayList();
+        for (E element : c) {
+            byte[] bytes = element.toString().getBytes(MessageDigestUtils.CHARSET);
+            int[] hashes = MessageDigestUtils.createHashes(bytes, k);
+            int[] redisIndexes = new int[hashes.length];
+            for(int i = 0; i < hashes.length; i++) {
+                redisIndexes[i] = Math.abs(hashes[i] % bitSetSize);
+            }
+            redisIndexesList.add(redisIndexes);
+        }
+        cache.pipSetBit(key, redisIndexesList, true);
         if(timeout > 0) cache.expire(key, timeout);
     }
 
@@ -225,10 +233,18 @@ public class RedisBloomFilter<E> implements Serializable {
      */
     public boolean contains(String key, byte[] bytes) {
         int[] hashes = MessageDigestUtils.createHashes(bytes, k);
-        for (int hash : hashes) {
-            boolean sign = cache.getbit(key, Math.abs(hash % bitSetSize));
-            if (!sign) return false;
+        int[] redisIndexes = new int[hashes.length];
+        for(int i = 0; i < hashes.length; i++) {
+            redisIndexes[i] = Math.abs(hashes[i] % bitSetSize);
         }
+        List<Boolean> list = cache.pipGetBit(key, redisIndexes);
+        for(boolean one : list) {
+            if (!one) return false;
+        }
+//        for (int hash : hashes) {
+//            boolean sign = cache.getBit(key, Math.abs(hash % bitSetSize));
+//            if (!sign) return false;
+//        }
         return true;
     }
 
@@ -237,14 +253,43 @@ public class RedisBloomFilter<E> implements Serializable {
      * into the Bloom filter. Use getFalsePositiveProbability() to calculate the
      * probability of this being correct.
      *
-     * @param c elements to check.
+     * @param list elements to check.
      * @return true if all the elements in c could have been inserted into the Bloom filter.
      */
-    public boolean containsAll(String key, Collection<? extends E> c) {
-        for (E element : c)
-            if (!contains(key, element))
-                return false;
-        return true;
+//    public boolean containsAll(String key, Collection<? extends E> c) {
+//        for (E element : c)
+//            if (!contains(key, element))
+//                return false;
+//        return true;
+//    }
+    public Map<E, Boolean> containsAll(String key, List<? extends E> list) {
+        List<int[]> redisIndexesList = Lists.newArrayList();
+        for (E element : list) {
+            byte[] bytes = element.toString().getBytes(MessageDigestUtils.CHARSET);
+            int[] hashes = MessageDigestUtils.createHashes(bytes, k);
+            int[] redisIndexes = new int[hashes.length];
+            for(int i = 0; i < hashes.length; i++) {
+                redisIndexes[i] = Math.abs(hashes[i] % bitSetSize);
+            }
+            redisIndexesList.add(redisIndexes);
+        }
+        List<List<Boolean>> lists = cache.pipGetBit(key, redisIndexesList);
+        Map<E, Boolean> res = Maps.newLinkedHashMap();
+        if(lists != null) {
+            for(int i = 0; i < lists.size(); i++) {
+                E element = list.get(i);
+                List<Boolean> reslist = lists.get(i);
+                boolean oneRes = true;
+                for(boolean one : reslist) {
+                    if (!one) {
+                        oneRes = false;
+                        break;
+                    }
+                }
+                res.put(element, oneRes);
+            }
+        }
+        return res;
     }
 
     /**
@@ -254,7 +299,7 @@ public class RedisBloomFilter<E> implements Serializable {
      * @return true if the bit is set, false if it is not.
      */
     public boolean getBit(String key, int bit) {
-        boolean sign = cache.getbit(key, bit);
+        boolean sign = cache.getBit(key, bit);
         return sign;
     }
 
@@ -265,7 +310,7 @@ public class RedisBloomFilter<E> implements Serializable {
      * @param value If true, the bit is set. If false, the bit is cleared.
      */
     public void setBit(String key, int bit, boolean value) {
-        cache.setbit(key, bit, value);
+        cache.setBit(key, bit, value);
     }
 
 
@@ -279,24 +324,6 @@ public class RedisBloomFilter<E> implements Serializable {
         return this.bitSetSize;
     }
 
-    /**
-     * Returns the number of elements added to the Bloom filter after it
-     * was constructed or after clear() was called.
-     *
-     * @return number of elements added to the Bloom filter.
-     */
-    public int count() {
-        return this.numberOfAddedElements;
-    }
-
-    /**
-     * Returns is the bit set empty, bit set is empty means no any elements added to bloom filter.
-     *
-     * @return is the bit set empty
-     */
-    public boolean isEmpty() {
-        return count() <= 0;
-    }
 
     /**
      * Returns the expected number of elements to be inserted into the filter.
@@ -316,16 +343,6 @@ public class RedisBloomFilter<E> implements Serializable {
      */
     public double getExpectedBitsPerElement() {
         return this.bitsPerElement;
-    }
-
-    /**
-     * Get actual number of bits per element based on the number of elements that have currently been inserted and the length
-     * of the Bloom filter. See also getExpectedBitsPerElement().
-     *
-     * @return number of bits per element.
-     */
-    public double getBitsPerElement() {
-        return this.bitSetSize / (double) numberOfAddedElements;
     }
 
 }

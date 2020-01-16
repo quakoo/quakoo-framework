@@ -1,10 +1,18 @@
 package test;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.quakoo.baseFramework.bloom.RedisBloomFilter;
 import com.quakoo.baseFramework.redis.JedisBean;
 import com.quakoo.baseFramework.redis.JedisX;
 import redis.clients.jedis.JedisPoolConfig;
+
+import java.security.Key;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 
 public class RedisTest {
@@ -18,25 +26,80 @@ public class RedisTest {
         queueConfig.setTestOnBorrow(true);
         queueConfig.setTestWhileIdle(true);
         JedisBean queueInfo = new JedisBean();
-        queueInfo.setMasterAddress("47.56.109.24:6380");
+        queueInfo.setMasterAddress("39.107.247.82:6383");
         queueInfo.setPassword("Queke123456");
 
         JedisX cache = new JedisX(queueInfo, queueConfig, 5000);
 
-        RedisBloomFilter<Long> bloomFilter = new RedisBloomFilter<>(cache, 0.0001, 2000);
-        boolean sign = bloomFilter.contains("user1", 1l);
-        System.out.println(sign);
-        bloomFilter.add("user1", 60 * 60, 1l);
+        HotWord a = new HotWord();
+        a.setWord("a");
+        a.setWeight(0.1);
+        Object obj = cache.hGetObject("map", "a", null);
 
-        sign = bloomFilter.contains("user1", 1l);
-        System.out.println(sign);
+        if(obj == null) {
+            a.setNum(1);
+            cache.hSetObject("map", "a", a);
+        } else {
+            HotWord db = (HotWord) obj;
+            db.setNum(db.getNum() + 1);
+            cache.hSetObject("map", "a", db);
+        }
+        HotWord b = new HotWord();
+        b.setWord("a");
+        b.setWeight(0.1);
 
-        bloomFilter.addAll("user1", 0, Lists.newArrayList(2l, 3l));
+        Map<String, Object> map = cache.hMultiGetObject("map", Lists.<String>newArrayList("a", "b"), null);
 
-        sign = bloomFilter.contains("user1", 2l);
-        System.out.println("2 : " + sign);
-        sign = bloomFilter.contains("user1", 3l);
-        System.out.println("3 : " + sign);
+
+        obj = cache.hGetObject("map", "a", null);
+        if(obj == null) {
+            b.setNum(1);
+            cache.hSetObject("map", "a", b);
+        } else {
+            HotWord db = (HotWord) obj;
+            db.setNum(db.getNum() + 1);
+            cache.hSetObject("map", "a", db);
+        }
+
+        obj = cache.hGetObject("map", "a", null);
+        HotWord db = (HotWord) obj;
+        System.out.println(db.toString());
+
+
+//        RedisBloomFilter<Long> bloomFilter = new RedisBloomFilter<>(cache, 0.0001, 20000);
+//
+//        List<Long> params = Lists.newArrayList();
+//        for(long i = Long.MAX_VALUE; i > Long.MAX_VALUE - 3000; i--) {
+//            params.add(i);
+//        }
+//        long start = System.currentTimeMillis();
+//        bloomFilter.addAll("user1", 60 * 5, params.subList(0, 2999));
+//        System.out.println("time : " +(System.currentTimeMillis() - start));
+//
+//        long start2 = System.currentTimeMillis();
+//        Map<Long, Boolean> map = bloomFilter.containsAll("user1", params);
+//        System.out.println("time : " +(System.currentTimeMillis() - start2));
+//        int num = 0;
+//        for(Map.Entry<Long, Boolean> entry : map.entrySet()) {
+//           if(entry.getValue()) {
+//               num ++;
+//           }
+//        }
+//        System.out.println("true num : " + num);
+
+//        Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
+//        for(int i = 0 ; i < 10; i++) {
+//            long start = System.currentTimeMillis();
+//            boolean sign = bloomFilter.contains("user1", (long)i);
+//            System.out.println("time : " +(System.currentTimeMillis() - start) + ", " + i + " : " + sign);
+//        }
+//
+//        bloomFilter.addAll("user1", 0, Lists.newArrayList(2l, 3l));
+//
+//        sign = bloomFilter.contains("user1", 2l);
+//        System.out.println("2 : " + sign);
+//        sign = bloomFilter.contains("user1", 3l);
+//        System.out.println("3 : " + sign);
 
 //        Set<String> set  = cache.keys("quakooChat_many_chat_object_uid_*");
 //        List<List<String>> list = Lists.partition(Lists.newArrayList(set),100);

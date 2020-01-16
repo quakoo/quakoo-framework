@@ -18,7 +18,6 @@ public class JavaBloomFilter<E> implements Serializable {
     private int bitSetSize;
     private double bitsPerElement;
     private int expectedNumberOfFilterElements; // expected (maximum) number of elements to be added
-    private int numberOfAddedElements; // number of elements actually added to the Bloom filter
     private int k; // number of hash functions
 
 
@@ -28,7 +27,6 @@ public class JavaBloomFilter<E> implements Serializable {
         this.k = k;
         this.bitsPerElement = c;
         this.bitSetSize = (int) Math.ceil(c * n);
-        numberOfAddedElements = 0;
     }
 
     /**
@@ -122,17 +120,6 @@ public class JavaBloomFilter<E> implements Serializable {
     }
 
     /**
-     * Get the current probability of a false positive. The probability is calculated from
-     * the size of the Bloom filter and the current number of elements added to it.
-     *
-     * @return probability of false positives.
-     */
-    public double getFalsePositiveProbability() {
-        return getFalsePositiveProbability(numberOfAddedElements);
-    }
-
-
-    /**
      * Returns the value chosen for K.
      *
      * K is the optimal number of hash functions based on the size
@@ -149,7 +136,6 @@ public class JavaBloomFilter<E> implements Serializable {
      */
     public void clear() {
         bitSet.clear();
-        numberOfAddedElements = 0;
     }
 
     /**
@@ -171,7 +157,6 @@ public class JavaBloomFilter<E> implements Serializable {
         int[] hashes = MessageDigestUtils.createHashes(bytes, k);
         for (int hash : hashes)
             bitSet.set(Math.abs(hash % bitSetSize), true);
-        numberOfAddedElements++;
     }
 
     /**
@@ -260,25 +245,6 @@ public class JavaBloomFilter<E> implements Serializable {
     }
 
     /**
-     * Returns the number of elements added to the Bloom filter after it
-     * was constructed or after clear() was called.
-     *
-     * @return number of elements added to the Bloom filter.
-     */
-    public int count() {
-        return this.numberOfAddedElements;
-    }
-
-    /**
-     * Returns is the bit set empty, bit set is empty means no any elements added to bloom filter.
-     *
-     * @return is the bit set empty
-     */
-    public boolean isEmpty() {
-        return count() <= 0;
-    }
-
-    /**
      * Returns the expected number of elements to be inserted into the filter.
      * This value is the same value as the one passed to the constructor.
      *
@@ -296,16 +262,6 @@ public class JavaBloomFilter<E> implements Serializable {
      */
     public double getExpectedBitsPerElement() {
         return this.bitsPerElement;
-    }
-
-    /**
-     * Get actual number of bits per element based on the number of elements that have currently been inserted and the length
-     * of the Bloom filter. See also getExpectedBitsPerElement().
-     *
-     * @return number of bits per element.
-     */
-    public double getBitsPerElement() {
-        return this.bitSetSize / (double) numberOfAddedElements;
     }
 
 }

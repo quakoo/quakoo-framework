@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc
+	                    http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		                http://www.springframework.org/schema/beans 
+		                http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		                http://www.springframework.org/schema/context 
+		                http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		                http://www.springframework.org/schema/aop 
+		                http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+
+    <import resource="dao-config.xml" />
+
+    <!-- service -->
+    <bean id="idfDictService" class="com.quakoo.framework.ext.recommend.service.impl.IDFDictServiceImpl">
+        <property name="idfDictDao" ref="idfDictDao" />
+    </bean>
+    <bean id="stopWordService" class="com.quakoo.framework.ext.recommend.service.impl.StopWordServiceImpl">
+        <property name="stopWordDao" ref="stopWordDao" />
+    </bean>
+    <bean id="tfidfService" class="com.quakoo.framework.ext.recommend.service.impl.TFIDFServiceImpl" >
+        <property name="stopWordService" ref="stopWordService" />
+        <property name="idfDictService" ref="idfDictService" />
+        <property name="idfMissWordService" ref="idfMissWordService" />
+        <property name="hotWordService" ref="hotWordService" />
+    </bean>
+    <bean id="idfMissWordService" class="com.quakoo.framework.ext.recommend.service.impl.IDFMissWordServiceImpl" >
+        <property name="idfMissWordDao" ref="idfMissWordDao" />
+    </bean>
+    <bean id="hotWordService" class="com.quakoo.framework.ext.recommend.service.impl.HotWordServiceImpl" >
+        <property name="hotWordDao" ref="hotWordDao" />
+    </bean>
+    <bean id="syncInfoService" class="com.quakoo.framework.ext.recommend.service.impl.SyncInfoServiceImpl" >
+        <property name="syncInfoDao" ref="syncInfoDao" />
+    </bean>
+    <bean id="filterService" class="com.quakoo.framework.ext.recommend.service.impl.FilterServiceImpl" >
+        <property name="recommendInfo" ref="recommendInfo" />
+    </bean>
+    <bean id="portraitItemCFService" class="com.quakoo.framework.ext.recommend.service.impl.PortraitItemCFServiceImpl" >
+        <property name="recommendInfo" ref="recommendInfo" />
+        <property name="tfidfService" ref="tfidfService" />
+        <property name="portraitItemCFDao" ref="portraitItemCFDao" />
+    </bean>
+
+    <bean id="realTimeSearchService" class="test.RealTimeSearchServiceImpl" />
+
+    <bean id="recommendService" class="com.quakoo.framework.ext.recommend.service.impl.RecommendServiceImpl" >
+        <property name="recommendInfo" ref="recommendInfo" />
+        <property name="realTimeSearchService" ref="realTimeSearchService" />
+        <property name="portraitItemCFService" ref="portraitItemCFService" />
+        <property name="hotWordService" ref="hotWordService" />
+        <property name="filterService" ref="filterService" />
+    </bean>
+
+    <!-- CONTEXT -->
+    <bean class="com.quakoo.framework.ext.recommend.context.handle.DistributedSchedulerContextHandle" >
+        <property name="recommendInfo" ref="recommendInfo" />
+    </bean>
+    <bean class="com.quakoo.framework.ext.recommend.context.handle.IDFMissWordSchedulerContextHandle" >
+        <property name="idfMissWordService" ref="idfMissWordService" />
+        <property name="recommendInfo" ref="recommendInfo" />
+    </bean>
+    <bean class="com.quakoo.framework.ext.recommend.context.handle.HotWordSchedulerContextHandle" >
+        <property name="hotWordService" ref="hotWordService" />
+        <property name="recommendInfo" ref="recommendInfo" />
+    </bean>
+    <bean class="com.quakoo.framework.ext.recommend.context.handle.SyncInfoSchedulerContextHandle" >
+        <property name="syncInfoService" ref="syncInfoService" />
+        <property name="recommendInfo" ref="recommendInfo" />
+    </bean>
+    <bean class="com.quakoo.framework.ext.recommend.context.handle.PortraitItemCFSchedulerContextHandle" >
+        <property name="portraitItemCFService" ref="portraitItemCFService" />
+        <property name="recommendInfo" ref="recommendInfo" />
+    </bean>
+
+</beans>

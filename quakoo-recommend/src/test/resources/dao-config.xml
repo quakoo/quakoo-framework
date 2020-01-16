@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xsi:schemaLocation="http://www.springframework.org/schema/mvc
+	                    http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		                http://www.springframework.org/schema/beans
+		                http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		                http://www.springframework.org/schema/data/mongo
+                        http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
+		                http://www.springframework.org/schema/context
+		                http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		                http://www.springframework.org/schema/aop
+		                http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:dao.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 配置信息 -->
+
+    <bean id="dataSource" class='${jdbc.class}'>
+        <property name="alias" value="dataSource"/>
+        <property name="driver" value="${jdbc.driver}"/>
+        <property name="driverUrl" value="${business.jdbc.driverUrl}"/>
+        <property name="user" value="${business.jdbc.user}"/>
+        <property name="password" value="${business.jdbc.password}"/>
+        <property name="maximumConnectionCount"
+                  value="${business.jdbc.maximumConnectionCount}"/>
+        <property name="simultaneousBuildThrottle"
+                  value="${business.jdbc.simultaneousBuildThrottle}"/>
+        <property name="testBeforeUse" value="${jdbc.testBeforeUse}"/>
+        <property name="houseKeepingTestSql" value="${jdbc.houseKeepingTestSql}"/>
+    </bean>
+
+    <import resource="recommend-dao-config.xml" />
+
+</beans>
