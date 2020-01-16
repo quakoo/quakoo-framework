@@ -17,7 +17,7 @@
 		<constructor-arg ref="dataSource" />
 	</bean>
 
-    <bean id="recommendInfo" class="com.quakoo.framework.ext.recommend.AbstractRecommendInfo" />
+    <bean id="recommendInfo" class="test.RecommendInfo" />
 
     <bean id="idfDictDao" class="com.quakoo.framework.ext.recommend.dao.impl.IDFDictDaoImpl" >
         <property name="recommendInfo" ref="recommendInfo" />

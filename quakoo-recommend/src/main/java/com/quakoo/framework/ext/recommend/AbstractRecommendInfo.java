@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import redis.clients.jedis.JedisPoolConfig;
 
-public class AbstractRecommendInfo implements InitializingBean {
+public abstract class AbstractRecommendInfo implements InitializingBean {
 
     private PropertyLoader propertyLoader = PropertyLoader.getInstance("recommend.properties");
 
@@ -33,8 +33,7 @@ public class AbstractRecommendInfo implements InitializingBean {
     public int hotWordStep = 2;
     public int cacheMultiple = 5;
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
+    protected void init() {
         this.projectName = propertyLoader.getProperty("recommend.project.name");
         this.lockZkAddress = propertyLoader.getProperty("recommend.lock.zk.address");
         this.distributedZkAddress = propertyLoader.getProperty("recommend.distributed.zk.address");
@@ -61,4 +60,5 @@ public class AbstractRecommendInfo implements InitializingBean {
         redisInfo.setMasterAddress(redisAddress);
         redisInfo.setPassword(redisPassword);
     }
+
 }

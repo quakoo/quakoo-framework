@@ -18,26 +18,26 @@ public class IDFMissWordTest {
         System.out.println("=========================================");
         IDFMissWordService idfMissWordService = context.getBean(IDFMissWordService.class);
 
-        List<IDFMissWord> list = Lists.newArrayList();
-
-        IDFMissWord one = new IDFMissWord();
-        one.setWord("aa");
-        one.setNum(1);
-        list.add(one);
-
-        IDFMissWord two = new IDFMissWord();
-        two.setWord("bb");
-        two.setNum(1);
-        list.add(two);
-
-        IDFMissWord three = new IDFMissWord();
-        three.setWord("cc");
-        three.setNum(1);
-        list.add(three);
-
-        idfMissWordService.handle(list);
-
-        System.exit(1);
+//        List<IDFMissWord> list = Lists.newArrayList();
+//
+//        IDFMissWord one = new IDFMissWord();
+//        one.setWord("aa");
+//        one.setNum(1);
+//        list.add(one);
+//
+//        IDFMissWord two = new IDFMissWord();
+//        two.setWord("bb");
+//        two.setNum(1);
+//        list.add(two);
+//
+//        IDFMissWord three = new IDFMissWord();
+//        three.setWord("cc");
+//        three.setNum(1);
+//        list.add(three);
+//
+//        idfMissWordService.handle(list);
+//
+//        System.exit(1);
     }
 
 }
