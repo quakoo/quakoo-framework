@@ -1,0 +1,56 @@
+create table hot_word
+(
+    id     bigint auto_increment
+        primary key,
+    word   varchar(200)                  null,
+    weight double(10, 5) default 0.00000 null,
+    num    int           default 0       null,
+    sort   bigint        default 0       null
+);
+
+create table idf_dict
+(
+    id     bigint auto_increment
+        primary key,
+    word   varchar(200)   null,
+    weight double(14, 11) null
+);
+
+create table idf_miss_word
+(
+    id   bigint auto_increment
+        primary key,
+    word varchar(200)  null,
+    num  int default 0 null
+);
+
+create table portrait_item_cf
+(
+    uid   bigint default 0 not null
+        primary key,
+    words mediumtext       null,
+    utime bigint default 0 null
+);
+
+create table stop_word
+(
+    id   bigint auto_increment
+        primary key,
+    word varchar(200) null
+);
+
+
+create table sync_info
+(
+    id                bigint auto_increment
+        primary key,
+    `sql`             varchar(1000)    not null,
+    esIndex           varchar(200)     not null,
+    esFields          mediumtext       null,
+    trackingColumn    varchar(200)     null,
+    batchSize         int    default 0 null,
+    esId              varchar(20)      null,
+    lastTrackingValue bigint default 0 null
+);
+
+
