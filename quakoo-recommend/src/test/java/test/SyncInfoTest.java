@@ -30,30 +30,30 @@ public class SyncInfoTest {
 //            System.out.println(one.toString());
 //        }
 
-//        List<ESField> list = Lists.newArrayList();
-//        ESField a = new ESField("id", "true", "long", null, "id");
-//        ESField b = new ESField("title", "true", "text", "jieba_index", "title");
-//        ESField c = new ESField("content","true", "text", "jieba_index", "content");
-//        ESField d = new ESField("type", "true", "integer", null, "type");
-//        ESField e = new ESField("lastUpdateTime", "true", "long", null, "lastUpdateTime");
-//        list.add(a);
-//        list.add(b);
-//        list.add(c);
-//        list.add(d);
-//        list.add(e);
-//
-//        SyncInfo syncInfo = new SyncInfo();
-//        syncInfo.setSql("select * from article where status = 2");
-//        syncInfo.setEsIndex("article");
-//        syncInfo.setEsFields(list);
-//        syncInfo.setEsId("id");
-//        syncInfo.setTrackingColumn("lastUpdateTime");
-//        syncInfo.setBatchSize(500);
-//
-//        boolean res = syncInfoService.insert(syncInfo);
-//        System.out.println(res);
+        List<ESField> list = Lists.newArrayList();
+        ESField a = new ESField("id", "true", "long", null, "id");
+        ESField b = new ESField("title", "true", "text", "jieba_index", "title");
+        ESField c = new ESField("content","true", "text", "jieba_index", "content");
+        ESField d = new ESField("type", "true", "integer", null, "type");
+        ESField e = new ESField("lastUpdateTime", "true", "long", null, "lastUpdateTime");
+        list.add(a);
+        list.add(b);
+        list.add(c);
+        list.add(d);
+        list.add(e);
 
-//        System.exit(1);
+        SyncInfo syncInfo = new SyncInfo();
+        syncInfo.setSql("select * from article where status = 2");
+        syncInfo.setEsIndex("article");
+        syncInfo.setEsFields(list);
+        syncInfo.setEsId("id");
+        syncInfo.setTrackingColumn("lastUpdateTime");
+        syncInfo.setBatchSize(500);
+
+        boolean res = syncInfoService.insert(syncInfo);
+        System.out.println(res);
+
+        System.exit(1);
     }
 
 }
