@@ -135,7 +135,7 @@ public class JiebaSegmenter {
 
     public static void main(String[] args) {
         JiebaSegmenter jiebaSegmenter = JiebaSegmenter.getInstance();
-        List<String> list = jiebaSegmenter.sentenceProcess("宝钢德盛1780mm热轧工程首架精轧机牌坊顺利安装");
+        List<String> list = jiebaSegmenter.sentenceProcess("150");
         System.out.println(list.toString());
     }
 
