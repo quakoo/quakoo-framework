@@ -24,5 +24,6 @@
     <bean id="filterService" class="com.quakoo.framework.ext.recommend.service.impl.FilterServiceImpl" />
     <bean id="portraitItemCFService" class="com.quakoo.framework.ext.recommend.service.impl.PortraitItemCFServiceImpl" />
     <bean id="recommendService" class="com.quakoo.framework.ext.recommend.service.impl.RecommendServiceImpl" />
+    <bean id="recommendIndexService" class="com.quakoo.framework.ext.recommend.service.impl.RecommendIndexServiceImpl" />
 
 </beans>

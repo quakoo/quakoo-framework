@@ -8,6 +8,8 @@ public class DistributedConfig {
 
     public static boolean canRunPortrait = false;
 
+    public static boolean canRunDelIndex = false;
+
     public static int serverNum = -1;
 
     public static int serverIndex = -1;

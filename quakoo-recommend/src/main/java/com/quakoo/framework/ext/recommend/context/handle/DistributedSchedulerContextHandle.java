@@ -159,8 +159,10 @@ public class DistributedSchedulerContextHandle extends BaseContextHandle impleme
 
                 if(serverIndex == 0) {
                     DistributedConfig.canRunIDFMissWord = true;
+                    DistributedConfig.canRunDelIndex = true;
                 } else {
                     DistributedConfig.canRunIDFMissWord = false;
+                    DistributedConfig.canRunDelIndex = false;
                 }
 
                 if(serverIndex == (serverNum - 1)) {
