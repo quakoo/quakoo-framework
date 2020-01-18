@@ -14,4 +14,6 @@ public class ApiRecommendContextHandle {
 
     public static class SyncInfoSchedulerContext extends SyncInfoSchedulerContextHandle {}
 
+    public static class DelIndexSchedulerContext extends DelIndexSchedulerContextHandle {}
+
 }
