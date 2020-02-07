@@ -129,14 +129,14 @@ public class Test {
     public static void main(String[] args) throws Exception  {
         RestHighLevelClient client = new RestHighLevelClient(
                 RestClient.builder(
-                        new HttpHost("10.10.1.232", 9200, "http")));
+                        new HttpHost("47.92.109.133", 9200, "http")));
 
 //        search(client);
-
+//"jieba_index"
         List<ESField> list = Lists.newArrayList();
         ESField a = new ESField("id", "true", "long", null, null);
-        ESField b = new ESField("title", "true", "text", "jieba_index",null);
-        ESField c = new ESField("content","true", "text", "jieba_index", null);
+        ESField b = new ESField("title", "true", "text", null,null);
+        ESField c = new ESField("content","true", "text", null, null);
         list.add(a);
         list.add(b);
         list.add(c);
