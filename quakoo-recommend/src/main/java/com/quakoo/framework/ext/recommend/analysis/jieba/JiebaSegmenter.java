@@ -2,7 +2,6 @@ package com.quakoo.framework.ext.recommend.analysis.jieba;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.quakoo.framework.ext.recommend.analysis.jieba.viterbi.FinalSeg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,6 @@ public class JiebaSegmenter {
 
     private static JiebaSegmenter singleton;
     private static WordDictionary wordDict;
-    private static FinalSeg finalSeg;
 
     private JiebaSegmenter() {
     }
@@ -24,7 +22,6 @@ public class JiebaSegmenter {
     public synchronized static JiebaSegmenter getInstance() {
         if (null == singleton) {
             singleton = new JiebaSegmenter();
-            finalSeg = FinalSeg.getInstance();
             wordDict = WordDictionary.getInstance();
         }
         return singleton;
@@ -112,7 +109,7 @@ public class JiebaSegmenter {
                         if (wordDict.containsWord(buf)) {
                             tokens.add(buf);
                         } else {
-                            finalSeg.cut(buf, tokens);
+                            wordDict.cut(buf, tokens);
                         }
                     }
                 }
@@ -128,7 +125,7 @@ public class JiebaSegmenter {
                 if (wordDict.containsWord(buf)) {
                     tokens.add(buf);
                 } else {
-                    finalSeg.cut(buf, tokens);
+                    wordDict.cut(buf, tokens);
                 }
             }
 
@@ -138,7 +135,7 @@ public class JiebaSegmenter {
 
     public static void main(String[] args) {
         JiebaSegmenter jiebaSegmenter = JiebaSegmenter.getInstance();
-        List<String> list = jiebaSegmenter.sentenceProcess("孩子上了醉翁之意不在酒幼儿园 鲜芋仙安全防拐教育要做好");
+        List<String> list = jiebaSegmenter.sentenceProcess("150");
         System.out.println(list.toString());
     }
 

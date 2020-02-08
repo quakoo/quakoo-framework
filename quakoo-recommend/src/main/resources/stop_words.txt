@@ -125,6 +125,7 @@ _
 ﹄
 ︻
 ︼
+”，
 的
 了
 the
@@ -889,10 +890,8 @@ did
 does
 may
 might
-would
 should
 must
-will
 ought
 shall
 need
@@ -1038,13 +1037,7 @@ when
 where
 which
 while
-why
-with
-without
 yesterday
-yet
-you
-your
 aboard
 about
 above
@@ -1140,7 +1133,6 @@ versus
 via
 vice
 with
-within
 without
 he
 her
@@ -1170,9 +1162,7 @@ our
 ourselves
 you
 your
-yours
 yourselves
-yourself
 this
 that
 these
@@ -1522,7 +1512,6 @@ you
 your
 yours
 yourself
-yourselves
  
 	
 :

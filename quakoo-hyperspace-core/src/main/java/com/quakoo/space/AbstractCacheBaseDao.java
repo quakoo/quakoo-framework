@@ -1015,18 +1015,19 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
     /**
      * 自增
      *
-     * @param model
+     * @param id
      * @return
      * @throws DataAccessException
      */
-    public T zkLockAndIncrement(T model, String filedName, int incrementValue) throws DataAccessException {
+    public T zkLockAndIncrement(Object id, String filedName, int incrementValue) throws DataAccessException {
         ZkLock lock = null;
         try {
-            HyperspaceId hyperspaceId=getHyperspaceIdByObj(model);
+            HyperspaceId hyperspaceId=getHyperspaceIdByObj(id);
             String zkKey=(entityClass.getName()+"_"+hyperspaceId.toString()).replaceAll(" ","");
             lock = ZkLock.getAndLock(hyperspaceConfig.getZkAddress(), "hyperSpace", zkKey, true,
                     30000, 30000);
-            return increment(model,filedName,incrementValue);
+            T obj=load(id);
+            return increment(obj, filedName, incrementValue);
 
         } catch (Exception e) {
             throw new PermissionDeniedDataAccessException("", e);

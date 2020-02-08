@@ -42,7 +42,7 @@ public interface HDao<T> extends Serializable {
 	 * @return
 	 * @throws DataAccessException
 	 */
-	public T zkLockAndIncrement(T model,String filedName,int incrementValue) throws Exception;
+	public T zkLockAndIncrement(Object id, String filedName, int incrementValue) throws Exception;
 
 
 }

@@ -2153,14 +2153,46 @@ public class JedisX {
         return 0L;
     }
 
+    public Map<String, Long> piprpushString(String key, Set<String> items) {
+        List<String> itemList = Lists.newArrayList(items);
+        List<byte[]> bytes = Lists.newArrayList();
+        for(String item : itemList) {
+            bytes.add(SafeEncoder.encode(item));
+        }
+        List<Object> resList = piprpushByteArr(key, bytes);
+        Map<String, Long> res = Maps.newLinkedHashMap();
+        for(int i = 0; i < itemList.size(); i++) {
+            String item = itemList.get(i);
+            long oneRes = 0;
+            if(resList.get(i) != null) oneRes = (long)resList.get(i);
+            res.put(item, oneRes);
+        }
+        return res;
+    }
+
     /**
      * 在list右端新增String类型的item
      * <p/>
      * key item 操作完成后的list长度
      */
-
     public Long rpushString(String key, String item) {
         return rpushByteArr(key, SafeEncoder.encode(item));
+    }
+
+    public Map<Object, Long> piprpushObject(String key, List<Object> items) {
+        List<byte[]> bytes = Lists.newArrayList();
+        for(Object item : items) {
+            bytes.add(serialize(item));
+        }
+        List<Object> resList = piprpushByteArr(key, bytes);
+        Map<Object, Long> res = Maps.newLinkedHashMap();
+        for(int i = 0; i < items.size(); i++) {
+            Object item = items.get(i);
+            long oneRes = 0;
+            if(resList.get(i) != null) oneRes = (long)resList.get(i);
+            res.put(item, oneRes);
+        }
+        return res;
     }
 
     /**
@@ -2168,9 +2200,14 @@ public class JedisX {
      * <p/>
      * key item 操作完成后的list长度
      */
-
     public Long rpushObject(String key, Object item) {
         return rpushByteArr(key, serialize(item));
+    }
+
+    public List<Object> piprpushByteArr(String key, List<byte[]> items) {
+        valueTypeAssert(items);
+        return piprpush(key, SafeEncoder.encode(key), items);
+
     }
 
     /**
@@ -2178,22 +2215,45 @@ public class JedisX {
      * <p/>
      * key item 操作完成后的list长度
      */
-
     public Long rpushByteArr(String key, byte[] item) {
         valueTypeAssert(item);
-
         return rpush(key, SafeEncoder.encode(key), item);
 
+    }
+
+    private List<Object> piprpush(String key, byte[] bytekey, List<byte[]> values) {
+        ShardedJedis shardJedis = null;
+        Jedis jedis = null;
+        Pipeline pipeline = null;
+        try {
+            shardJedis = shardedJedisPool.getResource();
+            jedis = shardJedis.getShard(key);
+            if (jedis != null) {
+                pipeline = jedis.pipelined();
+                for(byte[] value : values) {
+                    pipeline.rpush(bytekey, value);
+                }
+                List<Object> res = pipeline.syncAndReturnAll();
+                return res;
+            }
+        } catch (Exception e) {
+            onException(shardJedis, jedis, e);
+            shardJedis = null;
+        } finally {
+            try {
+                pipeline.close();
+            } catch (Exception e) {}
+            onFinally(shardJedis);
+        }
+        return Lists.newArrayList();
     }
 
     private Long rpush(String key, byte[] bytekey, byte[] value) {
         ShardedJedis shardJedis = null;
         Jedis jedis = null;
         try {
-
             shardJedis = shardedJedisPool.getResource();
             jedis = shardJedis.getShard(key);
-
             if (jedis != null) {
                 Long ret = jedis.rpush(bytekey, value);
                 return ret;
@@ -7483,14 +7543,58 @@ public class JedisX {
 	}
 
 
-    public boolean setbit(String key, int bitIndex, boolean value) {
+    public void pipSetBit(String key, List<int[]> bitIndexesList, boolean value) {
         ShardedJedis shardJedis = null;
         Jedis jedis = null;
         try {
             shardJedis = shardedJedisPool.getResource();
             jedis = shardJedis.getShard(key);
             if (jedis != null) {
-                boolean ret = jedis.setbit(SafeEncoder.encode(key), bitIndex, value);
+                Pipeline pipeline = jedis.pipelined();
+                for(int[] bitIndexes : bitIndexesList) {
+                    for (int bitIndex : bitIndexes) {
+                        pipeline.setbit(key, bitIndex, true);
+                    }
+                }
+                pipeline.sync();
+            }
+        } catch (Exception e) {
+            onException(shardJedis, jedis, e);
+            shardJedis = null;
+        } finally {
+            onFinally(shardJedis);
+        }
+    }
+
+	public void pipSetBit(String key, int[] bitIndexes, boolean value) {
+        ShardedJedis shardJedis = null;
+        Jedis jedis = null;
+        try {
+            shardJedis = shardedJedisPool.getResource();
+            jedis = shardJedis.getShard(key);
+            if (jedis != null) {
+                Pipeline pipeline = jedis.pipelined();
+                for (int bitIndex : bitIndexes) {
+                    pipeline.setbit(key, bitIndex, true);
+                }
+                pipeline.sync();
+            }
+        } catch (Exception e) {
+            onException(shardJedis, jedis, e);
+            shardJedis = null;
+        } finally {
+            onFinally(shardJedis);
+        }
+    }
+
+    public boolean setBit(String key, int bitIndex, boolean value) {
+        ShardedJedis shardJedis = null;
+        Jedis jedis = null;
+        try {
+            shardJedis = shardedJedisPool.getResource();
+            jedis = shardJedis.getShard(key);
+            if (jedis != null) {
+                boolean ret = jedis.setbit(key, bitIndex, value);
                 return ret;
             }
         } catch (Exception e) {
@@ -7502,14 +7606,86 @@ public class JedisX {
         return false;
     }
 
-    public boolean getbit(String key, int bitIndex) {
+    public List<List<Boolean>> pipGetBit(String key, List<int[]> bitIndexesList) {
         ShardedJedis shardJedis = null;
         Jedis jedis = null;
         try {
             shardJedis = shardedJedisPool.getResource();
             jedis = shardJedis.getShard(key);
             if (jedis != null) {
-                boolean ret = jedis.getbit(SafeEncoder.encode(key), bitIndex);
+                Pipeline pipeline = jedis.pipelined();
+                int num = 0;
+                for(int[] bitIndexes : bitIndexesList) {
+                    for (int bitIndex : bitIndexes) {
+                        pipeline.getbit(key, bitIndex);
+                        num++;
+                    }
+                }
+                List<Object> list = pipeline.syncAndReturnAll();
+                if(num != list.size()) return null;
+                for(Object obj : list) {
+                    if(obj == null) return null;
+                }
+                List<List<Boolean>> res = Lists.newArrayList();
+                for(int i = 0; i < bitIndexesList.size(); i++) {
+                    int startIndex = 0;
+                    if(i > 0) {
+                        for(int j = 0; j < i; j++) {
+                            startIndex += bitIndexesList.get(j).length;
+                        }
+                    }
+                    List<Boolean> oneRes = Lists.newArrayList();
+                    for(int j = startIndex; j < startIndex + bitIndexesList.get(i).length; j++) {
+                        oneRes.add((boolean)list.get(j));
+                    }
+                    res.add(oneRes);
+                }
+                return res;
+            }
+        } catch (Exception e) {
+            onException(shardJedis, jedis, e);
+            shardJedis = null;
+        } finally {
+            onFinally(shardJedis);
+        }
+        return null;
+    }
+
+    public List<Boolean> pipGetBit(String key, int[] bitIndexes) {
+        ShardedJedis shardJedis = null;
+        Jedis jedis = null;
+        try {
+            shardJedis = shardedJedisPool.getResource();
+            jedis = shardJedis.getShard(key);
+            if (jedis != null) {
+                Pipeline pipeline = jedis.pipelined();
+                for (int bitIndex : bitIndexes) {
+                    pipeline.getbit(key, bitIndex);
+                }
+                List<Object> list = pipeline.syncAndReturnAll();
+                List<Boolean> res = Lists.newArrayList();
+                for(Object obj : list) {
+                    res.add((Boolean) obj);
+                }
+                return res;
+            }
+        } catch (Exception e) {
+            onException(shardJedis, jedis, e);
+            shardJedis = null;
+        } finally {
+            onFinally(shardJedis);
+        }
+        return Lists.newArrayList();
+    }
+
+    public boolean getBit(String key, int bitIndex) {
+        ShardedJedis shardJedis = null;
+        Jedis jedis = null;
+        try {
+            shardJedis = shardedJedisPool.getResource();
+            jedis = shardJedis.getShard(key);
+            if (jedis != null) {
+                boolean ret = jedis.getbit(key, bitIndex);
                 return ret;
             }
         } catch (Exception e) {
@@ -7519,6 +7695,69 @@ public class JedisX {
             onFinally(shardJedis);
         }
         return false;
+    }
+
+
+    public List<String> lrangeAndDelString(String key, int start, int end) {
+        List<byte[]> ret = lrangeAndDelByteArr(key, start, end);
+        if (ret != null) {
+            List<String> trueRet = new ArrayList<String>();
+            for (byte[] item : ret) {
+                if (item != null) {
+                    trueRet.add(SafeEncoder.encode(item));
+                }
+            }
+            return trueRet;
+        }
+        return null;
+    }
+
+    public List<Object> lrangeAndDelObject(String key, int start, int end, final Class<? extends ScloudSerializable> clazz) {
+        List<byte[]> ret = lrangeAndDelByteArr(key, start, end);
+        if (ret != null) {
+            List<Object> trueRet = new ArrayList<Object>();
+            for (byte[] item : ret) {
+                if (item != null) {
+                    trueRet.add(deserialize(item, clazz));
+                }
+            }
+            return trueRet;
+        }
+        return null;
+    }
+
+    public List<byte[]> lrangeAndDelByteArr(String key, int start, int end) {
+        return lrangeAndDel(key, SafeEncoder.encode(key), start, end);
+
+    }
+
+    private List<byte[]> lrangeAndDel(String key, byte[] bytekey, int start, int end) {
+        ShardedJedis shardJedis = null;
+        Jedis jedis = null;
+        Transaction ts = null;
+        try {
+            shardJedis = shardedJedisPool.getResource();
+            jedis = shardJedis.getShard(key);
+            if (jedis != null) {
+                ts = jedis.multi();
+                ts.lrange(bytekey, start, end);
+                if(end == Integer.MAX_VALUE) ts.ltrim(bytekey, end, -1);
+                else ts.ltrim(bytekey, end + 1, -1);
+                List<Object> tsRes = ts.exec();
+                if(tsRes != null && !tsRes.isEmpty()){
+                    return (List<byte[]>)tsRes.get(0);
+                }
+            }
+        } catch (Exception e) {
+            onException(shardJedis, jedis, e);
+            shardJedis = null;
+        } finally {
+            try {
+                if(null != ts) ts.close();
+            } catch (Exception e) {}
+            onFinally(shardJedis);
+        }
+        return Lists.newArrayList();
     }
 	
 	
