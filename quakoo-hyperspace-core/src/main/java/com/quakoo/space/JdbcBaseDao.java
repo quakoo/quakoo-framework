@@ -624,7 +624,9 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 				Method writeMethod = info.getWriteMethod();
 				if(info.isJson()){
 					String jsonString= (String) ReflectUtil.getValueFormRsByType(String.class, rs, c);
-					writeMethod.invoke(o, JsonUtils.parse(jsonString,info.getField().getGenericType()));
+					if(StringUtils.isNotBlank(jsonString)){
+						writeMethod.invoke(o, JsonUtils.parse(jsonString,info.getField().getGenericType()));
+					}
 				}else{
 					Type type = info.getField().getGenericType();
 					writeMethod.invoke(o, ReflectUtil.getValueFormRsByType(type, rs, c));
