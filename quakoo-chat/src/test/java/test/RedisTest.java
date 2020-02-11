@@ -31,39 +31,42 @@ public class RedisTest {
 
         JedisX cache = new JedisX(queueInfo, queueConfig, 5000);
 
-        HotWord a = new HotWord();
-        a.setWord("a");
-        a.setWeight(0.1);
-        Object obj = cache.hGetObject("map", "a", null);
+        long num = cache.incrBy("intest", 1);
+        System.out.println(num);
 
-        if(obj == null) {
-            a.setNum(1);
-            cache.hSetObject("map", "a", a);
-        } else {
-            HotWord db = (HotWord) obj;
-            db.setNum(db.getNum() + 1);
-            cache.hSetObject("map", "a", db);
-        }
-        HotWord b = new HotWord();
-        b.setWord("a");
-        b.setWeight(0.1);
-
-        Map<String, Object> map = cache.hMultiGetObject("map", Lists.<String>newArrayList("a", "b"), null);
-
-
-        obj = cache.hGetObject("map", "a", null);
-        if(obj == null) {
-            b.setNum(1);
-            cache.hSetObject("map", "a", b);
-        } else {
-            HotWord db = (HotWord) obj;
-            db.setNum(db.getNum() + 1);
-            cache.hSetObject("map", "a", db);
-        }
-
-        obj = cache.hGetObject("map", "a", null);
-        HotWord db = (HotWord) obj;
-        System.out.println(db.toString());
+//        HotWord a = new HotWord();
+//        a.setWord("a");
+//        a.setWeight(0.1);
+//        Object obj = cache.hGetObject("map", "a", null);
+//
+//        if(obj == null) {
+//            a.setNum(1);
+//            cache.hSetObject("map", "a", a);
+//        } else {
+//            HotWord db = (HotWord) obj;
+//            db.setNum(db.getNum() + 1);
+//            cache.hSetObject("map", "a", db);
+//        }
+//        HotWord b = new HotWord();
+//        b.setWord("a");
+//        b.setWeight(0.1);
+//
+//        Map<String, Object> map = cache.hMultiGetObject("map", Lists.<String>newArrayList("a", "b"), null);
+//
+//
+//        obj = cache.hGetObject("map", "a", null);
+//        if(obj == null) {
+//            b.setNum(1);
+//            cache.hSetObject("map", "a", b);
+//        } else {
+//            HotWord db = (HotWord) obj;
+//            db.setNum(db.getNum() + 1);
+//            cache.hSetObject("map", "a", db);
+//        }
+//
+//        obj = cache.hGetObject("map", "a", null);
+//        HotWord db = (HotWord) obj;
+//        System.out.println(db.toString());
 
 
 //        RedisBloomFilter<Long> bloomFilter = new RedisBloomFilter<>(cache, 0.0001, 20000);

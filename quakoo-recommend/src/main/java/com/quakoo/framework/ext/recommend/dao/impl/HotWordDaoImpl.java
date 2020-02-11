@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -30,6 +31,22 @@ public class HotWordDaoImpl extends BaseDao implements HotWordDao, InitializingB
     private final static String hot_word_queue_key = "%s_hot_word_queue_%d";
 
     private final static String hot_word_key = "%s_hot_word";
+
+    private ResultSetExtractor<HotWord> resultSetExtractor = new ResultSetExtractor<HotWord>() {
+        @Override
+        public HotWord extractData(ResultSet rs) throws SQLException, DataAccessException {
+            if(rs.next()){
+                HotWord hotWord = new HotWord();
+                hotWord.setId(rs.getLong("id"));
+                hotWord.setWord(rs.getString("word"));
+                hotWord.setWeight(rs.getDouble("weight"));
+                hotWord.setNum(rs.getInt("num"));
+                hotWord.setSort(rs.getLong("sort"));
+                return hotWord;
+            } else
+                return null;
+        }
+    };
 
     private RowMapper<HotWord> rowMapper = new RowMapper<HotWord>() {
         @Override
@@ -90,7 +107,7 @@ public class HotWordDaoImpl extends BaseDao implements HotWordDao, InitializingB
     @Override
     public boolean delete(long id) throws DataAccessException {
         String sql = "select * from hot_word where id = %d";
-        HotWord dbHotWord = this.jdbcTemplate.queryForObject(String.format(sql, id), rowMapper);
+        HotWord dbHotWord = this.jdbcTemplate.query(String.format(sql, id), resultSetExtractor);
         if (dbHotWord != null) {
             sql = "delete from hot_word where id = %d";
             sql = String.format(sql, id);

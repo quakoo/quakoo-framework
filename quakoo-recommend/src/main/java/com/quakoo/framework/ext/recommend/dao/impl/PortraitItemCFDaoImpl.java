@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -29,6 +30,22 @@ public class PortraitItemCFDaoImpl extends BaseDao implements PortraitItemCFDao,
     private JedisX cache;
 
     private final static String portrait_item_cf_key_format = "%s_portrait_item_cf_user_%d";
+
+    private ResultSetExtractor<PortraitItemCF> resultSetExtractor = new ResultSetExtractor<PortraitItemCF>() {
+        @Override
+        public PortraitItemCF extractData(ResultSet rs) throws SQLException, DataAccessException {
+            if(rs.next()){
+                PortraitItemCF portrait = new PortraitItemCF();
+                portrait.setUid(rs.getLong("uid"));
+                String wordsStr = rs.getString("words");
+                List<PortraitWord> words = JsonUtils.fromJson(wordsStr, new TypeReference<List<PortraitWord>>() {});
+                portrait.setWords(words);
+                portrait.setUtime(rs.getLong("utime"));
+                return portrait;
+            } else
+                return null;
+        }
+    };
 
     private RowMapper<PortraitItemCF> rowMapper = new RowMapper<PortraitItemCF>() {
         @Override
@@ -92,7 +109,7 @@ public class PortraitItemCFDaoImpl extends BaseDao implements PortraitItemCFDao,
             String sql = "select * from portrait_item_cf where uid = %d";
             sql = String.format(sql, uid);
             long startTime = System.currentTimeMillis();
-            PortraitItemCF portraitItemCF = this.jdbcTemplate.queryForObject(sql, rowMapper);
+            PortraitItemCF portraitItemCF = this.jdbcTemplate.query(sql, resultSetExtractor);
             logger.info("===== sql time : " + (System.currentTimeMillis() - startTime) + " , sql : " + sql);
             if(portraitItemCF != null) {
                 cache.setObject(key, AbstractRecommendInfo.redis_overtime_long, portraitItemCF);

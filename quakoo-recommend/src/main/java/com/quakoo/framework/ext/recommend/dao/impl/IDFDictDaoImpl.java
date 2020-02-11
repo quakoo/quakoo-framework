@@ -8,12 +8,14 @@ import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.framework.ext.recommend.AbstractRecommendInfo;
 import com.quakoo.framework.ext.recommend.dao.BaseDao;
 import com.quakoo.framework.ext.recommend.dao.IDFDictDao;
+import com.quakoo.framework.ext.recommend.model.HotWord;
 import com.quakoo.framework.ext.recommend.model.IDFDict;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -29,6 +31,20 @@ public class IDFDictDaoImpl extends BaseDao implements IDFDictDao, InitializingB
     private JedisX cache;
 
     private final static String idf_dict_key = "%s_idf_dict";
+
+    private ResultSetExtractor<IDFDict> resultSetExtractor = new ResultSetExtractor<IDFDict>() {
+        @Override
+        public IDFDict extractData(ResultSet rs) throws SQLException, DataAccessException {
+            if(rs.next()){
+                IDFDict res = new IDFDict();
+                res.setId(rs.getLong("id"));
+                res.setWord(rs.getString("word"));
+                res.setWeight(rs.getDouble("weight"));
+                return res;
+            } else
+                return null;
+        }
+    };
 
     private RowMapper<IDFDict> rowMapper = new RowMapper<IDFDict>() {
         @Override
@@ -94,7 +110,7 @@ public class IDFDictDaoImpl extends BaseDao implements IDFDictDao, InitializingB
     @Override
     public boolean delete(long id) throws DataAccessException {
         String sql = "select * from idf_dict where id = %d";
-        IDFDict dbIdfDict = this.jdbcTemplate.queryForObject(String.format(sql, id), rowMapper);
+        IDFDict dbIdfDict = this.jdbcTemplate.query(String.format(sql, id), resultSetExtractor);
         if (dbIdfDict != null) {
             sql = "delete from idf_dict where id = %d";
             sql = String.format(sql, id);

@@ -39,35 +39,59 @@ public class Test {
     private static void search(RestHighLevelClient client) throws Exception {
         BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-
-//        QueryBuilder queryBuilder = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("type", 3)).must(QueryBuilders.termQuery("title", "恐怖").boost(1));
-//        boolBuilder.should(queryBuilder);
-//        QueryBuilder queryBuilder2 = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("type", 3)).must(QueryBuilders.termQuery("title", "石景山").boost(2));
-//        boolBuilder.should(queryBuilder2);
-
+//        for(String queryWord : words) {
+            QueryBuilder nameQuery = QueryBuilders.wildcardQuery("name", "*河北九江*");
+            boolBuilder.should(nameQuery);
+//            QueryBuilder phoneQuery = QueryBuilders.wildcardQuery("phone", "*河北九江集团*");
+//            boolBuilder.should(phoneQuery);
+//        }
         sourceBuilder.query(boolBuilder);
-        sourceBuilder.size(100);
+        sourceBuilder.size(400);
         sourceBuilder.sort("_score", SortOrder.DESC);
-//        sourceBuilder.sort("id", SortOrder.DESC);
-//        sourceBuilder.searchAfter(new Object[]{0.10230917, 3 });
-
-        sourceBuilder.sort("lastUpdateTime", SortOrder.DESC);
-
-        sourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
-        SearchRequest searchRequest = new SearchRequest("article"); //索引
+        sourceBuilder.sort("id", SortOrder.DESC);
+        sourceBuilder.timeout(new TimeValue(3, TimeUnit.SECONDS));
+        SearchRequest searchRequest = new SearchRequest("user"); //索引
         searchRequest.source(sourceBuilder);
-        sourceBuilder.fetchSource(new String[] {"id","title","content","lastUpdateTime"}, new String[] {});
-
-        System.out.println(searchRequest.toString());
+        sourceBuilder.fetchSource(new String[] {"id"}, new String[] {});
 
         SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
         SearchHits hits = response.getHits();
-        System.out.println(hits.getHits().length + "   ===== size");
         for(SearchHit hit : hits) {
-//            long id = hit.getFields().get("id").getValue();
-            long id = Long.parseLong(hit.getSourceAsMap().get("id").toString());
+            long id = hit.getFields().get("id").getValue();
             System.out.println("======= score : " + hit.getScore() + ", id : " + id + ", " + hit.getSourceAsString());
         }
+
+//        BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
+//        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+//
+////        QueryBuilder queryBuilder = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("type", 3)).must(QueryBuilders.termQuery("title", "恐怖").boost(1));
+////        boolBuilder.should(queryBuilder);
+////        QueryBuilder queryBuilder2 = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("type", 3)).must(QueryBuilders.termQuery("title", "石景山").boost(2));
+////        boolBuilder.should(queryBuilder2);
+//
+//        sourceBuilder.query(boolBuilder);
+//        sourceBuilder.size(100);
+//        sourceBuilder.sort("_score", SortOrder.DESC);
+////        sourceBuilder.sort("id", SortOrder.DESC);
+////        sourceBuilder.searchAfter(new Object[]{0.10230917, 3 });
+//
+//        sourceBuilder.sort("lastUpdateTime", SortOrder.DESC);
+//
+//        sourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+//        SearchRequest searchRequest = new SearchRequest("user"); //索引
+//        searchRequest.source(sourceBuilder);
+//        sourceBuilder.fetchSource(new String[] {"id","title","content","lastUpdateTime"}, new String[] {});
+//
+//        System.out.println(searchRequest.toString());
+//
+//        SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+//        SearchHits hits = response.getHits();
+//        System.out.println(hits.getHits().length + "   ===== size");
+//        for(SearchHit hit : hits) {
+////            long id = hit.getFields().get("id").getValue();
+//            long id = Long.parseLong(hit.getSourceAsMap().get("id").toString());
+//            System.out.println("======= score : " + hit.getScore() + ", id : " + id + ", " + hit.getSourceAsString());
+//        }
     }
 
 
@@ -131,17 +155,17 @@ public class Test {
                 RestClient.builder(
                         new HttpHost("47.92.109.133", 9200, "http")));
 
-//        search(client);
+        search(client);
 //"jieba_index"
-        List<ESField> list = Lists.newArrayList();
-        ESField a = new ESField("id", "true", "long", null, null);
-        ESField b = new ESField("title", "true", "text", null,null);
-        ESField c = new ESField("content","true", "text", null, null);
-        list.add(a);
-        list.add(b);
-        list.add(c);
-        String json = ESUtils.toIndexJson(list);
-        createIndex(client, json);
+//        List<ESField> list = Lists.newArrayList();
+//        ESField a = new ESField("id", "true", "long", null, null);
+//        ESField b = new ESField("title", "true", "text", null,null);
+//        ESField c = new ESField("content","true", "text", null, null);
+//        list.add(a);
+//        list.add(b);
+//        list.add(c);
+//        String json = ESUtils.toIndexJson(list);
+//        createIndex(client, json);
 
 //        changeIndex(client);
 

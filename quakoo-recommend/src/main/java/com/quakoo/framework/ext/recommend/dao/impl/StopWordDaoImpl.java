@@ -1,18 +1,23 @@
 package com.quakoo.framework.ext.recommend.dao.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.quakoo.baseFramework.jackson.JsonUtils;
 import com.quakoo.baseFramework.model.pagination.Pager;
 import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.framework.ext.recommend.AbstractRecommendInfo;
+import com.quakoo.framework.ext.recommend.bean.PortraitWord;
 import com.quakoo.framework.ext.recommend.dao.BaseDao;
 import com.quakoo.framework.ext.recommend.dao.StopWordDao;
+import com.quakoo.framework.ext.recommend.model.PortraitItemCF;
 import com.quakoo.framework.ext.recommend.model.StopWord;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -27,6 +32,19 @@ public class StopWordDaoImpl extends BaseDao implements StopWordDao, Initializin
     private JedisX cache;
 
     private final static String stop_word_key = "%s_stop_word";
+
+    private ResultSetExtractor<StopWord> resultSetExtractor = new ResultSetExtractor<StopWord>() {
+        @Override
+        public StopWord extractData(ResultSet rs) throws SQLException, DataAccessException {
+            if(rs.next()){
+                StopWord stopWord = new StopWord();
+                stopWord.setId(rs.getLong("id"));
+                stopWord.setWord(rs.getString("word"));
+                return stopWord;
+            } else
+                return null;
+        }
+    };
 
     private RowMapper<StopWord> rowMapper = new RowMapper<StopWord>() {
         @Override
@@ -117,7 +135,7 @@ public class StopWordDaoImpl extends BaseDao implements StopWordDao, Initializin
     @Override
     public boolean update(StopWord stopWord) throws DataAccessException {
         String sql = "select * from stop_word where id = %d";
-        StopWord dbStopWord = this.jdbcTemplate.queryForObject(String.format(sql, stopWord.getId()), rowMapper);
+        StopWord dbStopWord = this.jdbcTemplate.query(String.format(sql, stopWord.getId()), resultSetExtractor);
         if (dbStopWord != null) {
             sql = "update stop_word set word = '%s' where id = %d";
             sql = String.format(sql, stopWord.getWord(), stopWord.getId());
@@ -137,7 +155,7 @@ public class StopWordDaoImpl extends BaseDao implements StopWordDao, Initializin
     @Override
     public boolean delete(long id) throws DataAccessException {
         String sql = "select * from stop_word where id = %d";
-        StopWord dbStopWord = this.jdbcTemplate.queryForObject(String.format(sql, id), rowMapper);
+        StopWord dbStopWord = this.jdbcTemplate.query(String.format(sql, id), resultSetExtractor);
         if (dbStopWord != null) {
             sql = "delete from stop_word where id = %d";
             sql = String.format(sql, id);

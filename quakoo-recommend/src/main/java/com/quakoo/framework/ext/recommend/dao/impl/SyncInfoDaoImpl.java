@@ -7,8 +7,10 @@ import com.quakoo.baseFramework.jackson.JsonUtils;
 import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.framework.ext.recommend.AbstractRecommendInfo;
 import com.quakoo.framework.ext.recommend.bean.ESField;
+import com.quakoo.framework.ext.recommend.bean.PortraitWord;
 import com.quakoo.framework.ext.recommend.dao.BaseDao;
 import com.quakoo.framework.ext.recommend.dao.SyncInfoDao;
+import com.quakoo.framework.ext.recommend.model.PortraitItemCF;
 import com.quakoo.framework.ext.recommend.model.SyncInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.PreparedStatementCreatorFactory;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -35,6 +38,27 @@ public class SyncInfoDaoImpl extends BaseDao implements SyncInfoDao, Initializin
 
     private final static String sync_info_key = "%s_sync_info";
     private final static String sync_info_null_key = "%s_sync_info_null";
+
+    private ResultSetExtractor<SyncInfo> resultSetExtractor = new ResultSetExtractor<SyncInfo>() {
+        @Override
+        public SyncInfo extractData(ResultSet rs) throws SQLException, DataAccessException {
+            if(rs.next()){
+                SyncInfo syncInfo = new SyncInfo();
+                syncInfo.setId(rs.getLong("id"));
+                syncInfo.setSql(rs.getString("sql"));
+                syncInfo.setEsIndex(rs.getString("esIndex"));
+                String esFieldsStr = rs.getString("esFields");
+                List<ESField> esFields = JsonUtils.fromJson(esFieldsStr, new TypeReference<List<ESField>>() {});
+                syncInfo.setEsFields(esFields);
+                syncInfo.setTrackingColumn(rs.getString("trackingColumn"));
+                syncInfo.setBatchSize(rs.getInt("batchSize"));
+                syncInfo.setEsId(rs.getString("esId"));
+                syncInfo.setLastTrackingValue(rs.getLong("lastTrackingValue"));
+                return syncInfo;
+            } else
+                return null;
+        }
+    };
 
     private RowMapper<SyncInfo> rowMapper = new RowMapper<SyncInfo>() {
         @Override
@@ -142,7 +166,7 @@ public class SyncInfoDaoImpl extends BaseDao implements SyncInfoDao, Initializin
     @Override
     public boolean updateTrackingValue(long id, long trackingValue) throws DataAccessException {
         String sql = "select * from sync_info where id = %d";
-        SyncInfo dbSyncInfo = this.jdbcTemplate.queryForObject(String.format(sql, id), rowMapper);
+        SyncInfo dbSyncInfo = this.jdbcTemplate.query(String.format(sql, id), resultSetExtractor);
         if(dbSyncInfo != null) {
             sql = "update sync_info set lastTrackingValue = %d where id = %d";
             sql = String.format(sql, trackingValue, id);
@@ -165,7 +189,7 @@ public class SyncInfoDaoImpl extends BaseDao implements SyncInfoDao, Initializin
     @Override
     public boolean delete(long id) throws DataAccessException {
         String sql = "select * from sync_info where id = %d";
-        SyncInfo dbSyncInfo = this.jdbcTemplate.queryForObject(String.format(sql, id), rowMapper);
+        SyncInfo dbSyncInfo = this.jdbcTemplate.query(String.format(sql, id), resultSetExtractor);
         if (dbSyncInfo != null) {
             sql = "delete from sync_info where id = %d";
             sql = String.format(sql, id);
