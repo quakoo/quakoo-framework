@@ -78,7 +78,9 @@ public class RowMapperHelp<T> implements RowMapper<T> {
                 boolean isJson = info.isJson();
                 if(isJson) {
                     String jsonValue = rs.getString(c);
-                    writeMethod.invoke(o, JsonUtils.parse(jsonValue, type));
+                    if(StringUtils.isNotBlank(jsonValue)){
+                        writeMethod.invoke(o, JsonUtils.parse(jsonValue, type));
+                    }
                 } else writeMethod.invoke(o, ReflectUtil.getValueFormRsByType(type, rs, c));
             }
             return (T) o;
