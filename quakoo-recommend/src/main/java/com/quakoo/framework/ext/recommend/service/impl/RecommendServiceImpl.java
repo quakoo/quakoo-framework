@@ -289,6 +289,11 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
         return Lists.newArrayList(idSet);
     }
 
+    @Override
+    public void record(long uid, String title) throws Exception {
+        portraitItemCFService.record(uid, title);
+    }
+
     public static void main(String[] args) {
         List<Integer> standbyList = Lists.newArrayList();
         List<Integer> list = Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
