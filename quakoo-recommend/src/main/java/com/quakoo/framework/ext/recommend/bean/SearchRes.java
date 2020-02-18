@@ -3,6 +3,7 @@ package com.quakoo.framework.ext.recommend.bean;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Map;
 
 @Data
 public class SearchRes implements Serializable {
@@ -12,6 +13,8 @@ public class SearchRes implements Serializable {
     private double score;
 
     private long time;
+
+    private Map<String, String> columns;
 
     public SearchRes() {
     }

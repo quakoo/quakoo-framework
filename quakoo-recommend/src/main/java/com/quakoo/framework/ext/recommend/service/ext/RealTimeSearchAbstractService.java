@@ -1,6 +1,7 @@
 package com.quakoo.framework.ext.recommend.service.ext;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.quakoo.baseFramework.property.PropertyLoader;
 import com.quakoo.framework.ext.recommend.bean.SearchRes;
 import org.apache.commons.lang3.StringUtils;
@@ -21,6 +22,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public abstract class RealTimeSearchAbstractService implements RealTimeSearchService, InitializingBean {
@@ -48,6 +50,8 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
     public abstract String getSearchIndex();
     public abstract String getSearchColumn();
     public abstract String getSearchTime();
+    public abstract List<String> getSearchResColumns();
+    public abstract void handleFilter(List<SearchRes> list);
 
     @Override
     public List<SearchRes> searchByTime() throws Exception {
@@ -67,8 +71,19 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
             long id = Long.parseLong(hit.getSourceAsMap().get("id").toString());
             long timeValue = Long.parseLong(hit.getSourceAsMap().get(time).toString());
             SearchRes searchRes = new SearchRes(id, 0, timeValue);
+            Map<String, String> columns = Maps.newHashMap();
+            if(getSearchResColumns() != null && getSearchResColumns().size() > 0) {
+                for(String columnName : getSearchResColumns()) {
+                    Object columnValueObj = hit.getSourceAsMap().get(columnName);
+                    String columnValue = "";
+                    if(columnValueObj != null) columnValue = columnValueObj.toString();
+                    columns.put(columnName, columnValue);
+                }
+            }
+            searchRes.setColumns(columns);
             res.add(searchRes);
         }
+        handleFilter(res);
         return res;
     }
 
@@ -103,6 +118,7 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
             SearchRes searchRes = new SearchRes(id, score, timeValue);
             res.add(searchRes);
         }
+        handleFilter(res);
         return res;
     }
 
