@@ -63,7 +63,12 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
         sourceBuilder.timeout(new TimeValue(3, TimeUnit.SECONDS));
         SearchRequest searchRequest = new SearchRequest(index); //索引
         searchRequest.source(sourceBuilder);
-        sourceBuilder.fetchSource(new String[] {"id", time}, new String[] {});
+        List<String> includes = Lists.newArrayList();
+        includes.add("id");
+        if(getSearchResColumns() != null && getSearchResColumns().size() > 0)
+            includes.addAll(getSearchResColumns());
+        includes.add(time);
+        sourceBuilder.fetchSource(includes.toArray(new String[0]), new String[] {});
         SearchResponse response = esClient.search(searchRequest, RequestOptions.DEFAULT);
         SearchHits hits = response.getHits();
         List<SearchRes> res = Lists.newArrayList();
@@ -107,7 +112,12 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
         sourceBuilder.timeout(new TimeValue(3, TimeUnit.SECONDS));
         SearchRequest searchRequest = new SearchRequest(index); //索引
         searchRequest.source(sourceBuilder);
-        sourceBuilder.fetchSource(new String[] {"id", time}, new String[] {});
+        List<String> includes = Lists.newArrayList();
+        includes.add("id");
+        if(getSearchResColumns() != null && getSearchResColumns().size() > 0)
+            includes.addAll(getSearchResColumns());
+        includes.add(time);
+        sourceBuilder.fetchSource(includes.toArray(new String[0]), new String[] {});
         SearchResponse response = esClient.search(searchRequest, RequestOptions.DEFAULT);
         SearchHits hits = response.getHits();
         List<SearchRes> res = Lists.newArrayList();
@@ -116,6 +126,16 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
             long timeValue = Long.parseLong(hit.getSourceAsMap().get(time).toString());
             float score = hit.getScore();
             SearchRes searchRes = new SearchRes(id, score, timeValue);
+            Map<String, String> columns = Maps.newHashMap();
+            if(getSearchResColumns() != null && getSearchResColumns().size() > 0) {
+                for(String columnName : getSearchResColumns()) {
+                    Object columnValueObj = hit.getSourceAsMap().get(columnName);
+                    String columnValue = "";
+                    if(columnValueObj != null) columnValue = columnValueObj.toString();
+                    columns.put(columnName, columnValue);
+                }
+            }
+            searchRes.setColumns(columns);
             res.add(searchRes);
         }
         handleFilter(res, uid);
