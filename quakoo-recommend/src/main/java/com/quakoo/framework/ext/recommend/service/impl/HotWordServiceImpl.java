@@ -76,16 +76,31 @@ public class HotWordServiceImpl implements HotWordService {
         return hotWordDao.getBackPager(pager, word);
     }
 
+    private boolean isChineseWord(String word) {
+        String reg = "[\\u4e00-\\u9fa5]+";
+        boolean res = word.matches(reg);
+        return res;
+    }
+
+    public static void main(String[] args) {
+        String word = "欧文是。";
+        String reg = "[\\u4e00-\\u9fa5]+";
+        boolean res = word.matches(reg);
+        System.out.println(res);
+    }
+
     @Override
     public void record(List<Keyword> keywords) throws Exception {
         List<HotWord> hotWords = Lists.newArrayList();
         for(Keyword keyword : keywords) {
-            HotWord hotWord = new HotWord();
-            hotWord.setWord(keyword.getWord());
-            hotWord.setWeight(keyword.getTfidfWeight());
-            hotWords.add(hotWord);
+            if(isChineseWord(keyword.getWord())) {
+                HotWord hotWord = new HotWord();
+                hotWord.setWord(keyword.getWord());
+                hotWord.setWeight(keyword.getTfidfWeight());
+                hotWords.add(hotWord);
+            }
         }
-        hotWordDao.record(hotWords);
+        if(hotWords.size() > 0) hotWordDao.record(hotWords);
     }
 
     @Override
