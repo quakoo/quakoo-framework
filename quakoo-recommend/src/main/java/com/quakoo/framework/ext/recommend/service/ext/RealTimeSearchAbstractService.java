@@ -51,10 +51,10 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
     public abstract String getSearchColumn();
     public abstract String getSearchTime();
     public abstract List<String> getSearchResColumns();
-    public abstract void handleFilter(List<SearchRes> list);
+    public abstract void handleFilter(List<SearchRes> list, long uid);
 
     @Override
-    public List<SearchRes> searchByTime() throws Exception {
+    public List<SearchRes> searchByTime(long uid) throws Exception {
         String time = getSearchTime();
         String index = getSearchIndex();
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
@@ -83,12 +83,12 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
             searchRes.setColumns(columns);
             res.add(searchRes);
         }
-        handleFilter(res);
+        handleFilter(res, uid);
         return res;
     }
 
     @Override
-    public List<SearchRes> search(List<String> words) throws Exception {
+    public List<SearchRes> search(List<String> words, long uid) throws Exception {
         String column = getSearchColumn();
         String index = getSearchIndex();
         String time = getSearchTime();
@@ -118,7 +118,7 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
             SearchRes searchRes = new SearchRes(id, score, timeValue);
             res.add(searchRes);
         }
-        handleFilter(res);
+        handleFilter(res, uid);
         return res;
     }
 

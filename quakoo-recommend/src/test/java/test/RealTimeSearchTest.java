@@ -21,10 +21,10 @@ public class RealTimeSearchTest {
         words.add("监察");
         words.add("质量");
         words.add("炼钢厂");
-        realTimeSearchService.search(words);
+        realTimeSearchService.search(words, 1);
 
         long startTime = System.currentTimeMillis();
-        List<SearchRes> list = realTimeSearchService.search(words);
+        List<SearchRes> list = realTimeSearchService.search(words, 1);
 //        for(SearchRes one : list) {
 //            System.out.println(one.getId() + " " + one.getScore() + " " + one.getTime());
 //        }

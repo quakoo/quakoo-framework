@@ -58,7 +58,7 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
         cache = new JedisX(recommendInfo.redisInfo, recommendInfo.redisConfig, 2000);
     }
 
-    private List<SearchRes> searchByTime() throws Exception {
+    private List<SearchRes> searchByTime(long uid) throws Exception {
         String key = String.format(search_time_queue_key, recommendInfo.projectName);
         Set<Object> set = cache.zrevrangeByScoreObject(key, Double.MAX_VALUE, 0, null);
         if (set.size() > 0) {
@@ -69,7 +69,7 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
             return res;
         } else {
             long startTime = System.currentTimeMillis();
-            List<SearchRes> res = realTimeSearchService.searchByTime();
+            List<SearchRes> res = realTimeSearchService.searchByTime(uid);
             logger.info("searchByTime time : " + (System.currentTimeMillis() - startTime));
             if (res.size() > 0) {
                 Map<Object, Double> redisMap = Maps.newHashMap();
@@ -83,7 +83,7 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
         }
     }
 
-    private List<SearchRes> searchByHotWord() throws Exception {
+    private List<SearchRes> searchByHotWord(long uid) throws Exception {
         String key = String.format(search_hot_word_queue_key, recommendInfo.projectName);
         Set<Object> set = cache.zrevrangeByScoreObject(key, Double.MAX_VALUE, 0, null);
         if (set.size() > 0) {
@@ -96,7 +96,7 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
             List<String> hotWords = hotWordService.getLastHotWords();
             if (hotWords.size() == 0) return Lists.newArrayList();
             long startTime = System.currentTimeMillis();
-            List<SearchRes> res = realTimeSearchService.search(hotWords);
+            List<SearchRes> res = realTimeSearchService.search(hotWords, uid);
             logger.info("searchByHotWord time : " + (System.currentTimeMillis() - startTime));
             if (res.size() > 0) {
                 Map<Object, Double> redisMap = Maps.newHashMap();
@@ -131,7 +131,7 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
                 words.add(portraitWord.getWord());
             }
             long startTime = System.currentTimeMillis();
-            List<SearchRes> res = realTimeSearchService.search(words);
+            List<SearchRes> res = realTimeSearchService.search(words, uid);
             logger.info("searchItemCF time : " + (System.currentTimeMillis() - startTime));
             if (res.size() > 0) {
                 Map<Object, Double> redisMap = Maps.newHashMap();
@@ -174,13 +174,13 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
     }
 
     private List<RecallItem> recallTime(long uid) throws Exception {
-        List<SearchRes> searchResList = searchByTime();
+        List<SearchRes> searchResList = searchByTime(uid);
         List<RecallItem> recallItems = filter(uid, AbstractRecommendInfo.type_time, searchResList);
         return recallItems;
     }
 
     private List<RecallItem> recallHotWord(long uid) throws Exception {
-        List<SearchRes> searchResList = searchByHotWord();
+        List<SearchRes> searchResList = searchByHotWord(uid);
         List<RecallItem> recallItems = filter(uid, AbstractRecommendInfo.type_hot_word, searchResList);
         return recallItems;
     }
