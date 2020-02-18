@@ -49,6 +49,12 @@ public class PortraitItemCFServiceImpl implements PortraitItemCFService, Initial
         return res;
     }
 
+    private boolean isChineseWord(String word) {
+        String reg = "[\\u4e00-\\u9fa5]+";
+        boolean res = word.matches(reg);
+        return res;
+    }
+
     @Override
     public void record(long uid, String title) throws Exception {
         String key = String.format(portrait_item_queue_key, recommendInfo.projectName);
@@ -57,10 +63,12 @@ public class PortraitItemCFServiceImpl implements PortraitItemCFService, Initial
         portraitItem.setUid(uid);
         Map<String, Double> weightMap = Maps.newHashMap();
         for(Keyword keyword : keywords) {
-            weightMap.put(keyword.getWord(), keyword.getTfidfWeight());
+            if(isChineseWord(keyword.getWord())) {
+                weightMap.put(keyword.getWord(), keyword.getTfidfWeight());
+            }
         }
         portraitItem.setWeightMap(weightMap);
-        cache.rpushObject(key, portraitItem);
+        if(weightMap.size() > 0) cache.rpushObject(key, portraitItem);
     }
 
     @Override
