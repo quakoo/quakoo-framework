@@ -175,8 +175,8 @@ public class KWSeeker {
      * @param text 传入需要处理的字符串。
      * @return 返回处理后的结果。
      */
-    public String replaceWords(String text) {
-        return (String) process(new Highlight(), text, new IgnoreFragment("***"));
+    public ProcessRes replaceWords(String text) {
+        return (ProcessRes) process(new Highlight(), text, new IgnoreFragment("***"));
     }
 
     /**

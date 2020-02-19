@@ -2,6 +2,7 @@ package com.quakoo.baseFramework.sensitive.processor;
 
 import java.util.Map;
 
+import com.quakoo.baseFramework.sensitive.ProcessRes;
 import org.apache.commons.lang3.StringUtils;
 
 import com.quakoo.baseFramework.sensitive.KeyWord;
@@ -24,16 +25,23 @@ public class Highlight implements Processor {
      * @param text 待处理的文本
      * @return 返回提取的关键词或null
      */
-    public String process(Map<String, Map> wordsTree, String text, AbstractFragment fragment,
-            int minLen) {
+    public ProcessRes process(Map<String, Map> wordsTree, String text, AbstractFragment fragment,
+                              int minLen) {
         StringBuffer result = new StringBuffer("");
+        int num = 0;
         String pre = null;// 词的前面一个字
         while (true) {
             if (wordsTree == null || wordsTree.isEmpty() || StringUtils.isEmpty(text)) {
-                return result.append(text).toString();
+                ProcessRes processRes = new ProcessRes();
+                processRes.setContent(result.append(text).toString());
+                processRes.setNum(num);
+                return processRes;
             }
             if (text.length() < minLen) {
-                return result.append(text).toString();
+                ProcessRes processRes = new ProcessRes();
+                processRes.setContent(result.append(text).toString());
+                processRes.setNum(num);
+                return processRes;
             }
             String chr = text.substring(0, 1);
             text = text.substring(1);
@@ -55,10 +63,10 @@ public class Highlight implements Processor {
 
             // 处理片段
             result.append(fragment.format(kw));
+            num++;
             // 从text中去除当前已经匹配的内容，进行下一个循环匹配
             text = text.substring(kw.getWordLength() - 1);
             pre = kw.getWord().substring(kw.getWordLength() - 1, kw.getWordLength());
-            continue;
         }
     }
 
