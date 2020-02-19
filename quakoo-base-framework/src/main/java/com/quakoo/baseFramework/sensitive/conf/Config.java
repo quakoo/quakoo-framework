@@ -40,15 +40,17 @@ public final class Config {
         InputStream in = null;
         try {
             in = getClass().getClassLoader().getResourceAsStream(CONF_FILE_NAME);
-            Properties prop = new Properties();
-            prop.load(new InputStreamReader(in, "UTF-8"));
+            if(in != null) {
+                Properties prop = new Properties();
+                prop.load(new InputStreamReader(in, "UTF-8"));
 
-            // 一次性装载
-            Set<Object> keySet = prop.keySet();
-            Object value;
-            for (Object key : keySet) {
-                value = prop.get(key);
-                cacheConfig.put(String.valueOf(key), String.valueOf(value));
+                // 一次性装载
+                Set<Object> keySet = prop.keySet();
+                Object value;
+                for (Object key : keySet) {
+                    value = prop.get(key);
+                    cacheConfig.put(String.valueOf(key), String.valueOf(value));
+                }
             }
             // root根元素配置
             if (null != cacheConfig.get("root") && !"".equals(cacheConfig.get("root"))) {
