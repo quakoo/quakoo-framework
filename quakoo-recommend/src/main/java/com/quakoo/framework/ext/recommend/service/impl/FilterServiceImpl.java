@@ -7,6 +7,8 @@ import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.framework.ext.recommend.AbstractRecommendInfo;
 import com.quakoo.framework.ext.recommend.service.FilterService;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import javax.annotation.Resource;
@@ -17,6 +19,8 @@ import java.util.Map;
 
 @Data
 public class FilterServiceImpl implements FilterService, InitializingBean {
+
+    Logger logger = LoggerFactory.getLogger(FilterServiceImpl.class);
 
     @Resource
     private AbstractRecommendInfo recommendInfo;
@@ -44,6 +48,7 @@ public class FilterServiceImpl implements FilterService, InitializingBean {
 
     @Override
     public void record(long uid, int type, List<Long> aids) throws Exception {
+        logger.info("======= filter record uid : " + uid + ",type : " + type + ", size : " + aids.size());
         String user_recommended_key = String.format(user_recommended_key_format, projectName, uid, type);
         bloomFilter.addAll(user_recommended_key, timeout, aids);
 
