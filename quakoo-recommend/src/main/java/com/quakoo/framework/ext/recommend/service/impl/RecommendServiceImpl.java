@@ -283,7 +283,7 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
         for (Map.Entry<Integer, List<Long>> entry : recordsMap.entrySet()) {
             filterService.record(uid, entry.getKey(), entry.getValue());
         }
-        logger.info("======= recommend time : " + (System.currentTimeMillis() - startTime));
+        logger.info("======= recommend uid : " + uid + ",time : " + (System.currentTimeMillis() - startTime));
         return Lists.newArrayList(idSet);
     }
 
