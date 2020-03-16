@@ -23,6 +23,11 @@ public class RealTimeSearchServiceImpl extends RealTimeSearchAbstractService {
     }
 
     @Override
+    public int getSearchSize() {
+        return 2500;
+    }
+
+    @Override
     public List<String> getSearchResColumns() {
         return null;
     }
