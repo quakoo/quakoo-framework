@@ -45,8 +45,8 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
 
     private JedisX cache;
 
-    private String search_time_queue_key = "%s_search_time_queue";
-    private String search_words_queue_key = "%s_search_words_queue_%s";
+    private String search_time_queue_key = "%s_search_time_all_queue";
+    private String search_words_queue_key = "%s_search_words_all_queue_%s";
 
     @Override
     public void afterPropertiesSet() throws Exception {
