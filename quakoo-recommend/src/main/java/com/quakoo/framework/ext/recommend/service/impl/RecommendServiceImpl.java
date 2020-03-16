@@ -263,6 +263,7 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
 
     @Override
     public List<Long> recommend(long uid) throws Exception {
+        long startTime = System.currentTimeMillis();
         initRecall(uid);
         String key = String.format(recall_list_key, recommendInfo.projectName, uid);
         List<Object> objList = cache.lrangeAndDelObject(key, 0, 0, null);
@@ -282,6 +283,7 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
         for (Map.Entry<Integer, List<Long>> entry : recordsMap.entrySet()) {
             filterService.record(uid, entry.getKey(), entry.getValue());
         }
+        logger.info("======= recommend time : " + (System.currentTimeMillis() - startTime));
         return Lists.newArrayList(idSet);
     }
 
