@@ -23,7 +23,8 @@ public abstract class AbstractRecommendInfo implements InitializingBean {
     public static final int session_timout = 5000;
 
     public static final int redis_overtime_long = 60 * 60 * 24 * 3;
-    public static final int redis_overtime = 60 * 10;
+    public static final int redis_search_overtime = 60 * 30;
+    public static final int redis_overtime = 60 * 15;
 
     public JedisPoolConfig redisConfig;
     public JedisBean redisInfo;
