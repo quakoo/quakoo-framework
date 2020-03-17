@@ -53,7 +53,7 @@ public class FilterServiceImpl implements FilterService, InitializingBean {
         bloomFilter.addAll(user_recommended_key, timeout, aids);
 
         int day = Integer.parseInt(daySDF.format(new Date()));
-        String user_recommended_day_key = String.format(user_recommended_key_format, projectName, uid, type, day);
+        String user_recommended_day_key = String.format(user_recommended_key_day_format, projectName, uid, type, day);
         if(cache.exists(user_recommended_day_key)) {
             Map<String, Object> redisMap = Maps.newHashMap();
             for(long aid : aids) {
@@ -67,7 +67,7 @@ public class FilterServiceImpl implements FilterService, InitializingBean {
     public Map<Long, Boolean> filter(long uid, int type, List<Long> aids) throws Exception {
         Map<Long, Boolean> res = Maps.newHashMap();
         int day = Integer.parseInt(daySDF.format(new Date()));
-        String user_recommended_day_key = String.format(user_recommended_key_format, projectName, uid, type, day);
+        String user_recommended_day_key = String.format(user_recommended_key_day_format, projectName, uid, type, day);
         String user_recommended_key = String.format(user_recommended_key_format, projectName, uid, type);
         if(!cache.exists(user_recommended_day_key)) {
             res = bloomFilter.containsAll(user_recommended_key, aids);
