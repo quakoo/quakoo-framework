@@ -78,6 +78,8 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
 
     public abstract int getSearchSize();
 
+    public abstract int getReSearchSize();
+
     public abstract List<String> getSearchResColumns();
 
     public abstract void handleFilter(List<SearchRes> list, long uid);
@@ -145,7 +147,8 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
     public List<SearchRes> searchByTime(long uid) throws Exception {
         List<SearchRes> res = _searchByTime();
         List<String> delIds = getDelIds(res, uid);
-        if (delIds.size() > 0) delIds(delIds);
+        if(delIds.size() > 0) delIds(delIds);
+        if(getReSearchSize() > res.size()) res = _searchByTime();
         handleFilter(res, uid);
         return res;
     }
@@ -240,7 +243,8 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
     public List<SearchRes> search(List<String> words, long uid) throws Exception {
         List<SearchRes> res = _search(words);
         List<String> delIds = getDelIds(res, uid);
-        if (delIds.size() > 0) delIds(delIds);
+        if(delIds.size() > 0) delIds(delIds);
+        if(getReSearchSize() > res.size()) res = _search(words);
         handleFilter(res, uid);
         return res;
     }
