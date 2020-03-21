@@ -5,10 +5,15 @@ import com.google.common.collect.Maps;
 import com.quakoo.baseFramework.property.PropertyLoader;
 import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.framework.ext.recommend.AbstractRecommendInfo;
+import com.quakoo.framework.ext.recommend.bean.DelIndex;
 import com.quakoo.framework.ext.recommend.bean.SearchRes;
+import com.quakoo.framework.ext.recommend.service.RecommendIndexService;
 import com.quakoo.framework.ext.recommend.service.impl.RecommendServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -51,11 +56,11 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
     @Override
     public void afterPropertiesSet() throws Exception {
         String esHostport = propertyLoader.getProperty("es.hostport.list");
-        if(StringUtils.isBlank(esHostport)) throw new IllegalStateException("es.hostport.list is null");
+        if (StringUtils.isBlank(esHostport)) throw new IllegalStateException("es.hostport.list is null");
 
         List<String> hostportList = Lists.newArrayList(StringUtils.split(esHostport, ","));
         List<HttpHost> httpHosts = Lists.newArrayList();
-        for(String hostport : hostportList) {
+        for (String hostport : hostportList) {
             String host = StringUtils.split(hostport, ":")[0];
             int port = Integer.parseInt(StringUtils.split(hostport, ":")[1]);
             HttpHost httpHost = new HttpHost(host, port, "http");
@@ -66,11 +71,18 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
     }
 
     public abstract String getSearchIndex();
+
     public abstract String getSearchColumn();
+
     public abstract String getSearchTime();
+
     public abstract int getSearchSize();
+
     public abstract List<String> getSearchResColumns();
+
     public abstract void handleFilter(List<SearchRes> list, long uid);
+
+    public abstract List<String> getDelIds(List<SearchRes> list, long uid);
 
     private List<SearchRes> _searchByTime() throws Exception {
         String key = String.format(search_time_queue_key, recommendInfo.projectName);
@@ -93,24 +105,24 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
             searchRequest.source(sourceBuilder);
             List<String> includes = Lists.newArrayList();
             includes.add("id");
-            if(getSearchResColumns() != null && getSearchResColumns().size() > 0)
+            if (getSearchResColumns() != null && getSearchResColumns().size() > 0)
                 includes.addAll(getSearchResColumns());
             includes.add(time);
-            sourceBuilder.fetchSource(includes.toArray(new String[0]), new String[] {});
+            sourceBuilder.fetchSource(includes.toArray(new String[0]), new String[]{});
             SearchResponse response = esClient.search(searchRequest, RequestOptions.DEFAULT);
             logger.info("searchByTime time : " + (System.currentTimeMillis() - startTime));
             SearchHits hits = response.getHits();
             List<SearchRes> res = Lists.newArrayList();
-            for(SearchHit hit : hits) {
+            for (SearchHit hit : hits) {
                 long id = Long.parseLong(hit.getSourceAsMap().get("id").toString());
                 long timeValue = Long.parseLong(hit.getSourceAsMap().get(time).toString());
                 SearchRes searchRes = new SearchRes(id, 0, timeValue);
                 Map<String, String> columns = Maps.newHashMap();
-                if(getSearchResColumns() != null && getSearchResColumns().size() > 0) {
-                    for(String columnName : getSearchResColumns()) {
+                if (getSearchResColumns() != null && getSearchResColumns().size() > 0) {
+                    for (String columnName : getSearchResColumns()) {
                         Object columnValueObj = hit.getSourceAsMap().get(columnName);
                         String columnValue = "";
-                        if(columnValueObj != null) columnValue = columnValueObj.toString();
+                        if (columnValueObj != null) columnValue = columnValueObj.toString();
                         columns.put(columnName, columnValue);
                     }
                 }
@@ -132,6 +144,8 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
     @Override
     public List<SearchRes> searchByTime(long uid) throws Exception {
         List<SearchRes> res = _searchByTime();
+        List<String> delIds = getDelIds(res, uid);
+        if (delIds.size() > 0) delIds(delIds);
         handleFilter(res, uid);
         return res;
     }
@@ -153,7 +167,7 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
             String time = getSearchTime();
             BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
             SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-            for(int i = 0; i < words.size(); i++) {
+            for (int i = 0; i < words.size(); i++) {
                 int boost = words.size() - i;
                 String word = words.get(i);
                 QueryBuilder queryBuilder = QueryBuilders.termQuery(column, word).boost(boost);
@@ -168,25 +182,25 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
             searchRequest.source(sourceBuilder);
             List<String> includes = Lists.newArrayList();
             includes.add("id");
-            if(getSearchResColumns() != null && getSearchResColumns().size() > 0)
+            if (getSearchResColumns() != null && getSearchResColumns().size() > 0)
                 includes.addAll(getSearchResColumns());
             includes.add(time);
-            sourceBuilder.fetchSource(includes.toArray(new String[0]), new String[] {});
+            sourceBuilder.fetchSource(includes.toArray(new String[0]), new String[]{});
             SearchResponse response = esClient.search(searchRequest, RequestOptions.DEFAULT);
             logger.info("searchByWords time : " + (System.currentTimeMillis() - startTime));
             SearchHits hits = response.getHits();
             List<SearchRes> res = Lists.newArrayList();
-            for(SearchHit hit : hits) {
+            for (SearchHit hit : hits) {
                 long id = Long.parseLong(hit.getSourceAsMap().get("id").toString());
                 long timeValue = Long.parseLong(hit.getSourceAsMap().get(time).toString());
                 float score = hit.getScore();
                 SearchRes searchRes = new SearchRes(id, score, timeValue);
                 Map<String, String> columns = Maps.newHashMap();
-                if(getSearchResColumns() != null && getSearchResColumns().size() > 0) {
-                    for(String columnName : getSearchResColumns()) {
+                if (getSearchResColumns() != null && getSearchResColumns().size() > 0) {
+                    for (String columnName : getSearchResColumns()) {
                         Object columnValueObj = hit.getSourceAsMap().get(columnName);
                         String columnValue = "";
-                        if(columnValueObj != null) columnValue = columnValueObj.toString();
+                        if (columnValueObj != null) columnValue = columnValueObj.toString();
                         columns.put(columnName, columnValue);
                     }
                 }
@@ -205,9 +219,28 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
         }
     }
 
+
+    private void delIds(List<String> delIds) {
+       try {
+           List<DeleteRequest> deleteRequests = Lists.newArrayList();
+           for (String delId : delIds) {
+               DeleteRequest deleteRequest = new DeleteRequest(this.getSearchIndex());
+               deleteRequest.id(delId);
+               deleteRequests.add(deleteRequest);
+           }
+           BulkRequest bulkRequest = new BulkRequest();
+           for (DeleteRequest deleteRequest : deleteRequests) {
+               bulkRequest.add(deleteRequest);
+           }
+           esClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+       } catch (Exception e) {}
+    }
+
     @Override
     public List<SearchRes> search(List<String> words, long uid) throws Exception {
         List<SearchRes> res = _search(words);
+        List<String> delIds = getDelIds(res, uid);
+        if (delIds.size() > 0) delIds(delIds);
         handleFilter(res, uid);
         return res;
     }
