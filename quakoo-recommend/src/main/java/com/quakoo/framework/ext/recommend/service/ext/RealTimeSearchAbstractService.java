@@ -53,6 +53,8 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
     private String search_time_queue_key = "%s_search_time_all_queue";
     private String search_words_queue_key = "%s_search_words_all_queue_%s";
 
+    private String del_list_key = "%s_recommend_del_list";
+
     @Override
     public void afterPropertiesSet() throws Exception {
         String esHostport = propertyLoader.getProperty("es.hostport.list");
@@ -78,13 +80,11 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
 
     public abstract int getSearchSize();
 
-    public abstract int getReSearchSize();
-
     public abstract List<String> getSearchResColumns();
 
     public abstract void handleFilter(List<SearchRes> list, long uid);
 
-    public abstract List<String> getDelIds(List<SearchRes> list, long uid);
+    public abstract List<String> getDelIds(List<SearchRes> list);
 
     private List<SearchRes> _searchByTime() throws Exception {
         String key = String.format(search_time_queue_key, recommendInfo.projectName);
@@ -146,9 +146,8 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
     @Override
     public List<SearchRes> searchByTime(long uid) throws Exception {
         List<SearchRes> res = _searchByTime();
-        List<String> delIds = getDelIds(res, uid);
-        if(delIds.size() > 0) delIds(delIds);
-        if(getReSearchSize() > res.size()) res = _searchByTime();
+        List<String> delIds = getDelIds(res);
+        if (delIds.size() > 0) recordDelIndex(delIds);
         handleFilter(res, uid);
         return res;
     }
@@ -222,29 +221,23 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
         }
     }
 
-
-    private void delIds(List<String> delIds) {
-       try {
-           List<DeleteRequest> deleteRequests = Lists.newArrayList();
-           for (String delId : delIds) {
-               DeleteRequest deleteRequest = new DeleteRequest(this.getSearchIndex());
-               deleteRequest.id(delId);
-               deleteRequests.add(deleteRequest);
-           }
-           BulkRequest bulkRequest = new BulkRequest();
-           for (DeleteRequest deleteRequest : deleteRequests) {
-               bulkRequest.add(deleteRequest);
-           }
-           esClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-       } catch (Exception e) {}
+    private void recordDelIndex(List<String> ids) throws Exception {
+        String key = String.format(del_list_key, recommendInfo.projectName);
+        List<Object> list = Lists.newArrayList();
+        for (String id : ids) {
+            DelIndex delIndex = new DelIndex();
+            delIndex.setIndex(this.getSearchIndex());
+            delIndex.setId(id);
+            list.add(delIndex);
+        }
+        cache.piprpushObject(key, list);
     }
 
     @Override
     public List<SearchRes> search(List<String> words, long uid) throws Exception {
         List<SearchRes> res = _search(words);
-        List<String> delIds = getDelIds(res, uid);
-        if(delIds.size() > 0) delIds(delIds);
-        if(getReSearchSize() > res.size()) res = _search(words);
+        List<String> delIds = getDelIds(res);
+        if (delIds.size() > 0) recordDelIndex(delIds);
         handleFilter(res, uid);
         return res;
     }

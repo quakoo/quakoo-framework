@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.quakoo.baseFramework.jackson.JsonUtils;
 import com.quakoo.framework.ext.recommend.bean.ESField;
+import com.quakoo.framework.ext.recommend.bean.SearchRes;
 import com.quakoo.framework.ext.recommend.util.ESUtils;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
@@ -36,30 +37,85 @@ import java.util.concurrent.TimeUnit;
 
 public class Test {
 
-    private static void search(RestHighLevelClient client) throws Exception {
+    private static List<SearchRes> search(RestHighLevelClient esClient, SearchRes lastOne) throws Exception {
+        List<String> words = Lists.newArrayList("疫情", "请战");
+        List<String> searchResColumns = Lists.newArrayList("title", "uid", "characteristicId");
+        String column = "title";
+        String index = "article";
+        String time = "lastUpdateTime";
         BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-//        for(String queryWord : words) {
-            QueryBuilder nameQuery = QueryBuilders.wildcardQuery("name", "*河北九江*");
-            boolBuilder.should(nameQuery);
-//            QueryBuilder phoneQuery = QueryBuilders.wildcardQuery("phone", "*河北九江集团*");
-//            boolBuilder.should(phoneQuery);
-//        }
+        for (int i = 0; i < words.size(); i++) {
+            int boost = words.size() - i;
+            String word = words.get(i);
+            QueryBuilder queryBuilder = QueryBuilders.termQuery(column, word).boost(boost);
+            boolBuilder.should(queryBuilder);
+        }
         sourceBuilder.query(boolBuilder);
-        sourceBuilder.size(400);
+        sourceBuilder.size(2500);
         sourceBuilder.sort("_score", SortOrder.DESC);
         sourceBuilder.sort("id", SortOrder.DESC);
-        sourceBuilder.timeout(new TimeValue(3, TimeUnit.SECONDS));
-        SearchRequest searchRequest = new SearchRequest("user"); //索引
-        searchRequest.source(sourceBuilder);
-        sourceBuilder.fetchSource(new String[] {"id"}, new String[] {});
 
-        SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-        SearchHits hits = response.getHits();
-        for(SearchHit hit : hits) {
-            long id = hit.getFields().get("id").getValue();
-            System.out.println("======= score : " + hit.getScore() + ", id : " + id + ", " + hit.getSourceAsString());
+        if(lastOne != null) {
+            sourceBuilder.searchAfter(new Object[]{lastOne.getScore(), lastOne.getId()});
         }
+
+//        sourceBuilder.searchAfter(new Object[]{6.517213344573975, 448062});
+
+        sourceBuilder.timeout(new TimeValue(3, TimeUnit.SECONDS));
+        SearchRequest searchRequest = new SearchRequest(index); //索引
+        searchRequest.source(sourceBuilder);
+        List<String> includes = Lists.newArrayList();
+        includes.add("id");
+        if (searchResColumns != null && searchResColumns.size() > 0)
+            includes.addAll(searchResColumns);
+        includes.add(time);
+        sourceBuilder.fetchSource(includes.toArray(new String[0]), new String[]{});
+        SearchResponse response = esClient.search(searchRequest, RequestOptions.DEFAULT);
+        SearchHits hits = response.getHits();
+        List<SearchRes> res = Lists.newArrayList();
+        for (SearchHit hit : hits) {
+            long id = Long.parseLong(hit.getSourceAsMap().get("id").toString());
+            long timeValue = Long.parseLong(hit.getSourceAsMap().get(time).toString());
+            float score = hit.getScore();
+            SearchRes searchRes = new SearchRes(id, score, timeValue);
+            Map<String, String> columns = Maps.newHashMap();
+            if (searchResColumns != null && searchResColumns.size() > 0) {
+                for (String columnName : searchResColumns) {
+                    Object columnValueObj = hit.getSourceAsMap().get(columnName);
+                    String columnValue = "";
+                    if (columnValueObj != null) columnValue = columnValueObj.toString();
+                    columns.put(columnName, columnValue);
+                }
+            }
+            searchRes.setColumns(columns);
+            res.add(searchRes);
+        }
+        return res;
+
+//        BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
+//        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+////        for(String queryWord : words) {
+//            QueryBuilder nameQuery = QueryBuilders.wildcardQuery("name", "*河北九江*");
+//            boolBuilder.should(nameQuery);
+////            QueryBuilder phoneQuery = QueryBuilders.wildcardQuery("phone", "*河北九江集团*");
+////            boolBuilder.should(phoneQuery);
+////        }
+//        sourceBuilder.query(boolBuilder);
+//        sourceBuilder.size(400);
+//        sourceBuilder.sort("_score", SortOrder.DESC);
+//        sourceBuilder.sort("id", SortOrder.DESC);
+//        sourceBuilder.timeout(new TimeValue(3, TimeUnit.SECONDS));
+//        SearchRequest searchRequest = new SearchRequest("user"); //索引
+//        searchRequest.source(sourceBuilder);
+//        sourceBuilder.fetchSource(new String[] {"id"}, new String[] {});
+//
+//        SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+//        SearchHits hits = response.getHits();
+//        for(SearchHit hit : hits) {
+//            long id = hit.getFields().get("id").getValue();
+//            System.out.println("======= score : " + hit.getScore() + ", id : " + id + ", " + hit.getSourceAsString());
+//        }
 
 //        BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
 //        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
@@ -155,7 +211,28 @@ public class Test {
                 RestClient.builder(
                         new HttpHost("47.92.109.133", 9200, "http")));
 
-        search(client);
+        SearchRes afrer= new SearchRes();
+        afrer.setId(448104);
+        afrer.setScore(6.404315948486328);
+        List<SearchRes> list = search(client, afrer);
+
+        for(SearchRes one : list) {
+            System.out.println(one.getId());
+            System.out.println(one.getScore());
+            System.out.println(one.getColumns().toString());
+            System.out.println("=================================");
+        }
+        System.out.println(list.size());
+
+//        list = search(client, list.get(list.size() - 1));
+//        for(SearchRes one : list) {
+//            System.out.println(one.getId());
+//            System.out.println(one.getScore());
+//            System.out.println(one.getColumns().toString());
+//            System.out.println("=================================");
+//        }
+//        System.out.println(list.size());
+
 //"jieba_index"
 //        List<ESField> list = Lists.newArrayList();
 //        ESField a = new ESField("id", "true", "long", null, null);

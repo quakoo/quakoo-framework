@@ -36,4 +36,10 @@ public class RealTimeSearchServiceImpl extends RealTimeSearchAbstractService {
     public void handleFilter(List<SearchRes> list, long uid) {
 
     }
+
+
+    @Override
+    public List<String> getDelIds(List<SearchRes> list) {
+        return null;
+    }
 }
