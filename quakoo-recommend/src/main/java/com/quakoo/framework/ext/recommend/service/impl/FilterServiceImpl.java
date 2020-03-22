@@ -29,9 +29,9 @@ public class FilterServiceImpl implements FilterService, InitializingBean {
 
     private String user_recommended_key_format = "%s_recommend_filter_user_%d_type_%d";
 
-    private String user_recommended_key_day_format = "%s_recommend_filter_user_%d_type_%d_day_%d";
+    private String user_recommended_temp_key_format = "%s_recommend_temp_filter_user_%d_type_%d";
 
-    private SimpleDateFormat daySDF = new SimpleDateFormat("yyyyMMdd");
+//    private SimpleDateFormat daySDF = new SimpleDateFormat("yyyyMMdd");
 
     private String projectName;
 
@@ -52,36 +52,39 @@ public class FilterServiceImpl implements FilterService, InitializingBean {
         String user_recommended_key = String.format(user_recommended_key_format, projectName, uid, type);
         bloomFilter.addAll(user_recommended_key, timeout, aids);
 
-        int day = Integer.parseInt(daySDF.format(new Date()));
-        String user_recommended_day_key = String.format(user_recommended_key_day_format, projectName, uid, type, day);
-        if(cache.exists(user_recommended_day_key)) {
+//        int day = Integer.parseInt(daySDF.format(new Date()));
+        String user_recommended_temp_key = String.format(user_recommended_temp_key_format, projectName, uid, type);
+        if(cache.exists(user_recommended_temp_key)) {
             Map<String, Object> redisMap = Maps.newHashMap();
             for(long aid : aids) {
                 redisMap.put(String.valueOf(aid), true);
             }
-            cache.hMultiSetObject(user_recommended_day_key, redisMap);
+            cache.hMultiSetObject(user_recommended_temp_key, redisMap);
         }
     }
 
     @Override
     public Map<Long, Boolean> filter(long uid, int type, List<Long> aids) throws Exception {
         Map<Long, Boolean> res = Maps.newHashMap();
-        int day = Integer.parseInt(daySDF.format(new Date()));
-        String user_recommended_day_key = String.format(user_recommended_key_day_format, projectName, uid, type, day);
+        String user_recommended_temp_key = String.format(user_recommended_temp_key_format, projectName, uid, type);
         String user_recommended_key = String.format(user_recommended_key_format, projectName, uid, type);
-        if(!cache.exists(user_recommended_day_key)) {
+        if(!cache.exists(user_recommended_temp_key)) {
             res = bloomFilter.containsAll(user_recommended_key, aids);
             Map<String, Object> redisMap = Maps.newHashMap();
             for(Map.Entry<Long, Boolean> entry : res.entrySet()) {
                 redisMap.put(String.valueOf(entry.getKey()), entry.getValue());
             }
-            cache.hMultiSetObject(user_recommended_day_key, redisMap);
-            cache.expire(user_recommended_day_key, 60 * 60 * 24 + 5);
+            cache.hMultiSetObject(user_recommended_temp_key, redisMap);
+            cache.expire(user_recommended_temp_key, 60 * 60 * 24 * 3); //3天
         } else {
-            Map<String, Object> redisDayMap = cache.hGetAllObject(user_recommended_day_key, null);
+            List<String> aidStrs = Lists.newArrayList();
+            for(long aid : aids) {
+                aidStrs.add(String.valueOf(aid));
+            }
+            Map<String, Object> redisTempMap = cache.hMultiGetObject(user_recommended_temp_key, aidStrs, null);
             List<Long> secondAids = Lists.newArrayList();
             for(long aid : aids) {
-                Object redisValue = redisDayMap.get(String.valueOf(aid));
+                Object redisValue = redisTempMap.get(String.valueOf(aid));
                 if(redisValue == null) {
                     secondAids.add(aid);
                 } else {
@@ -95,7 +98,7 @@ public class FilterServiceImpl implements FilterService, InitializingBean {
                 for(Map.Entry<Long, Boolean> entry : secondRes.entrySet()) {
                     redisMap.put(String.valueOf(entry.getKey()), entry.getValue());
                 }
-                cache.hMultiSetObject(user_recommended_day_key, redisMap);
+                cache.hMultiSetObject(user_recommended_temp_key, redisMap);
             }
         }
         return res;
@@ -106,9 +109,8 @@ public class FilterServiceImpl implements FilterService, InitializingBean {
         String user_recommended_key = String.format(user_recommended_key_format, projectName, uid, type);
         bloomFilter.clear(user_recommended_key);
 
-        int day = Integer.parseInt(daySDF.format(new Date()));
-        String user_recommended_day_key = String.format(user_recommended_key_format, projectName, uid, type, day);
-        cache.delete(user_recommended_day_key);
+        String user_recommended_temp_key = String.format(user_recommended_temp_key_format, projectName, uid, type);
+        cache.delete(user_recommended_temp_key);
     }
 
 }
