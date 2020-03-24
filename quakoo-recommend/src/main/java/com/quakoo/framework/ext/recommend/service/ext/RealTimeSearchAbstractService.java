@@ -7,13 +7,8 @@ import com.quakoo.baseFramework.redis.JedisX;
 import com.quakoo.framework.ext.recommend.AbstractRecommendInfo;
 import com.quakoo.framework.ext.recommend.bean.DelIndex;
 import com.quakoo.framework.ext.recommend.bean.SearchRes;
-import com.quakoo.framework.ext.recommend.service.RecommendIndexService;
-import com.quakoo.framework.ext.recommend.service.impl.RecommendServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -23,6 +18,9 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
+import org.elasticsearch.index.query.functionscore.GaussDecayFunctionBuilder;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -79,6 +77,8 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
     public abstract String getSearchTime();
 
     public abstract int getSearchSize();
+
+    public abstract long getGaussTimeStep(); //获取衰减时间步长
 
     public abstract List<String> getSearchResColumns();
 
@@ -175,7 +175,18 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
                 QueryBuilder queryBuilder = QueryBuilders.termQuery(column, word).boost(boost);
                 boolBuilder.should(queryBuilder);
             }
-            sourceBuilder.query(boolBuilder);
+            long gaussTimeStep = getGaussTimeStep();
+            if(gaussTimeStep > 0) {
+                long origin = System.currentTimeMillis();
+                long offset = gaussTimeStep;
+                long scale =  gaussTimeStep;
+                double decay = 0.5;
+                GaussDecayFunctionBuilder gaussDecayFunctionBuilder = ScoreFunctionBuilders.gaussDecayFunction(time, origin, scale, offset, decay);
+                FunctionScoreQueryBuilder functionScoreQueryBuilder = QueryBuilders.functionScoreQuery(boolBuilder, gaussDecayFunctionBuilder);
+                sourceBuilder.query(functionScoreQueryBuilder);
+            } else {
+                sourceBuilder.query(boolBuilder);
+            }
             sourceBuilder.size(getSearchSize());
             sourceBuilder.sort("_score", SortOrder.DESC);
             sourceBuilder.sort("id", SortOrder.DESC);

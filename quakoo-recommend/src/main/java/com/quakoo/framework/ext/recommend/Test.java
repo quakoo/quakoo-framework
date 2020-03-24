@@ -2,10 +2,12 @@ package com.quakoo.framework.ext.recommend;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.quakoo.baseFramework.jackson.JsonUtils;
 import com.quakoo.framework.ext.recommend.bean.ESField;
 import com.quakoo.framework.ext.recommend.bean.SearchRes;
 import com.quakoo.framework.ext.recommend.util.ESUtils;
+import com.sun.org.apache.xalan.internal.xsltc.dom.SAXImpl;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -20,38 +22,53 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
+import org.elasticsearch.index.query.functionscore.GaussDecayFunctionBuilder;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class Test {
 
     private static List<SearchRes> search(RestHighLevelClient esClient, SearchRes lastOne) throws Exception {
-        List<String> words = Lists.newArrayList("疫情", "请战");
+        List<String> words = Lists.newArrayList("疫情");
         List<String> searchResColumns = Lists.newArrayList("title", "uid", "characteristicId");
         String column = "title";
         String index = "article";
         String time = "lastUpdateTime";
+
         BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+
         for (int i = 0; i < words.size(); i++) {
             int boost = words.size() - i;
             String word = words.get(i);
             QueryBuilder queryBuilder = QueryBuilders.termQuery(column, word).boost(boost);
             boolBuilder.should(queryBuilder);
         }
-        sourceBuilder.query(boolBuilder);
+        long origin = System.currentTimeMillis();
+        long offset = 1000 * 60 * 60 * 24 * 15;
+        long scale =  1000 * 60 * 60 * 24 * 15;
+        double decay = 0.5;
+        GaussDecayFunctionBuilder gaussDecayFunctionBuilder = ScoreFunctionBuilders.gaussDecayFunction(time, origin, scale, offset, decay);
+        FunctionScoreQueryBuilder functionScoreQueryBuilder = QueryBuilders.functionScoreQuery(boolBuilder, gaussDecayFunctionBuilder);
+
+        sourceBuilder.query(functionScoreQueryBuilder);
         sourceBuilder.size(2500);
         sourceBuilder.sort("_score", SortOrder.DESC);
         sourceBuilder.sort("id", SortOrder.DESC);
@@ -59,8 +76,6 @@ public class Test {
         if(lastOne != null) {
             sourceBuilder.searchAfter(new Object[]{lastOne.getScore(), lastOne.getId()});
         }
-
-//        sourceBuilder.searchAfter(new Object[]{6.517213344573975, 448062});
 
         sourceBuilder.timeout(new TimeValue(3, TimeUnit.SECONDS));
         SearchRequest searchRequest = new SearchRequest(index); //索引
@@ -211,16 +226,19 @@ public class Test {
                 RestClient.builder(
                         new HttpHost("47.92.109.133", 9200, "http")));
 
-        SearchRes afrer= new SearchRes();
-        afrer.setId(448104);
-        afrer.setScore(6.404315948486328);
-        List<SearchRes> list = search(client, afrer);
-
+        List<SearchRes> list = search(client, null);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Set<String> set = Sets.newLinkedHashSet();
         for(SearchRes one : list) {
-            System.out.println(one.getId());
-            System.out.println(one.getScore());
-            System.out.println(one.getColumns().toString());
-            System.out.println("=================================");
+//            System.out.println(one.getId());
+//            System.out.println(one.getScore());
+//            System.out.println(sdf.format(one.getTime()));
+            set.add(sdf.format(one.getTime()));
+//            System.out.println(one.getColumns().toString());
+//            System.out.println("=================================");
+        }
+        for(String one : set) {
+            System.out.println(one);
         }
         System.out.println(list.size());
 
