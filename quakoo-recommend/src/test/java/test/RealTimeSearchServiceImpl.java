@@ -37,6 +37,10 @@ public class RealTimeSearchServiceImpl extends RealTimeSearchAbstractService {
 
     }
 
+    @Override
+    public long getGaussTimeStep() {
+        return 0;
+    }
 
     @Override
     public List<String> getDelIds(List<SearchRes> list) {

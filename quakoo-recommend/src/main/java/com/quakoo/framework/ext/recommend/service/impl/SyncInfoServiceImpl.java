@@ -63,32 +63,36 @@ public class SyncInfoServiceImpl implements SyncInfoService, InitializingBean {
         esClient = new RestHighLevelClient(RestClient.builder(httpHosts.toArray(new HttpHost[]{})));
         esNumberShards = Integer.parseInt(esNumberShardsStr);
         esNumberReplicas = Integer.parseInt(esNumberReplicasStr);
+
+        initESIndex(esClient, esNumberShards, esNumberReplicas);
     }
 
-    private void initESIndex(RestHighLevelClient esClient, int esNumberShards, int esNumberReplicas, SyncInfo syncInfo) throws Exception {
-        long lastTrackingValue = syncInfo.getLastTrackingValue();
-        if(lastTrackingValue == 0) {
-            String esIndex = syncInfo.getEsIndex();
-            List<ESField> esFields = syncInfo.getEsFields();
-            String json = ESUtils.toIndexJson(esFields);
-            GetIndexRequest getIndexRequest = new GetIndexRequest(esIndex);
-            boolean exist = esClient.indices().exists(getIndexRequest, RequestOptions.DEFAULT);
-            if(!exist) {
-                CreateIndexRequest createIndexRequest = new CreateIndexRequest(esIndex);
-                createIndexRequest.settings(Settings.builder().put("index.number_of_shards", esNumberShards)
-                        .put("index.number_of_replicas", esNumberReplicas)
-                        .put("index.blocks.read_only_allow_delete", "false"));
-                createIndexRequest.mapping(json, XContentType.JSON);
-                CreateIndexResponse createIndexResponse = esClient.indices().create(createIndexRequest, RequestOptions.DEFAULT);
-                boolean createSign = createIndexResponse.isAcknowledged();
-                if(!createSign) throw new IllegalStateException("create index error");
+    private void initESIndex(RestHighLevelClient esClient, int esNumberShards, int esNumberReplicas) throws Exception {
+        List<SyncInfo> syncInfos = syncInfoDao.getSyncInfos();
+        for(SyncInfo syncInfo : syncInfos) {
+            long lastTrackingValue = syncInfo.getLastTrackingValue();
+            if(lastTrackingValue == 0) {
+                String esIndex = syncInfo.getEsIndex();
+                List<ESField> esFields = syncInfo.getEsFields();
+                String json = ESUtils.toIndexJson(esFields);
+                GetIndexRequest getIndexRequest = new GetIndexRequest(esIndex);
+                boolean exist = esClient.indices().exists(getIndexRequest, RequestOptions.DEFAULT);
+                if(!exist) {
+                    CreateIndexRequest createIndexRequest = new CreateIndexRequest(esIndex);
+                    createIndexRequest.settings(Settings.builder().put("index.number_of_shards", esNumberShards)
+                            .put("index.number_of_replicas", esNumberReplicas)
+                            .put("index.blocks.read_only_allow_delete", "false"));
+                    createIndexRequest.mapping(json, XContentType.JSON);
+                    CreateIndexResponse createIndexResponse = esClient.indices().create(createIndexRequest, RequestOptions.DEFAULT);
+                    boolean createSign = createIndexResponse.isAcknowledged();
+                    if(!createSign) throw new IllegalStateException("create index error");
+                }
             }
         }
     }
 
     @Override
     public int handle(SyncInfo syncInfo) throws Exception {
-        initESIndex(esClient, esNumberShards, esNumberReplicas, syncInfo);
         List<Map<String, Object>> list = syncInfoDao.syncList(syncInfo);
         if(list.size() > 0) {
             List<ESField> esFields = syncInfo.getEsFields();

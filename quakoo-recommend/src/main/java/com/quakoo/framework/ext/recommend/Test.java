@@ -9,6 +9,11 @@ import com.quakoo.framework.ext.recommend.bean.SearchRes;
 import com.quakoo.framework.ext.recommend.util.ESUtils;
 import com.sun.org.apache.xalan.internal.xsltc.dom.SAXImpl;
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -18,6 +23,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
@@ -222,25 +228,33 @@ public class Test {
     }
 
     public static void main(String[] args) throws Exception  {
-        RestHighLevelClient client = new RestHighLevelClient(
-                RestClient.builder(
-                        new HttpHost("47.92.109.133", 9200, "http")));
+        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY,
+                new UsernamePasswordCredentials("elastic", "quakoo123"));
+        RestClientBuilder builder = RestClient.builder(new HttpHost[] { new HttpHost("39.107.247.82", 9200)})
+                .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+            public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder)
+            {
+                return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+            }
+        });
+        RestHighLevelClient client = new RestHighLevelClient(builder);
 
-        List<SearchRes> list = search(client, null);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Set<String> set = Sets.newLinkedHashSet();
-        for(SearchRes one : list) {
-//            System.out.println(one.getId());
-//            System.out.println(one.getScore());
-//            System.out.println(sdf.format(one.getTime()));
-            set.add(sdf.format(one.getTime()));
-//            System.out.println(one.getColumns().toString());
-//            System.out.println("=================================");
-        }
-        for(String one : set) {
-            System.out.println(one);
-        }
-        System.out.println(list.size());
+//        List<SearchRes> list = search(client, null);
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//        Set<String> set = Sets.newLinkedHashSet();
+//        for(SearchRes one : list) {
+////            System.out.println(one.getId());
+////            System.out.println(one.getScore());
+////            System.out.println(sdf.format(one.getTime()));
+//            set.add(sdf.format(one.getTime()));
+////            System.out.println(one.getColumns().toString());
+////            System.out.println("=================================");
+//        }
+//        for(String one : set) {
+//            System.out.println(one);
+//        }
+//        System.out.println(list.size());
 
 //        list = search(client, list.get(list.size() - 1));
 //        for(SearchRes one : list) {
@@ -251,7 +265,6 @@ public class Test {
 //        }
 //        System.out.println(list.size());
 
-//"jieba_index"
 //        List<ESField> list = Lists.newArrayList();
 //        ESField a = new ESField("id", "true", "long", null, null);
 //        ESField b = new ESField("title", "true", "text", null,null);
