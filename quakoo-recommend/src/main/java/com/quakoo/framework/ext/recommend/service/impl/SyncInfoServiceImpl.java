@@ -12,11 +12,17 @@ import com.quakoo.framework.ext.recommend.util.ESUtils;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
@@ -48,9 +54,14 @@ public class SyncInfoServiceImpl implements SyncInfoService, InitializingBean {
         String esHostport = propertyLoader.getProperty("es.hostport.list");
         String esNumberShardsStr = propertyLoader.getProperty("es.number.shards");
         String esNumberReplicasStr = propertyLoader.getProperty("es.number.replicas");
+        String authUser = propertyLoader.getProperty("es.auth.user");
+        String authPassword = propertyLoader.getProperty("es.auth.password");
         if(StringUtils.isBlank(esHostport)) throw new IllegalStateException("es.hostport.list is null");
         if(StringUtils.isBlank(esNumberShardsStr)) throw new IllegalStateException("es.number.shards is null");
         if(StringUtils.isBlank(esNumberReplicasStr)) throw new IllegalStateException("es.number.replicas is null");
+        if (StringUtils.isBlank(authUser)) throw new IllegalStateException("es.auth.user is null");
+        if (StringUtils.isBlank(authPassword)) throw new IllegalStateException("es.auth.password is null");
+
 
         List<String> hostportList = Lists.newArrayList(StringUtils.split(esHostport, ","));
         List<HttpHost> httpHosts = Lists.newArrayList();
@@ -60,7 +71,14 @@ public class SyncInfoServiceImpl implements SyncInfoService, InitializingBean {
             HttpHost httpHost = new HttpHost(host, port, "http");
             httpHosts.add(httpHost);
         }
-        esClient = new RestHighLevelClient(RestClient.builder(httpHosts.toArray(new HttpHost[]{})));
+        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(authUser, authPassword));
+        RestClientBuilder builder = RestClient.builder(httpHosts.toArray(new HttpHost[]{})).setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+            public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+                return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+            }
+        });
+        esClient = new RestHighLevelClient(builder);
         esNumberShards = Integer.parseInt(esNumberShardsStr);
         esNumberReplicas = Integer.parseInt(esNumberReplicasStr);
 

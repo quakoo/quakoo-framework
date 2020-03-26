@@ -9,10 +9,16 @@ import com.quakoo.framework.ext.recommend.bean.DelIndex;
 import com.quakoo.framework.ext.recommend.bean.SearchRes;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -66,7 +72,18 @@ public abstract class RealTimeSearchAbstractService implements RealTimeSearchSer
             HttpHost httpHost = new HttpHost(host, port, "http");
             httpHosts.add(httpHost);
         }
-        esClient = new RestHighLevelClient(RestClient.builder(httpHosts.toArray(new HttpHost[]{})));
+        String authUser = propertyLoader.getProperty("es.auth.user");
+        if (StringUtils.isBlank(authUser)) throw new IllegalStateException("es.auth.user is null");
+        String authPassword = propertyLoader.getProperty("es.auth.password");
+        if (StringUtils.isBlank(authPassword)) throw new IllegalStateException("es.auth.password is null");
+        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(authUser, authPassword));
+        RestClientBuilder builder = RestClient.builder(httpHosts.toArray(new HttpHost[]{})).setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+            public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+                return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+            }
+        });
+        esClient = new RestHighLevelClient(builder);
         cache = new JedisX(recommendInfo.redisInfo, recommendInfo.redisConfig, 2000);
     }
 

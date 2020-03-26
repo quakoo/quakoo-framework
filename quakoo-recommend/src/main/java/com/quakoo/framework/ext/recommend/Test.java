@@ -52,11 +52,11 @@ import java.util.concurrent.TimeUnit;
 public class Test {
 
     private static List<SearchRes> search(RestHighLevelClient esClient, SearchRes lastOne) throws Exception {
-        List<String> words = Lists.newArrayList("疫情");
-        List<String> searchResColumns = Lists.newArrayList("title", "uid", "characteristicId");
+        List<String> words = Lists.newArrayList("测");
+//        List<String> searchResColumns = Lists.newArrayList("title", "uid", "characteristicId");
         String column = "title";
-        String index = "article";
-        String time = "lastUpdateTime";
+        String index = "quakoo_test";
+        String time = "id";
 
         BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
@@ -88,8 +88,8 @@ public class Test {
         searchRequest.source(sourceBuilder);
         List<String> includes = Lists.newArrayList();
         includes.add("id");
-        if (searchResColumns != null && searchResColumns.size() > 0)
-            includes.addAll(searchResColumns);
+//        if (searchResColumns != null && searchResColumns.size() > 0)
+//            includes.addAll(searchResColumns);
         includes.add(time);
         sourceBuilder.fetchSource(includes.toArray(new String[0]), new String[]{});
         SearchResponse response = esClient.search(searchRequest, RequestOptions.DEFAULT);
@@ -101,14 +101,14 @@ public class Test {
             float score = hit.getScore();
             SearchRes searchRes = new SearchRes(id, score, timeValue);
             Map<String, String> columns = Maps.newHashMap();
-            if (searchResColumns != null && searchResColumns.size() > 0) {
-                for (String columnName : searchResColumns) {
-                    Object columnValueObj = hit.getSourceAsMap().get(columnName);
-                    String columnValue = "";
-                    if (columnValueObj != null) columnValue = columnValueObj.toString();
-                    columns.put(columnName, columnValue);
-                }
-            }
+//            if (searchResColumns != null && searchResColumns.size() > 0) {
+//                for (String columnName : searchResColumns) {
+//                    Object columnValueObj = hit.getSourceAsMap().get(columnName);
+//                    String columnValue = "";
+//                    if (columnValueObj != null) columnValue = columnValueObj.toString();
+//                    columns.put(columnName, columnValue);
+//                }
+//            }
             searchRes.setColumns(columns);
             res.add(searchRes);
         }
@@ -240,17 +240,17 @@ public class Test {
         });
         RestHighLevelClient client = new RestHighLevelClient(builder);
 
-//        List<SearchRes> list = search(client, null);
-//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-//        Set<String> set = Sets.newLinkedHashSet();
-//        for(SearchRes one : list) {
-////            System.out.println(one.getId());
-////            System.out.println(one.getScore());
-////            System.out.println(sdf.format(one.getTime()));
+        List<SearchRes> list = search(client, null);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Set<String> set = Sets.newLinkedHashSet();
+        for(SearchRes one : list) {
+            System.out.println(one.getId());
+            System.out.println(one.getScore());
+//            System.out.println(sdf.format(one.getTime()));
 //            set.add(sdf.format(one.getTime()));
-////            System.out.println(one.getColumns().toString());
-////            System.out.println("=================================");
-//        }
+//            System.out.println(one.getColumns().toString());
+            System.out.println("=================================");
+        }
 //        for(String one : set) {
 //            System.out.println(one);
 //        }
