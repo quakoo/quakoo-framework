@@ -54,6 +54,9 @@ public class SyncInfoServiceImpl implements SyncInfoService, InitializingBean {
         String esHostport = propertyLoader.getProperty("es.hostport.list");
         String esNumberShardsStr = propertyLoader.getProperty("es.number.shards");
         String esNumberReplicasStr = propertyLoader.getProperty("es.number.replicas");
+        String esRefreshInterval = propertyLoader.getProperty(" es.refresh.interval");
+        if(StringUtils.isBlank(esRefreshInterval)) esRefreshInterval = "1s";
+
         String authUser = propertyLoader.getProperty("es.auth.user");
         String authPassword = propertyLoader.getProperty("es.auth.password");
         if(StringUtils.isBlank(esHostport)) throw new IllegalStateException("es.hostport.list is null");
@@ -82,10 +85,10 @@ public class SyncInfoServiceImpl implements SyncInfoService, InitializingBean {
         esNumberShards = Integer.parseInt(esNumberShardsStr);
         esNumberReplicas = Integer.parseInt(esNumberReplicasStr);
 
-        initESIndex(esClient, esNumberShards, esNumberReplicas);
+        initESIndex(esClient, esNumberShards, esNumberReplicas, esRefreshInterval);
     }
 
-    private void initESIndex(RestHighLevelClient esClient, int esNumberShards, int esNumberReplicas) throws Exception {
+    private void initESIndex(RestHighLevelClient esClient, int esNumberShards, int esNumberReplicas, String esRefreshInterval) throws Exception {
         List<SyncInfo> syncInfos = syncInfoDao.getSyncInfos();
         for(SyncInfo syncInfo : syncInfos) {
             long lastTrackingValue = syncInfo.getLastTrackingValue();
@@ -99,6 +102,7 @@ public class SyncInfoServiceImpl implements SyncInfoService, InitializingBean {
                     CreateIndexRequest createIndexRequest = new CreateIndexRequest(esIndex);
                     createIndexRequest.settings(Settings.builder().put("index.number_of_shards", esNumberShards)
                             .put("index.number_of_replicas", esNumberReplicas)
+                            .put("index.refresh_interval", esRefreshInterval)
                             .put("index.blocks.read_only_allow_delete", "false"));
                     createIndexRequest.mapping(json, XContentType.JSON);
                     CreateIndexResponse createIndexResponse = esClient.indices().create(createIndexRequest, RequestOptions.DEFAULT);
