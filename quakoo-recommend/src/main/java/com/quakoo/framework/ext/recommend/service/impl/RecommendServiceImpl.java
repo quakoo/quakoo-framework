@@ -234,6 +234,7 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
         }
     }
 
+
     private void initRecall(long uid) throws Exception {
         int item_cf_step = recommendInfo.itemCFStep;
         int hot_word_step = recommendInfo.hotWordStep;
@@ -245,12 +246,14 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
             List<RecallItem> standbyList = Lists.newArrayList();
 
             List<RecallItem> itemCFs = recallItemsMap.get(AbstractRecommendInfo.type_item_cf);
+            if(itemCFs == null) itemCFs = Lists.newArrayList();
             int itemCFLen = itemCFs.size();
             if (itemCFLen > item_cf_step * cache_multiple) itemCFLen = item_cf_step * cache_multiple;
             itemCFs = itemCFs.subList(0, itemCFLen);
             List<List<RecallItem>> itemCFsList = Lists.partition(itemCFs, item_cf_step);
 
             List<RecallItem> hotwords = recallItemsMap.get(AbstractRecommendInfo.type_hot_word);
+            if(hotwords == null) hotwords = Lists.newArrayList();
             int hotwordLen = hotwords.size();
             if (hotwordLen > hot_word_step * cache_multiple) hotwordLen = hot_word_step * cache_multiple;
             List<RecallItem> thisHotwords = hotwords.subList(0, hotwordLen);
@@ -264,6 +267,7 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
             }
 
             List<RecallItem> times = recallItemsMap.get(AbstractRecommendInfo.type_time);
+            if(times == null) times = Lists.newArrayList();
             int timeLen = times.size();
             if (timeLen > time_step * cache_multiple) timeLen = time_step * cache_multiple;
             List<RecallItem> thisTimes = times.subList(0, timeLen);
@@ -341,26 +345,28 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
     }
 
     public static void main(String[] args) {
-        List<Integer> standbyList = Lists.newArrayList();
-        List<Integer> list = Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
-        int num = 2 * 3;
-        List<Integer> thisList = list.subList(0, num);
-        List<Integer> otherList = list.subList(num, list.size());
-        standbyList.addAll(otherList);
-
-        List<List<Integer>> lists = Lists.partition(thisList, 2);
-        for (int i = 0; i < 3; i++) {
-            List<Integer> aa = Lists.newArrayList();
-            aa.addAll(lists.get(i));
-            int standbyNum = 2;
-            if (standbyList.size() >= standbyNum) {
-                List<Integer> one_standbyList = standbyList.subList(0, standbyNum);
-                aa.addAll(one_standbyList);
-                standbyList.removeAll(one_standbyList);
-            }
-            System.out.println(aa.toString());
-        }
-
+//        List<Integer> standbyList = Lists.newArrayList();
+//        List<Integer> list = Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+//        int num = 2 * 3;
+//        List<Integer> thisList = list.subList(0, num);
+//        List<Integer> otherList = list.subList(num, list.size());
+//        standbyList.addAll(otherList);
+//
+//        List<List<Integer>> lists = Lists.partition(thisList, 2);
+//        for (int i = 0; i < 3; i++) {
+//            List<Integer> aa = Lists.newArrayList();
+//            aa.addAll(lists.get(i));
+//            int standbyNum = 2;
+//            if (standbyList.size() >= standbyNum) {
+//                List<Integer> one_standbyList = standbyList.subList(0, standbyNum);
+//                aa.addAll(one_standbyList);
+//                standbyList.removeAll(one_standbyList);
+//            }
+//            System.out.println(aa.toString());
+//        }
+        List<Long> list = Lists.newArrayList();
+        list.subList(0, 0);
+        System.out.println(list.toString());
     }
 
 }
