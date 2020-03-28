@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.*;
 
 @Data
 public class RecommendServiceImpl implements RecommendService, InitializingBean {
@@ -52,6 +53,13 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
     private String search_item_cf_queue_key = "%s_search_item_cf_queue_uid_%d";
 
     private String recall_list_key = "%s_recall_list_user_%d";
+
+    private final int threadNum = Runtime.getRuntime().availableProcessors() * 2 + 1;
+
+    private ExecutorService executorService = Executors.newFixedThreadPool(threadNum);
+
+    private CompletionService<List<RecallItem>> completionService =
+            new ExecutorCompletionService<>(executorService);
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -108,7 +116,7 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
 
     }
 
-    private List<SearchRes> searchItemCF(long uid) throws Exception {
+    private List<SearchRes> searchByItemCF(long uid) throws Exception {
         String key = String.format(search_item_cf_queue_key, recommendInfo.projectName, uid);
         Set<Object> set = cache.zrevrangeByScoreObject(key, Double.MAX_VALUE, 0, null);
         if (set.size() > 0) {
@@ -169,22 +177,61 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
         return res;
     }
 
-    private List<RecallItem> recallTime(long uid) throws Exception {
-        List<SearchRes> searchResList = searchByTime(uid);
-        List<RecallItem> recallItems = filter(uid, AbstractRecommendInfo.type_time, searchResList);
-        return recallItems;
+//    private List<RecallItem> recallTime(long uid) throws Exception {
+//        List<SearchRes> searchResList = searchByTime(uid);
+//        List<RecallItem> recallItems = filter(uid, AbstractRecommendInfo.type_time, searchResList);
+//        return recallItems;
+//    }
+//
+//    private List<RecallItem> recallHotWord(long uid) throws Exception {
+//        List<SearchRes> searchResList = searchByHotWord(uid);
+//        List<RecallItem> recallItems = filter(uid, AbstractRecommendInfo.type_hot_word, searchResList);
+//        return recallItems;
+//    }
+//
+//    private List<RecallItem> recallItemCF(long uid) throws Exception {
+//        List<SearchRes> searchResList = searchItemCF(uid);
+//        List<RecallItem> recallItems = filter(uid, AbstractRecommendInfo.type_item_cf, searchResList);
+//        return recallItems;
+//    }
+
+    private Map<Integer, List<RecallItem>> recall(long uid) throws Exception {
+        Map<Integer, List<RecallItem>> resMap = Maps.newHashMap();
+        for(int type = 1; type <= 3; type++) {
+            completionService.submit(new RecallProcesser(type, uid));
+        }
+        List<RecallItem> res = Lists.newArrayList();
+        for (int i = 0; i < 3; i++) {
+            List<RecallItem> oneRes = completionService.take().get();
+            res.addAll(oneRes);
+        }
+        for(RecallItem one : res) {
+            List<RecallItem> subList = resMap.get(one.getType());
+            if(subList == null) {
+                subList = Lists.newArrayList();
+                resMap.put(one.getType(), subList);
+            }
+            subList.add(one);
+        }
+        return resMap;
     }
 
-    private List<RecallItem> recallHotWord(long uid) throws Exception {
-        List<SearchRes> searchResList = searchByHotWord(uid);
-        List<RecallItem> recallItems = filter(uid, AbstractRecommendInfo.type_hot_word, searchResList);
-        return recallItems;
-    }
-
-    private List<RecallItem> recallItemCF(long uid) throws Exception {
-        List<SearchRes> searchResList = searchItemCF(uid);
-        List<RecallItem> recallItems = filter(uid, AbstractRecommendInfo.type_item_cf, searchResList);
-        return recallItems;
+    class RecallProcesser implements Callable<List<RecallItem>> {
+        private int type;
+        private long uid;
+        public RecallProcesser(int type, long uid) {
+            this.type = type;
+            this.uid = uid;
+        }
+        @Override
+        public List<RecallItem> call() throws Exception {
+            List<SearchRes> searchResList = null;
+            if(type == AbstractRecommendInfo.type_time) searchResList = searchByTime(uid);
+            else if(type == AbstractRecommendInfo.type_hot_word) searchResList = searchByHotWord(uid);
+            else searchResList = searchByItemCF(uid);
+            List<RecallItem> recallItems = filter(uid, type, searchResList);
+            return recallItems;
+        }
     }
 
     private void initRecall(long uid) throws Exception {
@@ -194,15 +241,16 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
         int cache_multiple = recommendInfo.cacheMultiple;
         String key = String.format(recall_list_key, recommendInfo.projectName, uid);
         if (!cache.exists(key)) {
+            Map<Integer, List<RecallItem>> recallItemsMap = recall(uid);
             List<RecallItem> standbyList = Lists.newArrayList();
 
-            List<RecallItem> itemCFs = recallItemCF(uid);
+            List<RecallItem> itemCFs = recallItemsMap.get(AbstractRecommendInfo.type_item_cf);
             int itemCFLen = itemCFs.size();
             if (itemCFLen > item_cf_step * cache_multiple) itemCFLen = item_cf_step * cache_multiple;
             itemCFs = itemCFs.subList(0, itemCFLen);
             List<List<RecallItem>> itemCFsList = Lists.partition(itemCFs, item_cf_step);
 
-            List<RecallItem> hotwords = recallHotWord(uid);
+            List<RecallItem> hotwords = recallItemsMap.get(AbstractRecommendInfo.type_hot_word);
             int hotwordLen = hotwords.size();
             if (hotwordLen > hot_word_step * cache_multiple) hotwordLen = hot_word_step * cache_multiple;
             List<RecallItem> thisHotwords = hotwords.subList(0, hotwordLen);
@@ -215,7 +263,7 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
                 if (otherHotwords.size() > 0) standbyList.addAll(otherHotwords);
             }
 
-            List<RecallItem> times = recallTime(uid);
+            List<RecallItem> times = recallItemsMap.get(AbstractRecommendInfo.type_time);
             int timeLen = times.size();
             if (timeLen > time_step * cache_multiple) timeLen = time_step * cache_multiple;
             List<RecallItem> thisTimes = times.subList(0, timeLen);
