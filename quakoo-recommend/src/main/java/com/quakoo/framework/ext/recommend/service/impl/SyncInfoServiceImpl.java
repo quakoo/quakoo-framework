@@ -54,7 +54,7 @@ public class SyncInfoServiceImpl implements SyncInfoService, InitializingBean {
         String esHostport = propertyLoader.getProperty("es.hostport.list");
         String esNumberShardsStr = propertyLoader.getProperty("es.number.shards");
         String esNumberReplicasStr = propertyLoader.getProperty("es.number.replicas");
-        String esRefreshInterval = propertyLoader.getProperty(" es.refresh.interval");
+        String esRefreshInterval = propertyLoader.getProperty("es.refresh.interval");
         if(StringUtils.isBlank(esRefreshInterval)) esRefreshInterval = "1s";
 
         String authUser = propertyLoader.getProperty("es.auth.user");

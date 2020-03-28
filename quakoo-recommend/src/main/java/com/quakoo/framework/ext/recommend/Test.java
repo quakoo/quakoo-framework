@@ -203,6 +203,7 @@ public class Test {
             createIndexRequest.settings(Settings.builder()
                     .put("index.number_of_shards", 1)
                     .put("index.number_of_replicas", 0)
+                    .put("refresh_interval", "30s")
                     .put("index.blocks.read_only_allow_delete", "false")
             );
 //            XContentBuilder builder = XContentFactory.jsonBuilder()
@@ -240,17 +241,17 @@ public class Test {
         });
         RestHighLevelClient client = new RestHighLevelClient(builder);
 
-        List<SearchRes> list = search(client, null);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Set<String> set = Sets.newLinkedHashSet();
-        for(SearchRes one : list) {
-            System.out.println(one.getId());
-            System.out.println(one.getScore());
-//            System.out.println(sdf.format(one.getTime()));
-//            set.add(sdf.format(one.getTime()));
-//            System.out.println(one.getColumns().toString());
-            System.out.println("=================================");
-        }
+//        List<SearchRes> list = search(client, null);
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//        Set<String> set = Sets.newLinkedHashSet();
+//        for(SearchRes one : list) {
+//            System.out.println(one.getId());
+//            System.out.println(one.getScore());
+////            System.out.println(sdf.format(one.getTime()));
+////            set.add(sdf.format(one.getTime()));
+////            System.out.println(one.getColumns().toString());
+//            System.out.println("=================================");
+//        }
 //        for(String one : set) {
 //            System.out.println(one);
 //        }
@@ -265,15 +266,15 @@ public class Test {
 //        }
 //        System.out.println(list.size());
 
-//        List<ESField> list = Lists.newArrayList();
-//        ESField a = new ESField("id", "true", "long", null, null);
-//        ESField b = new ESField("title", "true", "text", null,null);
-//        ESField c = new ESField("content","true", "text", null, null);
-//        list.add(a);
-//        list.add(b);
-//        list.add(c);
-//        String json = ESUtils.toIndexJson(list);
-//        createIndex(client, json);
+        List<ESField> list = Lists.newArrayList();
+        ESField a = new ESField("id", "true", "long", null, null);
+        ESField b = new ESField("title", "true", "text", null,null);
+        ESField c = new ESField("content","true", "text", null, null);
+        list.add(a);
+        list.add(b);
+        list.add(c);
+        String json = ESUtils.toIndexJson(list);
+        createIndex(client, json);
 
 //        changeIndex(client);
 
