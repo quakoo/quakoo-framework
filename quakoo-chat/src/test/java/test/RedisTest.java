@@ -12,12 +12,30 @@ import java.security.Key;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 public class RedisTest {
 
-    public static void main(String[] args) {
+    static class TestCallable implements Callable<Void> {
+        private String key;
+        private List<Integer> values;
+        private RedisBloomFilter<Integer> bloomFilter;
+
+        public TestCallable(String key, List<Integer> values, RedisBloomFilter<Integer> bloomFilter) {
+            this.key = key;
+            this.values = values;
+            this.bloomFilter = bloomFilter;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            bloomFilter.addAll(key, 60 * 60, values);
+            return null;
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
         JedisPoolConfig queueConfig = new JedisPoolConfig();
         queueConfig.setMaxTotal(50);
         queueConfig.setMaxIdle(25);
@@ -31,8 +49,8 @@ public class RedisTest {
 
         JedisX cache = new JedisX(queueInfo, queueConfig, 5000);
 
-        long num = cache.incrBy("intest", 1);
-        System.out.println(num);
+//        long num = cache.incrBy("intest", 1);
+//        System.out.println(num);
 
 //        HotWord a = new HotWord();
 //        a.setWord("a");
@@ -67,10 +85,27 @@ public class RedisTest {
 //        obj = cache.hGetObject("map", "a", null);
 //        HotWord db = (HotWord) obj;
 //        System.out.println(db.toString());
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
 
+        RedisBloomFilter<Integer> bloomFilter = new RedisBloomFilter<>(cache, 0.0001, 20000);
+        List<Integer> list = Lists.newArrayList(1, 2, 3);
+        CompletionService<Void> completionService = new ExecutorCompletionService<>(executorService);
+        for(int i = 1; i <= 3; i++) {
+            completionService.submit(new TestCallable("test_" +
+                    String.valueOf(i), list, bloomFilter));
+        }
+        for (int i = 0; i < 3; i++) {
+            completionService.take().get();
+        }
 
-//        RedisBloomFilter<Long> bloomFilter = new RedisBloomFilter<>(cache, 0.0001, 20000);
-//
+        Map<Integer, Boolean> map = bloomFilter.containsAll("test_1", list);
+        System.out.println(map.toString());
+        map = bloomFilter.containsAll("test_2", list);
+        System.out.println(map.toString());
+        map = bloomFilter.containsAll("test_3", list);
+        System.out.println(map.toString());
+
+        //
 //        List<Long> params = Lists.newArrayList();
 //        for(long i = Long.MAX_VALUE; i > Long.MAX_VALUE - 3000; i--) {
 //            params.add(i);

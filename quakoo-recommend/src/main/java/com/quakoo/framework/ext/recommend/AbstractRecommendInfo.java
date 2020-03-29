@@ -6,6 +6,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import redis.clients.jedis.JedisPoolConfig;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public abstract class AbstractRecommendInfo implements InitializingBean {
 
     private PropertyLoader propertyLoader = PropertyLoader.getInstance("recommend.properties");
@@ -14,6 +17,10 @@ public abstract class AbstractRecommendInfo implements InitializingBean {
     public static final int type_hot_word = 2;
     public static final int type_item_cf = 3;
 
+
+    private final int threadNum = Runtime.getRuntime().availableProcessors() * 2 + 1;
+
+    public ExecutorService executorService = Executors.newFixedThreadPool(threadNum);
 
     public String projectName; //项目名
     public String lockZkAddress; //分布式锁

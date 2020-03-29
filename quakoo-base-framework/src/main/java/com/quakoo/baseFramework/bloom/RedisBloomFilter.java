@@ -207,8 +207,9 @@ public class RedisBloomFilter<E> implements Serializable {
             }
             redisIndexesList.add(redisIndexes);
         }
+        boolean sign = cache.exists(key);
         cache.pipSetBit(key, redisIndexesList, true);
-        if(timeout > 0) cache.expire(key, timeout);
+        if(timeout > 0 && !sign) cache.expire(key, timeout);
     }
 
     /**

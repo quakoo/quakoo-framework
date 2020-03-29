@@ -54,10 +54,6 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
 
     private String recall_list_key = "%s_recall_list_user_%d";
 
-    private final int threadNum = Runtime.getRuntime().availableProcessors() * 2 + 1;
-
-    private ExecutorService executorService = Executors.newFixedThreadPool(threadNum);
-
     @Override
     public void afterPropertiesSet() throws Exception {
         cache = new JedisX(recommendInfo.redisInfo, recommendInfo.redisConfig, 2000);
@@ -193,7 +189,7 @@ public class RecommendServiceImpl implements RecommendService, InitializingBean 
 //    }
 
     private Map<Integer, List<RecallItem>> recall(long uid) throws Exception {
-        CompletionService<List<RecallItem>> completionService = new ExecutorCompletionService<>(executorService);
+        CompletionService<List<RecallItem>> completionService = new ExecutorCompletionService<>(recommendInfo.executorService);
         Map<Integer, List<RecallItem>> resMap = Maps.newHashMap();
         for(int type = 1; type <= 3; type++) {
             completionService.submit(new RecallProcesser(type, uid));

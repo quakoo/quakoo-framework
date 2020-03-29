@@ -13,9 +13,13 @@ import org.springframework.beans.factory.InitializingBean;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
 
 @Data
 public class FilterServiceImpl implements FilterService, InitializingBean {
@@ -27,7 +31,7 @@ public class FilterServiceImpl implements FilterService, InitializingBean {
 
     private RedisBloomFilter<Long> bloomFilter;
 
-    private String user_recommended_key_format = "%s_recommend_filter_user_%d_type_%d";
+    private String user_recommended_key_format = "%s_recommend_filter_user_%d_type_%d_week_%s";
 
     private String user_recommended_temp_key_format = "%s_recommend_temp_filter_user_%d_type_%d";
 
@@ -35,7 +39,9 @@ public class FilterServiceImpl implements FilterService, InitializingBean {
 
     private String projectName;
 
-    private int timeout = 60 * 60 * 24 * 30;
+    private static int deadline_week = 4; //4周周期
+
+    private int timeout = 7 * 60 * 60 * 24;
 
     private JedisX cache;
 
@@ -46,13 +52,58 @@ public class FilterServiceImpl implements FilterService, InitializingBean {
         bloomFilter = new RedisBloomFilter<>(cache, 0.0001, 10000);
     }
 
+    private List<String> getRecordKeys(long uid, int type) {
+        List<String> res = Lists.newArrayList();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        String week = calendar.get(Calendar.YEAR) + "" + calendar.get(Calendar.WEEK_OF_YEAR);
+        String user_recommended_key = String.format(user_recommended_key_format, projectName, uid, type, week);
+        res.add(user_recommended_key);
+        for(int i = 1; i < deadline_week; i++) {
+            calendar.add(Calendar.WEEK_OF_YEAR, 1);
+            week = calendar.get(Calendar.YEAR) + "" + calendar.get(Calendar.WEEK_OF_YEAR);
+            user_recommended_key = String.format(user_recommended_key_format, projectName, uid, type, week);
+            res.add(user_recommended_key);
+        }
+        return res;
+    }
+
+    private String getKey(long uid, int type) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        String week = calendar.get(Calendar.YEAR) + "" + calendar.get(Calendar.WEEK_OF_YEAR);
+        String res = String.format(user_recommended_key_format, projectName, uid, type, week);
+        return res;
+    }
+
+    public static void main(String[] args) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        System.out.println(calendar.get(Calendar.YEAR) + "" + calendar.get(Calendar.WEEK_OF_YEAR));
+        List<String> weeks = Lists.newArrayList();
+        for(int i = 1; i < deadline_week; i++) {
+            calendar.add(Calendar.WEEK_OF_YEAR, 1);
+            weeks.add(calendar.get(Calendar.YEAR) + "" + calendar.get(Calendar.WEEK_OF_YEAR));
+        }
+        System.out.println(weeks.toString());
+    }
+
     @Override
     public void record(long uid, int type, List<Long> aids) throws Exception {
         logger.info("======= filter record uid : " + uid + ",type : " + type + ", size : " + aids.size());
-        String user_recommended_key = String.format(user_recommended_key_format, projectName, uid, type);
-        bloomFilter.addAll(user_recommended_key, timeout, aids);
+//        String user_recommended_key = String.format(user_recommended_key_format, projectName, uid, type);
+//        bloomFilter.addAll(user_recommended_key, timeout, aids);
 
-//        int day = Integer.parseInt(daySDF.format(new Date()));
+        List<String> keys = getRecordKeys(uid, type);
+        CompletionService<Void> completionService = new ExecutorCompletionService<>(recommendInfo.executorService);
+        for(int i = 0; i < keys.size(); i++) {
+            String key = keys.get(i);
+            int oneTimeout = timeout * (i + 1) + 5000;
+            completionService.submit(new RecordCallable(bloomFilter, key, oneTimeout, aids));
+        }
+        for (int i = 0; i < keys.size(); i++) {
+            completionService.take().get();
+        }
         String user_recommended_temp_key = String.format(user_recommended_temp_key_format, projectName, uid, type);
         if(cache.exists(user_recommended_temp_key)) {
             Map<String, Object> redisMap = Maps.newHashMap();
@@ -67,9 +118,10 @@ public class FilterServiceImpl implements FilterService, InitializingBean {
     public Map<Long, Boolean> filter(long uid, int type, List<Long> aids) throws Exception {
         Map<Long, Boolean> res = Maps.newHashMap();
         String user_recommended_temp_key = String.format(user_recommended_temp_key_format, projectName, uid, type);
-        String user_recommended_key = String.format(user_recommended_key_format, projectName, uid, type);
+//        String user_recommended_key = String.format(user_recommended_key_format, projectName, uid, type);
+        String key = getKey(uid, type);
         if(!cache.exists(user_recommended_temp_key)) {
-            res = bloomFilter.containsAll(user_recommended_key, aids);
+            res = bloomFilter.containsAll(key, aids);
             Map<String, Object> redisMap = Maps.newHashMap();
             for(Map.Entry<Long, Boolean> entry : res.entrySet()) {
                 redisMap.put(String.valueOf(entry.getKey()), entry.getValue());
@@ -92,7 +144,7 @@ public class FilterServiceImpl implements FilterService, InitializingBean {
                 }
             }
             if(secondAids.size() > 0) {
-                Map<Long, Boolean> secondRes = bloomFilter.containsAll(user_recommended_key, secondAids);
+                Map<Long, Boolean> secondRes = bloomFilter.containsAll(key, secondAids);
                 res.putAll(secondRes);
                 Map<String, Object> redisMap = Maps.newHashMap();
                 for(Map.Entry<Long, Boolean> entry : secondRes.entrySet()) {
@@ -106,11 +158,32 @@ public class FilterServiceImpl implements FilterService, InitializingBean {
 
     @Override
     public void clear(long uid, int type) throws Exception {
-        String user_recommended_key = String.format(user_recommended_key_format, projectName, uid, type);
-        bloomFilter.clear(user_recommended_key);
+        String key = getKey(uid, type);
+//        String user_recommended_key = String.format(user_recommended_key_format, projectName, uid, type);
+        bloomFilter.clear(key);
 
         String user_recommended_temp_key = String.format(user_recommended_temp_key_format, projectName, uid, type);
         cache.delete(user_recommended_temp_key);
+    }
+
+    class RecordCallable implements Callable<Void> {
+        private RedisBloomFilter<Long> bloomFilter;
+        private String key;
+        private int timeout;
+        private List<Long> aids;
+
+        public RecordCallable(RedisBloomFilter<Long> bloomFilter, String key, int timeout, List<Long> aids) {
+            this.bloomFilter = bloomFilter;
+            this.key = key;
+            this.timeout = timeout;
+            this.aids = aids;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            bloomFilter.addAll(key, timeout, aids);
+            return null;
+        }
     }
 
 }

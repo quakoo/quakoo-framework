@@ -52,15 +52,15 @@ import java.util.concurrent.TimeUnit;
 public class Test {
 
     private static List<SearchRes> search(RestHighLevelClient esClient, SearchRes lastOne) throws Exception {
-        List<String> words = Lists.newArrayList("测");
-//        List<String> searchResColumns = Lists.newArrayList("title", "uid", "characteristicId");
+        List<String> words = Lists.newArrayList("疫情","考试","钢铁","大排查","沈文荣",
+                "不锈", "德龙", "质量指标", "传真", "汉钢");
+        List<String> searchResColumns = Lists.newArrayList("title", "uid", "characteristicId");
         String column = "title";
-        String index = "quakoo_test";
-        String time = "id";
+        String index = "article";
+        String time = "lastUpdateTime";
 
         BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-
         for (int i = 0; i < words.size(); i++) {
             int boost = words.size() - i;
             String word = words.get(i);
@@ -68,17 +68,18 @@ public class Test {
             boolBuilder.should(queryBuilder);
         }
         long origin = System.currentTimeMillis();
-        long offset = 1000 * 60 * 60 * 24 * 15;
-        long scale =  1000 * 60 * 60 * 24 * 15;
+        long offset = 1000 * 60 * 60 * 24 * 7;
+        long scale =  1000 * 60 * 60 * 24 * 7;
         double decay = 0.5;
         GaussDecayFunctionBuilder gaussDecayFunctionBuilder = ScoreFunctionBuilders.gaussDecayFunction(time, origin, scale, offset, decay);
         FunctionScoreQueryBuilder functionScoreQueryBuilder = QueryBuilders.functionScoreQuery(boolBuilder, gaussDecayFunctionBuilder);
 
         sourceBuilder.query(functionScoreQueryBuilder);
-        sourceBuilder.size(2500);
+        sourceBuilder.size(2000);
         sourceBuilder.sort("_score", SortOrder.DESC);
         sourceBuilder.sort("id", SortOrder.DESC);
-
+//        QueryBuilder filter = QueryBuilders.rangeQuery(time).gte(1582128000000l).lt(1585412601456l);
+//        sourceBuilder.postFilter(filter);
         if(lastOne != null) {
             sourceBuilder.searchAfter(new Object[]{lastOne.getScore(), lastOne.getId()});
         }
@@ -88,11 +89,15 @@ public class Test {
         searchRequest.source(sourceBuilder);
         List<String> includes = Lists.newArrayList();
         includes.add("id");
-//        if (searchResColumns != null && searchResColumns.size() > 0)
-//            includes.addAll(searchResColumns);
+        if (searchResColumns != null && searchResColumns.size() > 0)
+            includes.addAll(searchResColumns);
         includes.add(time);
         sourceBuilder.fetchSource(includes.toArray(new String[0]), new String[]{});
+        long startTime = System.currentTimeMillis();
         SearchResponse response = esClient.search(searchRequest, RequestOptions.DEFAULT);
+
+        System.out.println("=== time : " + (System.currentTimeMillis() - startTime) + " ,took : " +
+                response.getTook().toString());
         SearchHits hits = response.getHits();
         List<SearchRes> res = Lists.newArrayList();
         for (SearchHit hit : hits) {
@@ -101,14 +106,14 @@ public class Test {
             float score = hit.getScore();
             SearchRes searchRes = new SearchRes(id, score, timeValue);
             Map<String, String> columns = Maps.newHashMap();
-//            if (searchResColumns != null && searchResColumns.size() > 0) {
-//                for (String columnName : searchResColumns) {
-//                    Object columnValueObj = hit.getSourceAsMap().get(columnName);
-//                    String columnValue = "";
-//                    if (columnValueObj != null) columnValue = columnValueObj.toString();
-//                    columns.put(columnName, columnValue);
-//                }
-//            }
+            if (searchResColumns != null && searchResColumns.size() > 0) {
+                for (String columnName : searchResColumns) {
+                    Object columnValueObj = hit.getSourceAsMap().get(columnName);
+                    String columnValue = "";
+                    if (columnValueObj != null) columnValue = columnValueObj.toString();
+                    columns.put(columnName, columnValue);
+                }
+            }
             searchRes.setColumns(columns);
             res.add(searchRes);
         }
@@ -231,8 +236,8 @@ public class Test {
     public static void main(String[] args) throws Exception  {
         final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY,
-                new UsernamePasswordCredentials("elastic", "quakoo123"));
-        RestClientBuilder builder = RestClient.builder(new HttpHost[] { new HttpHost("39.107.247.82", 9200)})
+                new UsernamePasswordCredentials("elastic", "steel123"));
+        RestClientBuilder builder = RestClient.builder(new HttpHost[] { new HttpHost("47.92.109.133", 9200)})
                 .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
             public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder)
             {
@@ -241,21 +246,21 @@ public class Test {
         });
         RestHighLevelClient client = new RestHighLevelClient(builder);
 
-//        List<SearchRes> list = search(client, null);
-//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-//        Set<String> set = Sets.newLinkedHashSet();
-//        for(SearchRes one : list) {
+        List<SearchRes> list = search(client, null);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Set<String> set = Sets.newLinkedHashSet();
+        for(SearchRes one : list) {
 //            System.out.println(one.getId());
 //            System.out.println(one.getScore());
-////            System.out.println(sdf.format(one.getTime()));
-////            set.add(sdf.format(one.getTime()));
-////            System.out.println(one.getColumns().toString());
+//            System.out.println(sdf.format(one.getTime()));
+            set.add(sdf.format(one.getTime()));
+//            System.out.println(one.getColumns().toString());
 //            System.out.println("=================================");
-//        }
-//        for(String one : set) {
-//            System.out.println(one);
-//        }
-//        System.out.println(list.size());
+        }
+        for(String one : set) {
+            System.out.println(one);
+        }
+        System.out.println(list.size());
 
 //        list = search(client, list.get(list.size() - 1));
 //        for(SearchRes one : list) {
@@ -266,15 +271,15 @@ public class Test {
 //        }
 //        System.out.println(list.size());
 
-        List<ESField> list = Lists.newArrayList();
-        ESField a = new ESField("id", "true", "long", null, null);
-        ESField b = new ESField("title", "true", "text", null,null);
-        ESField c = new ESField("content","true", "text", null, null);
-        list.add(a);
-        list.add(b);
-        list.add(c);
-        String json = ESUtils.toIndexJson(list);
-        createIndex(client, json);
+//        List<ESField> list = Lists.newArrayList();
+//        ESField a = new ESField("id", "true", "long", null, null);
+//        ESField b = new ESField("title", "true", "text", null,null);
+//        ESField c = new ESField("content","true", "text", null, null);
+//        list.add(a);
+//        list.add(b);
+//        list.add(c);
+//        String json = ESUtils.toIndexJson(list);
+//        createIndex(client, json);
 
 //        changeIndex(client);
 
