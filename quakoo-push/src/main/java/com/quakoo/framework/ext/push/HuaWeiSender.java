@@ -60,7 +60,7 @@ public class HuaWeiSender {
                 params, null, false, false, false);
         Map<String, Object> res = JsonUtils.fromJson(httpResult.getResult(), new TypeReference<Map<String, Object>>() {});
         accessToken = res.get("access_token").toString();
-        tokenExpiredTime = System.currentTimeMillis() + Integer.parseInt(res.get("expires_in").toString()) - 5*60*1000;
+        tokenExpiredTime = System.currentTimeMillis() + Integer.parseInt(res.get("expires_in").toString()) * 1000 - 5*60*1000;
     }
 
     public void send(List<String> huaWeiTokens, String title, String content, int type, Map<String, String> ext) throws Exception {
@@ -102,12 +102,24 @@ public class HuaWeiSender {
 
 
     public static void main(String[] args) throws  Exception{
-        HuaWeiSender huaWaiSender = new HuaWeiSender("65b358ecc93ac90a140770856b962b1a",
-                "100543099", "com.queke.minglian",
-                "com.queke.minglian.MainActivity"
-        ,"customscheme");
-        List<String> tokens = Lists.newArrayList("AFF2RSBCeM3GlNCZFPbdJ0hKZ8B4Z70elXOXburRjsV_FaT-g1pKe0O8HHa3rCpZdi4pnRtXXk5a3XteQDO2g_GwC_A8pBvUcHd_v86d-xXQIpw8AWda5t-MuNLB8qtFjg");
-        huaWaiSender.send(tokens, "111", "111", HuaWeiSender.type_notice, null);
+//        HuaWeiSender huaWaiSender = new HuaWeiSender("65b358ecc93ac90a140770856b962b1a",
+//                "100543099", "com.queke.minglian",
+//                "com.queke.minglian.MainActivity"
+//        ,"customscheme");
+//        List<String> tokens = Lists.newArrayList("AFF2RSBCeM3GlNCZFPbdJ0hKZ8B4Z70elXOXburRjsV_FaT-g1pKe0O8HHa3rCpZdi4pnRtXXk5a3XteQDO2g_GwC_A8pBvUcHd_v86d-xXQIpw8AWda5t-MuNLB8qtFjg");
+//        huaWaiSender.send(tokens, "111", "111", HuaWeiSender.type_notice, null);
+        HttpPoolParam httpPoolParam = new HttpPoolParam(5000, 5000, 1);
+        String tokenUrl = "https://login.cloud.huawei.com/oauth2/v2/token";
+        MultiHttpPool httpPool = new MultiHttpPool(httpPoolParam);
+
+        Map<String, Object> params = Maps.newHashMap();
+        params.put("grant_type", "client_credentials");
+        params.put("client_secret", URLEncoder.encode("4c8077f22886696dbe84b4d46f3c0ade", "UTF-8"));
+        params.put("client_id", "100412763");
+        HttpResult httpResult = httpPool.httpQuery(tokenUrl, null, "post", null,
+                params, null, false, false, false);
+        Map<String, Object> res = JsonUtils.fromJson(httpResult.getResult(), new TypeReference<Map<String, Object>>() {});
+        System.out.println(res.toString());
 
     }
 
