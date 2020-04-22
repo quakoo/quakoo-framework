@@ -202,11 +202,14 @@ public class NioConnectServiceImpl implements NioConnectService, InitializingBea
                 String videoDuration = ((OtherChatRequest) sessionRequest).getVideoDuration();
                 String picture = ((OtherChatRequest) sessionRequest).getPicture();
                 String ext = ((OtherChatRequest) sessionRequest).getExt();
-                OtherChatRes otherChatRes = otherChatPrevService.handle(uid, chatType, thirdId,
-                        word, picture, voice, voiceDuration, video, videoDuration, ext);
-                if(otherChatRes.isSuccess()) {
-                    chatService.asyncOtherChat(uid, clientId, chatType, thirdId,
-                            otherChatRes.getMessageChat(), ctx, sessionId); //异步处理其他类型的消息
+
+                ChatCheckRes chatCheckRes = chatCheckService.check(uid,chatType, thirdId, word);
+                if(chatCheckRes.isSuccess()) {
+                    OtherChatRes otherChatRes = otherChatPrevService.handle(uid, chatType, thirdId,
+                            word, picture, voice, voiceDuration, video, videoDuration, ext);
+                    if(otherChatRes.isSuccess()) {
+                        chatService.asyncOtherChat(uid, clientId, chatType, thirdId,
+                                otherChatRes.getMessageChat(), ctx, sessionId); //异步处理其他类型的消息
 //                    boolean sign = chatService.otherChat(uid, clientId, chatType, thirdId,
 //                            otherChatRes.getMessageChat());
 //                    OtherChatResponse response = new OtherChatResponse();
@@ -214,12 +217,20 @@ public class NioConnectServiceImpl implements NioConnectService, InitializingBea
 //                    response.setSuccess(sign);
 //                    response.setSessionId(sessionId);
 //                    ChannelUtils.write(ctx, response, false);
+                    } else {
+                        OtherChatResponse response = new OtherChatResponse();
+                        response.setClientId(clientId);
+                        response.setSuccess(false);
+                        response.setSessionId(sessionId);
+                        response.setErrMsg(otherChatRes.getErrMsg());
+                        ChannelUtils.write(ctx, response, false);
+                    }
                 } else {
                     OtherChatResponse response = new OtherChatResponse();
                     response.setClientId(clientId);
                     response.setSuccess(false);
                     response.setSessionId(sessionId);
-                    response.setErrMsg(otherChatRes.getErrMsg());
+                    response.setErrMsg(chatCheckRes.getMsg());
                     ChannelUtils.write(ctx, response, false);
                 }
             } catch (Exception e) {
