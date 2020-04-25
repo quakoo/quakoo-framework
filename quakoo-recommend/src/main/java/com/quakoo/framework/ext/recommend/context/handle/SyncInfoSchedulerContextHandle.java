@@ -47,7 +47,7 @@ public class SyncInfoSchedulerContextHandle extends BaseContextHandle {
             while (true) {
                 if (DistributedConfig.serverNum > 0) {
                     try {
-                        Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+                        Uninterruptibles.sleepUninterruptibly(200, TimeUnit.MILLISECONDS);
                         List<SyncInfo> syncInfos = syncInfoService.getSyncInfos();
                         if (syncInfos.size() > 0) {
                             List<List<SyncInfo>> partitionSyncInfos = partition(syncInfos, DistributedConfig.serverNum);
