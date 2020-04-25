@@ -32,7 +32,7 @@ import java.util.Set;
 
 public class SyncInfoDaoImpl extends BaseDao implements SyncInfoDao, InitializingBean {
 
-    private Logger logger = LoggerFactory.getLogger(StopWordDaoImpl.class);
+    private Logger logger = LoggerFactory.getLogger(SyncInfoDaoImpl.class);
 
     private JedisX cache;
 
