@@ -59,7 +59,7 @@ public class SyncInfoSchedulerContextHandle extends BaseContextHandle {
                                 totalSize += size;
                             }
                             if(totalSize > 0) Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
-                            else Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+                            else Uninterruptibles.sleepUninterruptibly(5, TimeUnit.SECONDS);
                         } else {
                             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.MINUTES);
                         }
