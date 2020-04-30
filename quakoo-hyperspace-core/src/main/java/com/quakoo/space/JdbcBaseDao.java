@@ -1209,7 +1209,7 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 			return tableName;
 		} else {
 			// 可以根据复杂公式（jdbcIndex） 均匀hash，但是不好查数据
-			tableIndex = (int) shardId / 10 % seeds[index];
+			tableIndex = (int) shardId % seeds[index];
 			if (tableIndex == 0) {
 				if (Arrays.asList(keywords).contains(tableName.toUpperCase())) {
 					return  "`" + tableName + "`";
