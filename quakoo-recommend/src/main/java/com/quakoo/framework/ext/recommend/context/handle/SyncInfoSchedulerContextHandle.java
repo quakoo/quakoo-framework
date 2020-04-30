@@ -58,8 +58,8 @@ public class SyncInfoSchedulerContextHandle extends BaseContextHandle {
                                 if(size > 0) logger.info("====== sync " + syncInfo.getEsId() + ", size : " + size + ", time : " + (System.currentTimeMillis() - startTime));
                                 totalSize += size;
                             }
-                            if(totalSize > 0) Uninterruptibles.sleepUninterruptibly(20, TimeUnit.MILLISECONDS);
-                            else Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
+                            if(totalSize > 0) Uninterruptibles.sleepUninterruptibly(3, TimeUnit.SECONDS);
+                            else Uninterruptibles.sleepUninterruptibly(15, TimeUnit.SECONDS);
                         } else {
                             Uninterruptibles.sleepUninterruptibly(1, TimeUnit.MINUTES);
                         }

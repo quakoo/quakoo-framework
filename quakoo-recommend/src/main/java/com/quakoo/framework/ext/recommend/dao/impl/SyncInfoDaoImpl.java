@@ -32,7 +32,7 @@ import java.util.Set;
 
 public class SyncInfoDaoImpl extends BaseDao implements SyncInfoDao, InitializingBean {
 
-    private Logger logger = LoggerFactory.getLogger(StopWordDaoImpl.class);
+    private Logger logger = LoggerFactory.getLogger(SyncInfoDaoImpl.class);
 
     private JedisX cache;
 
@@ -91,14 +91,18 @@ public class SyncInfoDaoImpl extends BaseDao implements SyncInfoDao, Initializin
         int size = syncInfo.getBatchSize();
         sql += " and %s > %d order by %s asc limit 0, %d";
         sql = String.format(sql, trackingColumn, trackingValue, trackingColumn, size + 1);
+        long startTime = System.currentTimeMillis();
         List<Map<String, Object>> res = this.jdbcTemplate.queryForList(sql);
+        logger.info("===== sql : " + sql + ", time : " + (System.currentTimeMillis() - startTime) + ", size : " + res.size());
         if(res.size() == size + 1) {
             long lastValue = (long)res.get(size - 1).get(trackingColumn);
             long nextValue = (long)res.get(size).get(trackingColumn);
             if(lastValue == nextValue) {
                 sql = syncInfo.getSql() + " and %s > %d and %s <= %d order by %s asc";
                 sql = String.format(sql, trackingColumn, trackingValue, trackingColumn, nextValue, trackingColumn);
+                startTime = System.currentTimeMillis();
                 res = this.jdbcTemplate.queryForList(sql);
+                logger.info("===== sql : " + sql + ", time : " + (System.currentTimeMillis() - startTime) + ", size : " + res.size());
             } else {
                 res = res.subList(0, size);
             }
