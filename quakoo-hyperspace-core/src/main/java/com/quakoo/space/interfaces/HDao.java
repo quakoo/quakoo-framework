@@ -23,6 +23,15 @@ public interface HDao<T> extends Serializable {
 	
 	public T increment(T model,String filedName,int incrementValue) throws Exception;
 
+	/**
+	 * 对多个属性进行加减操作
+	 * @param model
+	 * @param filedName
+	 * @param incrementValue
+	 * @return
+	 * @throws Exception
+	 */
+	public T increment(T model,List<String> filedName,List<Integer> incrementValue) throws Exception;
 
 
 	/**

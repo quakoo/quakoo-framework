@@ -1011,6 +1011,28 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
         return model;
     }
 
+    public T increment(T model,List<String> filedName,List<Integer> incrementValue) throws Exception{
+        if (primaryFieldInfo != null && combinationFieldInfos.size() == 0) {
+            return increment_identity(model, filedName, incrementValue);
+        }
+        if (primaryFieldInfo == null && combinationFieldInfos.size() >= 0) {
+            return increment_combination(model, filedName, incrementValue);
+        }
+        if (primaryFieldInfo != null && combinationFieldInfos.size() > 0) {
+            long id = 0;
+            try {
+                id = ReflectUtil.getLongValueForLongOrInt(this.primaryFieldInfo.getReadMethod().invoke(model));
+            } catch (Exception e) {
+                throw new DataAccessResourceFailureException("", e);
+            }
+            if (id > 0) {
+                return increment_identity(model, filedName, incrementValue);
+            }
+            return increment_combination(model, filedName, incrementValue);
+        }
+        return model;
+    }
+
 
     /**
      * 自增
@@ -1073,6 +1095,44 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
         return model;
     }
 
+
+    /**
+     * 根据组合键进行自增操作
+     *
+     * @param model
+     * @return
+     * @throws DataAccessException
+     */
+    private T increment_combination(T model, List<String> filedName, List<Integer> incrementValue) throws DataAccessException {
+
+        T oldModel = this.load_combination(model, true);
+        boolean ret = super.jdbc_increment_combination(model, filedName, incrementValue);
+        if (!ret) {
+            throw new DataAccessResourceFailureException("increment error");
+        }
+        try {
+            this.handle_ctime(oldModel, model);
+            // 击穿缓存 获取新数据
+            model = load(getHyperspaceIdByEntity(model), false);
+            if (ret && this.enableObjectCache) {
+                this.handle_combination(model);
+                this.delete_object_cache(model);
+                this.add_object_cache(model);
+            }
+
+            if (ret) {
+                this.cache_deleteOne(oldModel);
+                this.cache_addOne(model);
+            }
+
+        } catch (Exception e) {
+            throw new DataAccessResourceFailureException("", e);
+        }
+        afterIncrement(oldModel, model);
+        return model;
+    }
+
+
     /**
      * 根据id主键 进行缓存自增操作
      *
@@ -1081,6 +1141,44 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
      * @throws DataAccessException
      */
     private T increment_identity(T model, String filedName, int incrementValue) throws DataAccessException {
+        long id;
+        try {
+            id = ReflectUtil.getLongValueForLongOrInt(this.primaryFieldInfo.getReadMethod().invoke(model));
+
+        } catch (Exception e1) {
+            throw new DataAccessResourceFailureException("", e1);
+        }
+        T oldModel = this.load_identity(id, true);
+        boolean ret = super.jdbc_increment_identity(model, filedName, incrementValue);
+        if (!ret) {
+            throw new DataAccessResourceFailureException("increment error");
+        }
+        try {
+            this.handle_ctime(oldModel, model);
+            // 击穿缓存 获取新数据
+            model = load(getHyperspaceIdByEntity(model), false);
+            if (ret && this.enableObjectCache) {
+                this.handle_identity(model);
+                this.delete_object_cache(model);
+                this.add_object_cache(model);
+            }
+            if (ret) {
+                this.cache_deleteOne(oldModel);
+                this.cache_addOne(model);
+            }
+        } catch (Exception e) {
+            throw new DataAccessResourceFailureException("", e);
+        }
+        afterIncrement(oldModel, model);
+        return model;
+    } /**
+     * 根据id主键 进行缓存自增操作
+     *
+     * @param model
+     * @return
+     * @throws DataAccessException
+     */
+    private T increment_identity(T model, List<String> filedName, List<Integer> incrementValue) throws DataAccessException {
         long id;
         try {
             id = ReflectUtil.getLongValueForLongOrInt(this.primaryFieldInfo.getReadMethod().invoke(model));
