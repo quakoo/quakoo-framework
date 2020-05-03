@@ -870,7 +870,7 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 			for(int i=0;i<filedNameList.size();i++){
 				String filedName =filedNameList.get(i);
 				int incrementValue=incrementValueList.get(i);
-				updatePartSql=filedName+"=("+filedName;
+				updatePartSql=updatePartSql+filedName+"=("+filedName;
 				if(incrementValue>0){
 					updatePartSql=updatePartSql+"+"+incrementValue+")";
 				}else{
@@ -986,7 +986,7 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 			for(int i=0;i<filedNameList.size();i++){
 				String filedName =filedNameList.get(i);
 				int incrementValue=incrementValueList.get(i);
-				updatePartSql=filedName+"=("+filedName;
+				updatePartSql=updatePartSql+filedName+"=("+filedName;
 				if(incrementValue>0){
 					updatePartSql=updatePartSql+"+"+incrementValue+")";
 				}else{
