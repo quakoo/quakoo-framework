@@ -1901,12 +1901,7 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
     }
 
     private void handleCount(String countCacheKey, long step) {
-
-        String lockKey = countCacheKey + "_key";
-        ZkLock lock = null;
         try {
-            lock = ZkLock.getAndLock(hyperspaceConfig.getZkAddress(), "hyperSpace", lockKey, true, 30000, 30000);
-
             if (JedisXUtils.exists(cache, countCacheKey)) {
                 if (step > 0) {
                     logger.info(daoClassName + "count incy cache :{},step:{}", new Object[] { countCacheKey, step });
@@ -1920,8 +1915,6 @@ public abstract class AbstractCacheBaseDao<T> extends JdbcBaseDao<T> {
         } catch (Exception e) {
             this.logger.info(daoClassName + e.getMessage());
         } finally {
-            if (lock != null)
-                lock.release();
         }
     }
 
