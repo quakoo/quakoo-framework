@@ -31,5 +31,5 @@ public interface UserStreamService {
 
 
 	 public List<UserStream> getDirectoryStream(long uid, double lastIndex) throws Exception;
-	 
+
 }

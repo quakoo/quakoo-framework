@@ -503,6 +503,8 @@ public class UserStreamDaoImpl extends BaseDaoHandle implements UserStreamDao, I
         }
     }
 
+
+
     @Override
 	public void new_cold_data(List<UserStreamParam> list) throws Exception {
 		List<RedisSortedSetParam> params = Lists.newArrayList();

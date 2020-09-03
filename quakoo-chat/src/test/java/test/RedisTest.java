@@ -44,10 +44,13 @@ public class RedisTest {
         queueConfig.setTestOnBorrow(true);
         queueConfig.setTestWhileIdle(true);
         JedisBean queueInfo = new JedisBean();
-        queueInfo.setMasterAddress("39.107.247.82:6383");
-        queueInfo.setPassword("Queke123456");
+        queueInfo.setMasterAddress("47.92.108.189:6384");
+        queueInfo.setPassword("Queke123!!!");
 
         JedisX cache = new JedisX(queueInfo, queueConfig, 5000);
+
+        Object str = cache.getObject("steel_object_com.quakoo.model.PayPassport_id_1", null);
+        System.out.println(str.toString());
 
 //        long num = cache.incrBy("intest", 1);
 //        System.out.println(num);
@@ -85,25 +88,25 @@ public class RedisTest {
 //        obj = cache.hGetObject("map", "a", null);
 //        HotWord db = (HotWord) obj;
 //        System.out.println(db.toString());
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
-
-        RedisBloomFilter<Integer> bloomFilter = new RedisBloomFilter<>(cache, 0.0001, 20000);
-        List<Integer> list = Lists.newArrayList(1, 2, 3);
-        CompletionService<Void> completionService = new ExecutorCompletionService<>(executorService);
-        for(int i = 1; i <= 3; i++) {
-            completionService.submit(new TestCallable("test_" +
-                    String.valueOf(i), list, bloomFilter));
-        }
-        for (int i = 0; i < 3; i++) {
-            completionService.take().get();
-        }
-
-        Map<Integer, Boolean> map = bloomFilter.containsAll("test_1", list);
-        System.out.println(map.toString());
-        map = bloomFilter.containsAll("test_2", list);
-        System.out.println(map.toString());
-        map = bloomFilter.containsAll("test_3", list);
-        System.out.println(map.toString());
+//        ExecutorService executorService = Executors.newFixedThreadPool(3);
+//
+//        RedisBloomFilter<Integer> bloomFilter = new RedisBloomFilter<>(cache, 0.0001, 20000);
+//        List<Integer> list = Lists.newArrayList(1, 2, 3);
+//        CompletionService<Void> completionService = new ExecutorCompletionService<>(executorService);
+//        for(int i = 1; i <= 3; i++) {
+//            completionService.submit(new TestCallable("test_" +
+//                    String.valueOf(i), list, bloomFilter));
+//        }
+//        for (int i = 0; i < 3; i++) {
+//            completionService.take().get();
+//        }
+//
+//        Map<Integer, Boolean> map = bloomFilter.containsAll("test_1", list);
+//        System.out.println(map.toString());
+//        map = bloomFilter.containsAll("test_2", list);
+//        System.out.println(map.toString());
+//        map = bloomFilter.containsAll("test_3", list);
+//        System.out.println(map.toString());
 
         //
 //        List<Long> params = Lists.newArrayList();
