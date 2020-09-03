@@ -841,6 +841,58 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 			throw new DataAccessResourceFailureException("", e);
 		}
 	}
+
+
+	/***
+	 * 根据id主键进行 数据某个字段自增(利用数据库事物保证原子性，不是先查出来，再更改的模式)
+	 *
+	 * @param model
+	 * @return
+	 * @throws DataAccessException
+	 */
+	protected boolean jdbc_increment_identity(T model,List<String> filedNameList,List<Integer> incrementValueList) throws DataAccessException {
+		long startTime=System.currentTimeMillis();
+		if (isShardingTable && shardingFieldInfo != primaryFieldInfo) {
+			throw new IllegalAccessError("找不到分表字段");
+		}
+		try {
+			String dbName = this.primaryFieldInfo.getDbName();
+			Object value = this.primaryFieldInfo.getReadMethod().invoke(model);
+			String sql = "UPDATE %s set %s where "
+					+ this.jdbcHelper.getWhere_columns_identity();
+			sql = sql.replaceAll(":" + primaryFieldInfo.getName() + " ",
+					value.toString()  + " ");
+
+			String updatePartSql="";
+			if(filedNameList.size()!=incrementValueList.size()){
+				throw new IllegalAccessError("increment 操作，参数list数量不对等");
+			}
+			for(int i=0;i<filedNameList.size();i++){
+				String filedName =filedNameList.get(i);
+				int incrementValue=incrementValueList.get(i);
+				updatePartSql=updatePartSql+filedName+"=("+filedName;
+				if(incrementValue>0){
+					updatePartSql=updatePartSql+"+"+incrementValue+")";
+				}else{
+					updatePartSql=updatePartSql+"-"+(0-incrementValue)+")";
+				}
+				if(i!=filedNameList.size()-1){
+					updatePartSql=updatePartSql+",";
+				}
+			}
+
+			if (utimeFieldInfo != null) {
+				long utime = new Date().getTime();
+				updatePartSql = updatePartSql+(",utime="+ Long.toString(utime) + " ");
+			}
+			sql = String.format(sql, this.getTable(model),updatePartSql);
+			int ret = getJdbcTemplate(model, false).getJdbcTemplate().update(sql);
+			logger.info(daoClassName + "update increment id sql:{},time:{}", sql,(System.currentTimeMillis()-startTime));
+			return ret >= 1 ? true : false;
+		} catch (Exception e) {
+			throw new DataAccessResourceFailureException("", e);
+		}
+	}
 	
 	/***
 	 * 根据组合键进行 数据某个字段自增(利用数据库事物保证原子性，不是先查出来，再更改的模式)
@@ -879,6 +931,72 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 				updatePartSql=updatePartSql+"-"+(0-incrementValue)+")";
 			}
 					
+			if (utimeFieldInfo != null) {
+				long utime = new Date().getTime();
+				updatePartSql = updatePartSql+(",utime="+ Long.toString(utime) + " ");
+			}
+			sql = String.format(sql, this.getTable(model),
+					updatePartSql);
+
+			int ret = getJdbcTemplate(model, false).getJdbcTemplate().update(sql);
+			logger.info(daoClassName + "update increment combination sql:{},time:{}", sql,(System.currentTimeMillis()-startTime));
+
+			return ret >= 1 ? true : false;
+		} catch (Exception e) {
+			throw new DataAccessResourceFailureException("", e);
+		}
+	}
+
+
+
+	/***
+	 * 根据组合键进行 数据某个字段自增(利用数据库事物保证原子性，不是先查出来，再更改的模式)
+	 *
+	 * @param model
+	 * @return
+	 * @throws DataAccessException
+	 */
+	protected boolean jdbc_increment_combination(T model,List<String> filedNameList,List<Integer> incrementValueList)
+			throws DataAccessException {
+		long startTime=System.currentTimeMillis();
+
+		if (isShardingTable
+				&& !combinationFieldInfos.contains(shardingFieldInfo)) {
+			throw new IllegalAccessError("找不到分表字段");
+		}
+		try {
+			String sql = "UPDATE %s set %s where "
+					+ this.jdbcHelper.getWhere_columns_combination();
+			for (FieldInfo one : this.combinationFieldInfos) {
+				String dbName = one.getDbName();
+				Object value = one.getReadMethod().invoke(model, null);
+				if (value instanceof String) {
+					sql = sql.replaceAll(":" + one.getName() + " ",
+							"'" + value.toString() + "' ");
+				} else {
+					sql = sql.replaceAll(":" + one.getName() + " ",
+							value.toString() + " ");
+				}
+			}
+
+			String updatePartSql="";
+			if(filedNameList.size()!=incrementValueList.size()){
+				throw new IllegalAccessError("increment 操作，参数list数量不对等");
+			}
+			for(int i=0;i<filedNameList.size();i++){
+				String filedName =filedNameList.get(i);
+				int incrementValue=incrementValueList.get(i);
+				updatePartSql=updatePartSql+filedName+"=("+filedName;
+				if(incrementValue>0){
+					updatePartSql=updatePartSql+"+"+incrementValue+")";
+				}else{
+					updatePartSql=updatePartSql+"-"+(0-incrementValue)+")";
+				}
+				if(i!=filedNameList.size()-1){
+					updatePartSql=updatePartSql+",";
+				}
+			}
+
 			if (utimeFieldInfo != null) {
 				long utime = new Date().getTime();
 				updatePartSql = updatePartSql+(",utime="+ Long.toString(utime) + " ");
@@ -1209,7 +1327,7 @@ public class JdbcBaseDao<T> implements RowMapper<T>,
 			return tableName;
 		} else {
 			// 可以根据复杂公式（jdbcIndex） 均匀hash，但是不好查数据
-			tableIndex = (int) shardId / 10 % seeds[index];
+			tableIndex = (int) shardId % seeds[index];
 			if (tableIndex == 0) {
 				if (Arrays.asList(keywords).contains(tableName.toUpperCase())) {
 					return  "`" + tableName + "`";

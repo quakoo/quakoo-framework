@@ -82,7 +82,7 @@ public class JedisX {
                     final GenericObjectPool internalPool = (GenericObjectPool) targetField
                             .get(shardedJedisPool);
                     if (internalPool != null) {
-                    	monitorLog.info("ShardedJedisPool------maxActive:"
+                        log.info("ShardedJedisPool------maxActive:"
                                 + internalPool.getMaxTotal() + ",active:"
                                 + internalPool.getNumActive() + ",idle:"
                                 + internalPool.getNumIdle());
@@ -94,7 +94,7 @@ public class JedisX {
                 }
             }
 
-        }, 2, 1, TimeUnit.SECONDS);
+        }, 2, 100, TimeUnit.SECONDS);
 
     }
 

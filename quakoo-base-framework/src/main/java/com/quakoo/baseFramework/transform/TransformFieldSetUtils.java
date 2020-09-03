@@ -2,6 +2,8 @@ package com.quakoo.baseFramework.transform;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -9,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 public class TransformFieldSetUtils {
+    Logger logger= LoggerFactory.getLogger(TransformFieldSetUtils.class);
 
     private List<PropertyDescriptor> listFieldDescriptors = Lists.newArrayList();
 
@@ -46,6 +49,7 @@ public class TransformFieldSetUtils {
             }
             return res;
         } catch (Exception e) {
+            logger.error("",e);
             throw new IllegalStateException("TransformFieldListUtils fieldList is error!", e);
         }
     }
