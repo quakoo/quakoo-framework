@@ -13,10 +13,6 @@ import javax.annotation.Resource;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.quakoo.baseFramework.jackson.JsonUtils;
-import com.quakoo.baseFramework.sensitive.KWSeeker;
-import com.quakoo.baseFramework.sensitive.KWSeekerManage;
-import com.quakoo.baseFramework.sensitive.ProcessRes;
-import com.quakoo.baseFramework.sensitive.SimpleKWSeekerProcessor;
 import com.quakoo.framework.ext.chat.bean.AsyncMessage;
 import com.quakoo.framework.ext.chat.dao.ManyChatQueueDao;
 import com.quakoo.framework.ext.chat.dao.MessageDao;
@@ -31,11 +27,13 @@ import com.quakoo.framework.ext.chat.model.param.nio.RecallResponse;
 import com.quakoo.framework.ext.chat.model.param.nio.SessionResponse;
 import com.quakoo.framework.ext.chat.nio.ChannelUtils;
 import com.quakoo.framework.ext.chat.service.ChatService;
+import com.quakoo.framework.ext.chat.service.ext.ChatWordFilterService;
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 聊天处理类
@@ -69,12 +67,12 @@ public class ChatServiceImpl implements ChatService, InitializingBean {
 
     private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2 + 1);
 
-    private KWSeeker kwSeeker;
+    @Qualifier("chatWordFilterService")
+    @Autowired(required = false)
+    private ChatWordFilterService chatWordFilterService;
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        KWSeekerManage kwSeekerManage = SimpleKWSeekerProcessor.newInstance();
-        kwSeeker = kwSeekerManage.getKWSeeker("common");
         Thread processer = new Thread(new Processer());
         processer.start();
     }
@@ -412,9 +410,12 @@ public class ChatServiceImpl implements ChatService, InitializingBean {
                 return;
             }
         }
-        if(kwSeeker != null && StringUtils.isNotBlank(word)) {
-            ProcessRes processRes = kwSeeker.replaceWords(word);
-            word = processRes.getContent();
+//        if(kwSeeker != null && StringUtils.isNotBlank(word)) {
+//            ProcessRes processRes = kwSeeker.replaceWords(word);
+//            word = processRes.getContent();
+//        }
+        if(chatWordFilterService != null) {
+            word = chatWordFilterService.filter(word);
         }
         MessageChat messageChat = new MessageChat(word, picture, voice, voiceDuration, video, videoDuration, ext);
         String content = JsonUtils.toJson(messageChat);
@@ -445,9 +446,12 @@ public class ChatServiceImpl implements ChatService, InitializingBean {
 		if(Type.type_single_chat == type) {
 			if(uid == thirdId) return false;
 		}
-		if(kwSeeker != null && StringUtils.isNotBlank(word)) {
-            ProcessRes processRes = kwSeeker.replaceWords(word);
-            word = processRes.getContent();
+//		if(kwSeeker != null && StringUtils.isNotBlank(word)) {
+//            ProcessRes processRes = kwSeeker.replaceWords(word);
+//            word = processRes.getContent();
+//        }
+        if(chatWordFilterService != null) {
+            word = chatWordFilterService.filter(word);
         }
 		boolean res = false;
 		MessageChat messageChat = new MessageChat(word, picture, voice, voiceDuration, video, videoDuration, ext);

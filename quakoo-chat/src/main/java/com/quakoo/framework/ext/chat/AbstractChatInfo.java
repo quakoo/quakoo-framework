@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.quakoo.baseFramework.redis.JedisBean;
 //import com.quakoo.framework.ext.chat.bean.SegmentLock;
+import com.quakoo.baseFramework.util.StringUtil;
 import com.quakoo.framework.ext.chat.util.PropertyUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -54,6 +55,8 @@ public abstract class AbstractChatInfo implements InitializingBean {
 	public String redis_will_push_queue;
 	public String user_stream_init_lock_key; //信息流锁key
 
+    public int wordFilter; //是否过滤
+
 
 //    public SegmentLock segmentLock; //分段锁 用于mysql限制insert的峰值(同一ms只能有3个insert操作)
 
@@ -71,6 +74,9 @@ public abstract class AbstractChatInfo implements InitializingBean {
 		this.nioConnectBootstrapPort = propertyUtil.getProperty("chat.nio.connect.bootstrap.port");
 		this.distributedZkAddress = propertyUtil.getProperty("chat.distributed.zk.address");
 //		this.distributedProjectName = propertyUtil.getProperty("chat.distributed.project.name");
+        String wordFilterStr = propertyUtil.getProperty("chat.word.filter");
+        wordFilter = 0;
+        if(StringUtils.isNotBlank(wordFilterStr)) wordFilter = Integer.parseInt(wordFilterStr);
 
         String single_chat_queue_name = "single_chat_queue";
         String many_chat_queue_name = "many_chat_queue";
