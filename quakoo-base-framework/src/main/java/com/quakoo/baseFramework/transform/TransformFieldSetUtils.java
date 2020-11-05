@@ -31,6 +31,7 @@ public class TransformFieldSetUtils {
     }
 
     public <F> Set<F> fieldList(List<?> list, String fieldName) {
+        if(list.size() == 0) return Sets.newHashSet();
         PropertyDescriptor listFieldDescriptor = null;
         for(PropertyDescriptor one : listFieldDescriptors) {
             if(one.getName().equals(fieldName)) {

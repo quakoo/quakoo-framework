@@ -30,6 +30,7 @@ public class TransformMapUtils {
     }
 
     public <K, V> Map<K, V> listToMap(List<V> list, String fieldName) {
+        if(list.size() == 0) return Maps.newHashMap();
         PropertyDescriptor listFieldDescriptor = null;
         for(PropertyDescriptor one : listFieldDescriptors) {
             if(one.getName().equals(fieldName)) {
