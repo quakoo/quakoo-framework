@@ -26,7 +26,7 @@ public abstract class AbstractChatInfo implements InitializingBean {
 	
 	public static final int session_timout = 5000;
 	
-	public static final int pull_length = 500;
+	public static final int pull_length = 1000;
 
 	public List<String> single_chat_queue_names = Lists.newArrayList();
     public List<String> many_chat_queue_names = Lists.newArrayList();
