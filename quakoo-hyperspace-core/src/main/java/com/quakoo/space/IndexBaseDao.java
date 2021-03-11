@@ -121,9 +121,9 @@ public class IndexBaseDao<T> extends JdbcBaseDao<T> implements InitializingBean 
                         String sortValue = daoMethod.order().name();
                         String sortName = indexSort.value();
                         String searchFileName = indexSearch.value();
-                        String sortSign = " < ";
+                        String sortSign = " <= ";
                         if (sortValue.equals("asc")) {
-                            sortSign = " > ";
+                            sortSign = " >= ";
                         }
                         String whereSql = " where ";
                         for (int i : fieldNames.keySet()) {
