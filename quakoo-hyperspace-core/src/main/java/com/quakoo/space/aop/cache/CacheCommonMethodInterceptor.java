@@ -12,6 +12,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.google.common.collect.Lists;
 import com.quakoo.space.annotation.HyperspaceId;
 import com.quakoo.space.annotation.cache.CacheDaoMethod;
 import com.quakoo.space.annotation.cache.CacheSort;
@@ -351,22 +352,67 @@ public class CacheCommonMethodInterceptor extends JdbcCommonMethodInterceptor {
         List mergeListarg = (List) args[index];
         CacheSortOrder order = getCache_sort_order(object, relationMethod, args);
         List<String> cacheKeys = new CopyOnWriteArrayList<String>();
-        long start = System.currentTimeMillis();
+//        long start = System.currentTimeMillis();
 
-        if (methodhashMap.get(method) == null) {
-            methodhashMap.put(method, new MethodDaoInfo(dao, args, index));
-        }
+//        if (methodhashMap.get(method) == null) {
+//            methodhashMap.put(method, new MethodDaoInfo(dao, args, index));
+//        }
 //         SyncLocalCacheThread.initThread();
 
-        CountDownLatch cdl = new CountDownLatch(mergeListarg.size());
+        List<String> keys = Lists.newArrayList();
         for (Object arg : mergeListarg) {
-//            executor.execute(new batchGetThread(args, isListLoaclCache, isNullLoaclCache, index, order, relationMethod,
-//                    dao, cacheKeys, arg, cdl));
-
-            executor.execute(new batchGetThread(args, index, order, relationMethod,
-                    dao, cacheKeys, arg, cdl));
+            Object[] newArgs = new Object[args.length];
+            for (int i = 0; i < args.length; i++) {
+                if (i == index) {
+                    newArgs[i] = arg;
+                } else {
+                    newArgs[i] = args[i];
+                }
+            }
+            String cacheKey = dao.getCacheKey(relationMethod, newArgs, order);
+            String isNullCacheKey = dao.getIsNullListCacheKey(cacheKey);
+            keys.add(cacheKey);
+            keys.add(isNullCacheKey);
         }
-        cdl.await();
+        Map<String, Boolean> keyExistsMap = dao.getCache().pipExists(keys);
+        List handleList = Lists.newArrayList();
+        for(Object arg : mergeListarg) {
+            Object[] newArgs = new Object[args.length];
+            for (int i = 0; i < args.length; i++) {
+                if (i == index) {
+                    newArgs[i] = arg;
+                } else {
+                    newArgs[i] = args[i];
+                }
+            }
+            String cacheKey = dao.getCacheKey(relationMethod, newArgs, order);
+            String isNullCacheKey = dao.getIsNullListCacheKey(cacheKey);
+            boolean isList = keyExistsMap.get(cacheKey);
+            boolean isNull = keyExistsMap.get(isNullCacheKey);
+            if (!isList && !isNull) {
+                handleList.add(arg);
+            }
+            if(isList) {
+                cacheKeys.add(cacheKey);
+            }
+        }
+        if(handleList.size() > 0) {
+            CountDownLatch cdl = new CountDownLatch(handleList.size());
+            for (Object arg : handleList) {
+                executor.execute(new batchGetThread(args, index, order, relationMethod,
+                        dao, cacheKeys, arg, cdl));
+            }
+            cdl.await();
+        }
+//        CountDownLatch cdl = new CountDownLatch(mergeListarg.size());
+//        for (Object arg : mergeListarg) {
+////            executor.execute(new batchGetThread(args, isListLoaclCache, isNullLoaclCache, index, order, relationMethod,
+////                    dao, cacheKeys, arg, cdl));
+//
+//            executor.execute(new batchGetThread(args, index, order, relationMethod,
+//                    dao, cacheKeys, arg, cdl));
+//        }
+//        cdl.await();
         int size = getSize(object, method, args);
         List<HyperspaceId> hyperspaceIds = dao.cache_getMergeList(cacheKeys, size, order);
         return decideListReturnResult(object, method, args, hyperspaceIds);
