@@ -293,22 +293,22 @@ public class CacheCommonMethodInterceptor extends JdbcCommonMethodInterceptor {
                     }
                 }
                 String cacheKey = dao.getCacheKey(relationMethod, newArgs, order);
-                String isNullCacheKey = dao.getIsNullListCacheKey(cacheKey);
+//                String isNullCacheKey = dao.getIsNullListCacheKey(cacheKey);
 
 //                boolean isList = isListLoaclCache.get(ReflectUtil.getLongValueForLongOrInt( arg)) != null;
 //                boolean isNull = isNullLoaclCache.get(ReflectUtil.getLongValueForLongOrInt( arg)) != null;
                 // 既没存有list又没存有null，说明没有初始化本地cache。
 
-                boolean isList = dao.getCache().exists(cacheKey);
-                boolean isNull = dao.getCache().exists(isNullCacheKey);
-                if (!isList && !isNull) {
+//                boolean isList = dao.getCache().exists(cacheKey);
+//                boolean isNull = dao.getCache().exists(isNullCacheKey);
+//                if (!isList && !isNull) {
                     relationMethod.invoke(dao, newArgs);
 //                    initLocalCache(cacheKey, isNullCacheKey, dao, newArgs, relationMethod, isListLoaclCache,
 //                            isNullLoaclCache, arg);
-                    isList = dao.getCache().exists(cacheKey);
+                boolean isList = dao.getCache().exists(cacheKey);
 //                    isList = isListLoaclCache.get(ReflectUtil.getLongValueForLongOrInt( arg)) != null;
 //                    isNull = isNullLoaclCache.get(ReflectUtil.getLongValueForLongOrInt( arg)) != null;
-                }
+//                }
 
                 if (isList) {
                     cacheKeys.add(cacheKey);
