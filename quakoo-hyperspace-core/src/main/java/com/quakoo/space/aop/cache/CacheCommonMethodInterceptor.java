@@ -226,7 +226,6 @@ public class CacheCommonMethodInterceptor extends JdbcCommonMethodInterceptor {
             isListInCache = dao.getCache().exists(cacheKey);
             if (isListInCache) {
                 isListLoaclCache.put(ReflectUtil.getLongValueForLongOrInt( arg), 0, 1000 * 60);
-                return;
             }
         }
     }
@@ -268,6 +267,19 @@ public class CacheCommonMethodInterceptor extends JdbcCommonMethodInterceptor {
             this.cdl = cdl;
         }
 
+        public batchGetThread(Object[] args, int index, CacheSortOrder order, Method relationMethod, AbstractCacheBaseDao<?> dao,
+                              List<String> cacheKeys, Object arg, CountDownLatch cdl) {
+            super();
+            this.args = args;
+            this.index = index;
+            this.order = order;
+            this.relationMethod = relationMethod;
+            this.dao = dao;
+            this.cacheKeys = cacheKeys;
+            this.arg = arg;
+            this.cdl = cdl;
+        }
+
         @Override
         public void run() {
             try {
@@ -282,15 +294,19 @@ public class CacheCommonMethodInterceptor extends JdbcCommonMethodInterceptor {
                 String cacheKey = dao.getCacheKey(relationMethod, newArgs, order);
                 String isNullCacheKey = dao.getIsNullListCacheKey(cacheKey);
 
-                boolean isList = isListLoaclCache.get(ReflectUtil.getLongValueForLongOrInt( arg)) != null;
-                boolean isNull = isNullLoaclCache.get(ReflectUtil.getLongValueForLongOrInt( arg)) != null;
+//                boolean isList = isListLoaclCache.get(ReflectUtil.getLongValueForLongOrInt( arg)) != null;
+//                boolean isNull = isNullLoaclCache.get(ReflectUtil.getLongValueForLongOrInt( arg)) != null;
                 // 既没存有list又没存有null，说明没有初始化本地cache。
 
+                boolean isList = dao.getCache().exists(cacheKey);
+                boolean isNull = dao.getCache().exists(isNullCacheKey);
                 if (!isList && !isNull) {
-                    initLocalCache(cacheKey, isNullCacheKey, dao, newArgs, relationMethod, isListLoaclCache,
-                            isNullLoaclCache, arg);
-                    isList = isListLoaclCache.get(ReflectUtil.getLongValueForLongOrInt( arg)) != null;
-                    isNull = isNullLoaclCache.get(ReflectUtil.getLongValueForLongOrInt( arg)) != null;
+                    relationMethod.invoke(dao, newArgs);
+//                    initLocalCache(cacheKey, isNullCacheKey, dao, newArgs, relationMethod, isListLoaclCache,
+//                            isNullLoaclCache, arg);
+                    isList = dao.getCache().exists(cacheKey);
+//                    isList = isListLoaclCache.get(ReflectUtil.getLongValueForLongOrInt( arg)) != null;
+//                    isNull = isNullLoaclCache.get(ReflectUtil.getLongValueForLongOrInt( arg)) != null;
                 }
 
                 if (isList) {
@@ -318,15 +334,15 @@ public class CacheCommonMethodInterceptor extends JdbcCommonMethodInterceptor {
     	}
     	
     	
-        if (isListHashMap.get(methodAndArg) == null) {
-            isListHashMap.put(methodAndArg, new LongKeyLocalCache(method.getName()));
-        }
-        if (isNullHashMap.get(methodAndArg) == null) {
-            isNullHashMap.put(methodAndArg, new LongKeyLocalCache(method.getName()));
-        }
+//        if (isListHashMap.get(methodAndArg) == null) {
+//            isListHashMap.put(methodAndArg, new LongKeyLocalCache(method.getName()));
+//        }
+//        if (isNullHashMap.get(methodAndArg) == null) {
+//            isNullHashMap.put(methodAndArg, new LongKeyLocalCache(method.getName()));
+//        }
 
-        LongKeyLocalCache isListLoaclCache = isListHashMap.get(methodAndArg);
-        LongKeyLocalCache isNullLoaclCache = isNullHashMap.get(methodAndArg);
+//        LongKeyLocalCache isListLoaclCache = isListHashMap.get(methodAndArg);
+//        LongKeyLocalCache isNullLoaclCache = isNullHashMap.get(methodAndArg);
 
       
 
@@ -340,11 +356,14 @@ public class CacheCommonMethodInterceptor extends JdbcCommonMethodInterceptor {
         if (methodhashMap.get(method) == null) {
             methodhashMap.put(method, new MethodDaoInfo(dao, args, index));
         }
-        // SyncLocalCacheThread.initThread();
+//         SyncLocalCacheThread.initThread();
 
         CountDownLatch cdl = new CountDownLatch(mergeListarg.size());
         for (Object arg : mergeListarg) {
-            executor.execute(new batchGetThread(args, isListLoaclCache, isNullLoaclCache, index, order, relationMethod,
+//            executor.execute(new batchGetThread(args, isListLoaclCache, isNullLoaclCache, index, order, relationMethod,
+//                    dao, cacheKeys, arg, cdl));
+
+            executor.execute(new batchGetThread(args, index, order, relationMethod,
                     dao, cacheKeys, arg, cdl));
         }
         cdl.await();
