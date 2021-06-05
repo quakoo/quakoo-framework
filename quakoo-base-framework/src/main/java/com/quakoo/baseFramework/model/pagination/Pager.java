@@ -148,6 +148,7 @@ public class Pager implements Serializable {
         }
 		int count = 0;
 		count = this.getCount();
+        resulte.put("success", true);
 		resulte.put("count", count);
 		resulte.put("preCursor", this.getPreCursor());
 		resulte.put("nextCursor", this.getNextCursor());
