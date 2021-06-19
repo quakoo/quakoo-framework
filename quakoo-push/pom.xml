@@ -14,6 +14,12 @@
 			<groupId>com.quakoo</groupId>
 			<artifactId>quakoo-web-framework</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.data</groupId>
@@ -24,6 +30,12 @@
 			<groupId>com.notnoop.apns</groupId>
 			<artifactId>apns</artifactId>
 			<version>1.0.0.Beta6</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
 		</dependency>
 		<dependency>
 		    <groupId>io.netty</groupId>
@@ -56,6 +68,12 @@
             <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache</artifactId>
             <version>2.8.3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 	</dependencies>
 
