@@ -49,7 +49,7 @@
         <junit.version>4.11</junit.version>
         <servlet-api.version>4.0.1</servlet-api.version>
         <spring-ibatis.version>2.0.8</spring-ibatis.version>
-        <mysql-connector.version>5.1.34</mysql-connector.version>
+        <mysql-connector.version>8.0.16</mysql-connector.version>
         <kafka_2.9.2.version>0.8.1.1</kafka_2.9.2.version>
         <commons-configuration.version>1.6</commons-configuration.version>
         <log4jdbc.version>1.2</log4jdbc.version>
